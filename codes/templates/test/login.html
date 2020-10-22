@@ -1,0 +1,89 @@
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+
+    <script>
+      var SERVER = window.location.origin;
+      function phone_login() {
+        var form = new FormData();
+        form.append("phone_number", $("#phone_number").val());
+
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            //"headers": {
+            //    "Authorization": "Token " + localStorage.getItem("session_id"),
+            //},
+            "url": SERVER + "/neighbormade/login-phone-number",
+            "method": "POST",
+            "processData": false,
+            "contentType": false,
+            "mimeType": "multipart/form-data",
+            "data": form
+        }
+        $.ajax(settings).done(function (response) {
+          alert("OKAY")
+
+
+        }).fail(function (err) {
+          alert("ERROR")
+        });
+      }
+
+      function code_next() {
+        var form = new FormData();
+        form.append("phone_number", $("#phone_number").val());
+        form.append("code_2fa", $("#code_2fa").val());
+
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            //"headers": {
+            //    "Authorization": "Token " + localStorage.getItem("session_id"),
+            //},
+            "url": SERVER + "/neighbormade/login-verify-2fa",
+            "method": "POST",
+            "processData": false,
+            "contentType": false,
+            "mimeType": "multipart/form-data",
+            "data": form
+        }
+        $.ajax(settings).done(function (response) {
+          var resp = JSON.parse(response)
+          if( resp.message.includes("success")) {
+            localStorage.setItem('neighbormade_token', resp.token)
+          }
+        }).fail(function (err) {
+          alert("ERROR")
+        });
+      }
+
+      function init() {
+
+        $("#login").on('click', function() {
+          phone_login()
+        });
+
+        $("#code_next").on('click', function() {
+          code_next()
+        });
+
+      }
+      window.addEventListener("DOMContentLoaded", init, false);
+
+
+    </script>
+
+  <body>
+      <input type='text' id='phone_number' placeholder='phone'/><br>
+      <button id='login'>Next</button>
+      <br>
+      <br>
+      <br>
+      Then 2fa code
+      <input type='text' id='code_2fa' placeholder='code_2fa'/><br>
+      <button id='code_next'>Submit</button>
+
+  </body>
+</html>

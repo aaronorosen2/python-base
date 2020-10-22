@@ -1,0 +1,10 @@
+Django==2.2.8
+psycopg2-binary
+django-cors-headers
+django-model-utils
+Pillow
+firebase_admin
+gunicorn
+stripe
+twilio
+django-storages

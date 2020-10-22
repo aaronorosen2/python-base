@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "mysticverse",
+  "private_key_id": "783123a006c2a44ebb87010d6b2d8c740f9477b3",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDMXkPlb7S61VrP\nkTiQHufOVjmoB1c4rn1LtJlnF0xCirAacJmWP5UM0D9UKMjklB0T2jjAwAemb5l1\nfh2vxOwKBkgrZiWzbRxCAoM5vZKm0d+AJUDV+zWCX3dI7HWtrT386FA+QbFVkwRb\n7NfCCVTSA87aQA3wGLzCS1WkTkugdsJbLJ3uYIQQM4TdvZXm9x1ZTZX0sjbEbgXy\n3uT2EoHG/OCvL2ZcU8T0Y8mWrJteKrISI6XdQ7EmgIFj/jk6SslE4qnHT5PZP8dM\nFjPW+4ZNl3dxtwfq92HemMZSo4hMqKEi8eaLFjLQjSY59vGGaB+Yz791SnhqqrG5\n31vYPjYBAgMBAAECggEAEklwEWBuv1YWh2LC+TBuxRmVlKm9fgKtDwBkxqMAzaZ7\nzg3bzGQ5mdkrhYQVv9BaDrv03piARr4PMQJ9NQxto5L+07VS88x0Xhq788d5DyjR\n8zVCKTOOjPEuaw3PlOAe3xnJjlyR+eqLFg+qGcB8gMNa99AJ/z0zbL5Rdj+USFIX\nLObL4DqDKtCBrVMB80DwtjzrD16Z4J+Nhv4InZYFHwYdtHSxdkm2VCWPNOtp0Zsd\nCwHmRETAxdnb5G4ByqsU4aFQcQlPpzs4/5/PQIJzlbD5//yx6UznmzYjhX4iQN4q\nrt3q62vTJaqRXIivxUM8HwbsCfKvGPm6penJdXykrQKBgQDqq79OpHyoccGpjxtS\n0Hz90X9H7GSv97sFKpRdPhN6vHYVSeM+BsINezOIs/rpra+/TOqz+/4aW2rYiwT7\nggjiAHAAbrPiUUrOwtU1TzXnAUWWCHPSM0/jqum2VJq7oVpSL5wVXMV1WYzUgM7f\nA+wb+C21z5SPEZdz0Qk/nIV/vQKBgQDe8XHLRBEs9ydZmH0qbC+sFCu2TJfQwxkr\nYxY3dHqVA5jTHo9gv1YJPoAG+pyIfV/5bu5koQXO6Asjn6u2VD1tOO+6Y4WKohmy\nKT6ZQpqKzp1Ojz6FfClTOBfYNQ3MTxbuPmfHfycO4W6cWI7raJYUtOtfxaflf9kI\nxqWdqtmhlQKBgA9wrW2nNOyAT5WwbMPOI+svVYiN7TIGwq9cVdastutkawCLlAAI\nwcvRR1q/PMsTOnUDwo2FDvr8+NK2kuVZcOwtyzC8F+nUH2/rMcwIIivI0aNFexlh\ndugr3qS4fFXMD/1IVKSzLerCsZlpwDK8N1S/x4Im3kdriON95XXh/oahAoGBANhV\nXeCqOihx5AMyzzIdLN1D7W7GQALZblEFo4dIRbLXfLJQUzzELc5mkYE0KjTfxAOc\nu0N2ZNZzoGt/Ava4I6satrUc4Xa2+UxCbXX2hVPwTgDvSvHom4kfQzQPt0Xr8Qpa\nEAYrwlDUO6sG3BheslOBg2y5tcQjHQ1BBXBLW0dJAoGAFTC8DlitjvNQjqpaNBCu\nFGO8lmW4H8p2PBEEiuWo9wo7VxBE1GVoqhJtb/TY9W7uefzfcrmJYZFQ57HAaQ7Q\nAhhT8D4D5lDPmuV5FocylRhCNpX+3SLZ7QSGHG8w5BhU+35w5sPaovlCCstEXQ57\n7ILclGMq41CClz5ArvK7gOA=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-qgsbk@mysticverse.iam.gserviceaccount.com",
+  "client_id": "100470437903089857531",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-qgsbk%40mysticverse.iam.gserviceaccount.com"
+}

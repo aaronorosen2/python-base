@@ -1,0 +1,12 @@
+.env
+*.pyc
+__pycache__/
+*.sqlite3
+*.sw?
+.profile
+.DS_Store
+venv
+*.sv?
+agent_data.csv
+*.csv
+images

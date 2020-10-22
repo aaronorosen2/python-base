@@ -1,0 +1,106 @@
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+
+    <script>
+      var SERVER = window.location.origin;
+      function create_store() {
+        var form = new FormData();
+        form.append("description", $("#description").val());
+        form.append("status", $("#status").val());
+        form.append("location", $("#location").val());
+        var files = $('#pic')[0].files[0];
+        form.append('file', files);
+
+
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "headers": {
+              "Authorization": localStorage.getItem("neighbormade_token"),
+            },
+            "url": SERVER + "/neighbormade/manage-store",
+            "method": "POST",
+            "processData": false,
+            "contentType": false,
+            "mimeType": "multipart/form-data",
+            "data": form
+        }
+        $.ajax(settings).done(function (response) {
+          alert("OKAY")
+          window.location.reload()
+
+        }).fail(function (err) {
+          alert("ERROR")
+        });
+      }
+
+      function get_stores() {
+        var form = new FormData();
+
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "headers": {
+              "Authorization": localStorage.getItem("neighbormade_token"),
+            },
+            "url": SERVER + "/neighbormade/manage-store",
+            "method": "GET",
+            "processData": false,
+            "contentType": false,
+            "mimeType": "multipart/form-data",
+            "data": form
+        }
+        $.ajax(settings).done(function (response) {
+          var stores = JSON.parse(response)
+          for(var store of stores) {
+            console.log(store)
+            $("#stores").append(
+              "<hr>" +
+              "<div> ID: [" + store.id + "]</div>" +
+              "<div> Status: [" + store.status + "]</div>" +
+              "<div> Description: [" + store.description + "]</div>" +
+              "<div> Location: [" + store.location + "]</div>" +
+              "<div> Location: [" + store.business_photo + "]</div>"
+            )
+          }
+
+          console.log(response)
+        }).fail(function (err) {
+          alert("ERROR")
+        });
+      }
+
+      function init() {
+
+        $("#create").on('click', function() {
+          create_store()
+        });
+
+        get_stores()
+
+      }
+      window.addEventListener("DOMContentLoaded", init, false);
+
+
+    </script>
+
+  <body>
+      <b>Create Store</b><br>
+      Description: <textarea id='description' placeholder='description of store'></textarea>
+      <br>
+      Status: <select id='status'>
+        <option value='open'>open</option>
+        <option value='closed'>closed</option>
+      </select>
+      <br>
+      Location: <input id='location' placeholder='location'/>
+      <br>
+      Picture: <input type='file' id='pic' placeholder='Profile Pic'/><br>
+      <button id='create'>Create</button>
+      <br>
+      <br>
+      <div id='stores'></div>
+  </body>
+</html>

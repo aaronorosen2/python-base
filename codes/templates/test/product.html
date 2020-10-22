@@ -1,0 +1,101 @@
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+
+    <script>
+      var SERVER = window.location.origin;
+      function create_store() {
+        var form = new FormData();
+        form.append("description", $("#description").val());
+        form.append("status", $("#status").val());
+        form.append("store_id", $("#store_id").val());
+        var files = $('#pic')[0].files[0];
+        form.append('photo1', files);
+
+
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "headers": {
+              "Authorization": localStorage.getItem("neighbormade_token"),
+            },
+            "url": SERVER + "/neighbormade/manage-product",
+            "method": "POST",
+            "processData": false,
+            "contentType": false,
+            "mimeType": "multipart/form-data",
+            "data": form
+        }
+        $.ajax(settings).done(function (response) {
+          console.log(response)
+          window.location.reload()
+
+
+        }).fail(function (err) {
+          alert("ERROR")
+        });
+      }
+
+      function get_stores() {
+        var form = new FormData();
+
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "headers": {
+              "Authorization": localStorage.getItem("neighbormade_token"),
+            },
+            "url": SERVER + "/neighbormade/manage-product",
+            "method": "GET",
+            "processData": false,
+            "contentType": false,
+            "mimeType": "multipart/form-data",
+            "data": form
+        }
+        $.ajax(settings).done(function (response) {
+          var products = JSON.parse(response)
+          for(var product of products) {
+            console.log(product)
+            $("#stores").append(
+              "<hr>" +
+              "<div> ID: [" + product.id + "]</div>" +
+              "<div> Store_id: [" + product.memberstore_id + "]</div>" +
+              "<div> Description: [" + product.description + "]</div>" +
+              "<div> PHOTO: [" + product.photo1 + "]</div>"
+            )
+          }
+
+          console.log(response)
+        }).fail(function (err) {
+          alert("ERROR")
+        });
+      }
+
+      function init() {
+
+        $("#create").on('click', function() {
+          create_store()
+        });
+
+        get_stores()
+
+      }
+      window.addEventListener("DOMContentLoaded", init, false);
+
+
+    </script>
+
+  <body>
+      <b>Create Store</b><br>
+      Description: <textarea id='description' placeholder='description of product'></textarea>
+      <br>
+      store_id: <input id='store_id' placeholder='store_id'/>
+      <br>
+      Picture: <input type='file' id='pic' placeholder='Product Pic1'/><br>
+      <button id='create'>Create</button>
+      <br>
+      <br>
+      <div id='stores'></div>
+  </body>
+</html>
