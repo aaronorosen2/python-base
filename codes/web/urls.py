@@ -20,8 +20,8 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('neighbormade', include(
-        ('neighbormade.urls', 'neighbormade'),
-        namespace='neighbormade')),
+    path('sfapp', include(
+        ('sfapp.urls', 'sfapp'),
+        namespace='sfapp')),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

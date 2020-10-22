@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'neighbormade',
+    'sfapp',
     'storages',
     'corsheaders',
 ]
@@ -64,7 +64,7 @@ TWILIO = {
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = 'AKIAU7EQAGZOMEU6KP4M'
 AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'neighbormade'
+AWS_STORAGE_BUCKET_NAME = 'sfapp'
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 
 
@@ -95,9 +95,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
         'USER': 'postgres',
-        'HOST': 'neighbormade1.cptd8u1rhj7z.us-west-1.rds.amazonaws.com',
+        'HOST': 'sfapp.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com',
         'PORT': '5432',
-        'PASSWORD': 'MjNhMmYwZjA4ZDE4YzNiZmJmOGYyYWVj'
+        'PASSWORD': 'EhB4bINnDFmzI0Bg'
     }
 }
 
