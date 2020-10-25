@@ -31,4 +31,6 @@ class Command(BaseCommand):
             service.address = i.address
             service.latitude = i.lat
             service.longitude = i.long
+            service.services = i.services
+            service.other_info = i.other_info
             service.save()
