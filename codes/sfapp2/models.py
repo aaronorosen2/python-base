@@ -30,9 +30,11 @@ class Token(models.Model):
 
 
 class Service(models.Model):
-    title2 = models.CharField(max_length=512)
+    title = models.CharField(max_length=512)
+    url = models.CharField(max_length=4096, blank=True, null=True,
+                           unique=True)
     description = models.TextField()
-    phone = models.CharField(max_length=20, blank=True, null=True)
+    phone = models.CharField(max_length=1024, blank=True, null=True)
     address = models.CharField(max_length=512, blank=True, null=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6,
                                    blank=True, null=True)
