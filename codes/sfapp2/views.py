@@ -18,6 +18,8 @@ def get_services(request):
             'phone': service.phone,
             'latitude': float(service.latitude),
             'longitude':  float(service.longitude),
+            'services':  float(service.longitude),
+            'other_info':  float(service.longitude),
         })
     print(datas)
     return JsonResponse(datas, safe=False)
