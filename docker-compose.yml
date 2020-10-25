@@ -8,7 +8,7 @@ services:
             - ./codes:/home/web/codes
             - /opt/mystic-images:/home/web/codes/media
         ports:
-            - 8000:8000
+            - 8040:8000
         # command: bash -c "python3 manage.py runserver 0.0.0.0:8000"
         command: bash -c "/usr/local/bin/gunicorn --bind :8000 --timeout 999 --workers 8 --env DJANGO_SETTINGS_MODULE=web.settings  web.wsgi:application"
 
