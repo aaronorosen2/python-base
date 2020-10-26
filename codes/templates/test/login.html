@@ -15,7 +15,7 @@
             //"headers": {
             //    "Authorization": "Token " + localStorage.getItem("session_id"),
             //},
-            "url": SERVER + "/neighbormade/login-phone-number",
+            "url": SERVER + "/sfapp2/api/login-phone-number",
             "method": "POST",
             "processData": false,
             "contentType": false,
@@ -42,7 +42,7 @@
             //"headers": {
             //    "Authorization": "Token " + localStorage.getItem("session_id"),
             //},
-            "url": SERVER + "/neighbormade/login-verify-2fa",
+            "url": SERVER + "/sfapp2/api/login-verify-2fa",
             "method": "POST",
             "processData": false,
             "contentType": false,
@@ -52,7 +52,8 @@
         $.ajax(settings).done(function (response) {
           var resp = JSON.parse(response)
           if( resp.message.includes("success")) {
-            localStorage.setItem('neighbormade_token', resp.token)
+            localStorage.setItem('token', resp.token)
+            alert("LOGINGIN")
           }
         }).fail(function (err) {
           alert("ERROR")

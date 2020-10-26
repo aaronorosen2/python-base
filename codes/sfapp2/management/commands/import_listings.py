@@ -33,4 +33,6 @@ class Command(BaseCommand):
             service.longitude = i.long
             service.services = i.services
             service.other_info = i.other_info
+            service.services_list = i.services_list
+            service.population_list = i.population_list
             service.save()

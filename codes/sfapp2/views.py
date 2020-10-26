@@ -1,3 +1,4 @@
+import json
 import uuid
 from django.shortcuts import render
 from django.http import Http404
@@ -19,6 +20,8 @@ def get_services(request):
             'latitude': float(service.latitude),
             'longitude':  float(service.longitude),
             'services':  service.services,
+            'services_list':  (service.services_list),
+            'population_list':  (service.population_list),
             'other_info': service.other_info,
         })
     print(datas)
