@@ -8,11 +8,23 @@ from django.views.decorators.csrf import csrf_exempt
 from sfapp2.models import Member, Token, Upload, Service
 
 
+def to_list(el):
+    if not el:
+        return []
+    return [s for s in json.loads(el)]
+
 @csrf_exempt
 def get_services(request):
     services = Service.objects.filter().all()
     datas = []
+    population_types = []
+    service_types = []
     for service in services:
+
+        service_types += to_list(service.services_list)
+        population_types += to_list(service.population_list)
+
+        print(to_list(service.services_list))
         datas.append({
             'title': service.title,
             'description': service.description,
@@ -20,12 +32,22 @@ def get_services(request):
             'latitude': float(service.latitude),
             'longitude':  float(service.longitude),
             'services':  service.services,
-            'services_list':  (service.services_list),
-            'population_list':  (service.population_list),
             'other_info': service.other_info,
+            'services_list': to_list(service.services_list),
+            'population_list': to_list(service.population_list),
         })
-    print(datas)
-    return JsonResponse(datas, safe=False)
+
+    service_types = list(set(service_types))
+    population_types = list(set(population_types))
+    service_types.sort()
+    population_types.sort()
+    print(service_types)
+    results = {
+        'places': datas,
+        'service_types': service_types,
+        'population_types': population_types,
+    }
+    return JsonResponse(results, safe=False)
 
 
 @csrf_exempt
