@@ -29,6 +29,7 @@ def get_services(request):
         datas.append({
             'title': service.title,
             'description': service.description,
+            'address': service.address,
             'phone': service.phone,
             'latitude': float(service.latitude),
             'longitude':  float(service.longitude),
