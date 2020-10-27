@@ -13,6 +13,7 @@ def to_list(el):
         return []
     return [s for s in json.loads(el)]
 
+
 @csrf_exempt
 def get_services(request):
     services = Service.objects.filter().all()
@@ -41,7 +42,6 @@ def get_services(request):
     population_types = list(set(population_types))
     service_types.sort()
     population_types.sort()
-    print(service_types)
     results = {
         'places': datas,
         'service_types': service_types,
@@ -77,22 +77,22 @@ def verify_2fa(request):
         phone = request.POST.get('phone_number')
         member = Member.objects.filter(phone=phone).first()
         if not member:
-            return JsonResponse({'message': 'Error'})
+            raise HttpResponseBadRequest()
 
         if member.code_2fa and member.code_2fa == code:
             member.has_verified_phone = True
             # clear code_2fa after use
             member.code_2fa = ''
             member.save()
-            neighbormade_token = Token()
-            neighbormade_token.member = member
-            neighbormade_token.token = str(uuid.uuid4())
-            neighbormade_token.save()
+            token = Token()
+            token.member = member
+            token.token = str(uuid.uuid4())
+            token.save()
 
             return JsonResponse({'message': 'success',
-                                 'token': neighbormade_token.token})
+                                 'token': token.token})
         else:
-            return JsonResponse({'message': 'invalid_code'})
+            raise HttpResponseBadRequest()
 
 
 def get_member_from_headers(headers):

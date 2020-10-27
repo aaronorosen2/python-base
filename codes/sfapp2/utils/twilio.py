@@ -10,7 +10,7 @@ def send_confirmation_code(to_number):
 
 
 def generate_code():
-    return str(random.randrange(100000, 999999))
+    return str(random.randrange(1000, 9999))
 
 
 def send_sms(to_number, body):
