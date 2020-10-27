@@ -1,7 +1,7 @@
 import json
 import uuid
 from django.shortcuts import render
-from django.http import Http404
+from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from sfapp2.utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
@@ -57,7 +57,7 @@ def confirm_phone_number(request):
 
     phone_number = request.POST.get('phone_number')
     if not phone_number:
-        return JsonResponse({'message': 'Phone number is required'})
+        raise HttpResponseBadRequest()
 
     member = Member.objects.filter(phone=phone_number).first()
     if not member:
