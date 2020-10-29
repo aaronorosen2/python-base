@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'storages',
     'corsheaders',
     'admin_backend',
+    'voip',
 ]
 
 MIDDLEWARE = [
