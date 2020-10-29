@@ -5,7 +5,7 @@ from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from sfapp2.utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
-from sfapp2.models import Member, Token, Upload, Service
+from sfapp2.models import Member, Token, Upload, Service, GpsCheckin
 
 
 def to_list(el):
@@ -115,6 +115,22 @@ def set_user_info(request):
             member.save()
 
         return JsonResponse({'message': 'success'})
+
+@csrf_exempt
+def do_checkin_gps(request):
+    if request.POST:
+        msg = request.POST.get('msg')
+        member = get_member_from_headers(request.headers)
+        if msg and member:
+            gps_checkin = GpsCheckin()
+            gps_checkin.member = member
+            gps_checkin.msg = request.POST.get("msg", "")
+            gps_checkin.lat = request.POST.get("lat", "")
+            gps_checkin.lng = request.POST.get("lng", "")
+            gps_checkin.save()
+
+        return JsonResponse({'message': 'success'})
+
 
 @csrf_exempt
 def test_login(request):

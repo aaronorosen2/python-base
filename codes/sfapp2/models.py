@@ -23,6 +23,15 @@ class Member(models.Model):
     created_at = models.DateTimeField(auto_now=True)
 
 
+class GpsCheckin(models.Model):
+    member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
+                               default="")
+    msg = models.CharField(max_length=2000, default='')
+    lat = models.CharField(max_length=500, default='')
+    lng = models.CharField(max_length=500, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Token(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     token = models.CharField(max_length=256)
