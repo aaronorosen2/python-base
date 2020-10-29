@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'sfapp2',
     'storages',
     'corsheaders',
+    'admin_backend',
 ]
 
 MIDDLEWARE = [

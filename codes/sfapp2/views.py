@@ -104,6 +104,17 @@ def get_member_from_headers(headers):
         if user_token:
             return user_token.member
 
+@csrf_exempt
+def set_user_info(request):
+    if request.POST:
+        name = request.POST.get('name')
+        member = get_member_from_headers(request.headers)
+        if name and member:
+            print("SAVE NAME!!")
+            member.name = name
+            member.save()
+
+        return JsonResponse({'message': 'success'})
 
 @csrf_exempt
 def test_login(request):

@@ -23,5 +23,8 @@ urlpatterns = [
     path('sfapp2', include(
         ('sfapp2.urls', 'sfapp2'),
         namespace='sfapp2')),
+    path('admin_backend', include(
+        ('admin_backend.urls', 'admin_backend'),
+        namespace='admin_backend')),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
