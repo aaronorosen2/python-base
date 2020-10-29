@@ -1,3 +1,4 @@
+import time
 import json
 import uuid
 from django.shortcuts import render
@@ -130,6 +131,24 @@ def do_checkin_gps(request):
             gps_checkin.save()
 
         return JsonResponse({'message': 'success'})
+
+@csrf_exempt
+def checkin_activity(request):
+    member = get_member_from_headers(request.headers)
+    if member:
+        gps_checkins = GpsCheckin.objects.filter(
+            member=member).order_by('-created_at').all()
+        events = []
+        for gps_checkin in gps_checkins:
+            t = gps_checkin.created_at
+            events.append({
+                'type': 'gps',
+                'lat': gps_checkin.lat,
+                'lng': gps_checkin.lng,
+                'msg': gps_checkin.msg,
+                'created_at': time.mktime(t.timetuple()),
+            })
+        return JsonResponse({'events': events})
 
 
 @csrf_exempt
