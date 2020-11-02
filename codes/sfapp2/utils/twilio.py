@@ -41,3 +41,31 @@ def list_sms(to_number):
         # print(dir(sms))
         # print(sms.body, sms.date_created)
     return resps
+
+
+def list_calls():
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    twilio_number = settings.TWILIO['TWILIO_NUMBER']
+    client = Client(account_sid, auth_token)
+
+    calls = client.api.calls.list(limit=20)
+    resps = []
+    for call in calls:
+        print((call.recordings.list))
+        print(dir(call.recordings))
+        if call.recordings.list():
+            url = (
+                'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+                    (call.recordings.list()[0].account_sid,
+                     call.recordings.list()[0].sid))
+        else:
+            url = ''
+        resps.append({
+            'date_created': call.date_created,
+            'recording': url,
+            'duration': call.duration,
+            'from': call.from_,
+            'to': call.to,
+        })
+    return resps

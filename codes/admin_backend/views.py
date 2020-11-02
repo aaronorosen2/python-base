@@ -1,12 +1,17 @@
 from sfapp2.models import Member
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from sfapp2.utils import twilio
 
 
 @csrf_exempt
 def get_members(request):
     members = Member.objects.all().values()
     return JsonResponse(list(members), safe=False)
+
+@csrf_exempt
+def list_calls(request):
+    return JsonResponse(list(twilio.list_calls()), safe=False)
 
 
 @csrf_exempt
