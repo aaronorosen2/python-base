@@ -23,3 +23,9 @@ def voice(request):
             '</Dial>'
         '</Response>')
     return HttpResponse(resp)
+
+
+
+@csrf_exempt
+def add_phone_number(request):
+    pass
