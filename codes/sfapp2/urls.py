@@ -9,7 +9,7 @@ urlpatterns = [
     path('/api/checkin_activity', views.checkin_activity),
     path('/api/add_med', views.add_med),
     path('/api/list_meds', views.list_meds),
-
+    path('/api/del_med/<int:med_id>', views.del_med),
     path('/api/login-phone-number', views.confirm_phone_number,
         name='confirm_phone_number'),
     path('/api/login-verify-2fa', views.verify_2fa,

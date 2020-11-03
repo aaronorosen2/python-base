@@ -172,6 +172,14 @@ def list_meds(request):
         print(meds)
         return JsonResponse({'meds': list(meds)}, safe=False)
 
+@csrf_exempt
+def del_med(request, med_id):
+    member = get_member_from_headers(request.headers)
+    if member:
+        meds = MyMed.objects.filter(member=member, id=med_id).delete()
+        print(meds)
+        return JsonResponse({'message': 'success'})
+
 
 @csrf_exempt
 def test_login(request):
