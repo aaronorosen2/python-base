@@ -39,6 +39,17 @@ class MyMed(models.Model):
     dosage = models.CharField(max_length=2000, default='')
 
 
+class Question(models.Model):
+    question_text = models.CharField(max_length=4000)
+    created_at = models.DateTimeField(auto_now=True)
+
+
+class Choice(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_text = models.CharField(max_length=400)
+    created_at = models.DateTimeField(auto_now=True)
+
+
 class Token(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     token = models.CharField(max_length=256)
