@@ -32,6 +32,13 @@ class GpsCheckin(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class MyMed(models.Model):
+    member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
+                               default="")
+    name = models.CharField(max_length=2000, default='')
+    dosage = models.CharField(max_length=2000, default='')
+
+
 class Token(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     token = models.CharField(max_length=256)
