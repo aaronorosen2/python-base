@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from sfapp2.utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
 from sfapp2.models import Member, Token, Upload, Service, GpsCheckin
+from sfapp2.models import MyMed
 
 
 def to_list(el):
@@ -149,6 +150,27 @@ def checkin_activity(request):
                 'created_at': time.mktime(t.timetuple()),
             })
         return JsonResponse({'events': events})
+
+@csrf_exempt
+def add_med(request):
+    member = get_member_from_headers(request.headers)
+    if member and request.POST:
+        my_med = MyMed()
+        my_med.member = member
+        my_med.name = request.POST.get('name')
+        my_med.dosage = request.POST.get('dosage')
+        # XXX photo
+        my_med.save()
+        return JsonResponse({'message': 'success'})
+
+
+@csrf_exempt
+def list_meds(request):
+    member = get_member_from_headers(request.headers)
+    if member:
+        meds = MyMed.objects.filter(member=member).values().all()
+        print(meds)
+        return JsonResponse({'meds': list(meds)}, safe=False)
 
 
 @csrf_exempt
