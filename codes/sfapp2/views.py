@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from sfapp2.utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
 from sfapp2.models import Member, Token, Upload, Service, GpsCheckin
-from sfapp2.models import MyMed
+from sfapp2.models import MyMed, Question, Choice
 
 
 def to_list(el):
@@ -106,6 +106,7 @@ def get_member_from_headers(headers):
         if user_token:
             return user_token.member
 
+
 @csrf_exempt
 def set_user_info(request):
     if request.POST:
@@ -117,6 +118,7 @@ def set_user_info(request):
             member.save()
 
         return JsonResponse({'message': 'success'})
+
 
 @csrf_exempt
 def do_checkin_gps(request):
@@ -132,6 +134,7 @@ def do_checkin_gps(request):
             gps_checkin.save()
 
         return JsonResponse({'message': 'success'})
+
 
 @csrf_exempt
 def checkin_activity(request):
@@ -150,6 +153,7 @@ def checkin_activity(request):
                 'created_at': time.mktime(t.timetuple()),
             })
         return JsonResponse({'events': events})
+
 
 @csrf_exempt
 def add_med(request):
@@ -172,13 +176,25 @@ def list_meds(request):
         print(meds)
         return JsonResponse({'meds': list(meds)}, safe=False)
 
+
 @csrf_exempt
 def del_med(request, med_id):
     member = get_member_from_headers(request.headers)
     if member:
         meds = MyMed.objects.filter(member=member, id=med_id).delete()
-        print(meds)
         return JsonResponse({'message': 'success'})
+
+
+@csrf_exempt
+def list_questions(request):
+    questions = Question.objects.filter().values().all()
+    for question in questions:
+        question['choices'] = list(Choice.objects.filter(
+            question__id=question['id']).values().all())
+
+    print(questions)
+
+    return JsonResponse({'questions': list(questions)}, safe=False)
 
 
 @csrf_exempt
