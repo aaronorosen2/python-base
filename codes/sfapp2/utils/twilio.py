@@ -49,17 +49,19 @@ def list_calls():
     twilio_number = settings.TWILIO['TWILIO_NUMBER']
     client = Client(account_sid, auth_token)
 
-    calls = client.api.calls.list(limit=20)
+    # XXX filter calls to be 15102885469
+    calls = client.api.calls.list(limit=100)
     resps = []
     for call in calls:
-        print((call.recordings.list))
-        print(dir(call.recordings))
+        # print((call.recordings.list))
+        # print(dir(call.recordings))
         if call.recordings.list():
             url = (
                 'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
                     (call.recordings.list()[0].account_sid,
                      call.recordings.list()[0].sid))
         else:
+            continue
             url = ''
         resps.append({
             'date_created': call.date_created,
