@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from sfapp2.utils.twilio import send_sms, list_sms
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 
 @csrf_exempt
@@ -20,6 +20,7 @@ def list_sms_api(request):
 @csrf_exempt
 def twilio_call_status(request):
     print(request.POST)
+    return HttpResponse('')
 
 
 
