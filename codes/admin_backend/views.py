@@ -8,10 +8,15 @@ from sfapp2.utils import twilio
 def parse_question_answers(question_answers):
     response = []
     for question_id in question_answers.keys():
-        question = Question.objects.get(id=int(question_id)).question_text
+        question = Question.objects.get(id=int(question_id))
         answer = Choice.objects.get(
-            id=int(question_answers[question_id])).choice_text
-        response.append({'question': question, 'answer': answer})
+            id=int(question_answers[question_id]))
+        response.append({
+            'question': question.question_text,
+            'answer': answer.choice_text,
+            'question_id': question.id,
+            'choice_id': answer.id
+        })
     return response
 
 
@@ -34,6 +39,7 @@ def get_question_counters(request):
     for question in questions:
         el = {
             'question': question['question_text'],
+            'question_id': question['id'],
             'answers': [],
         }
         for choice in choices:
@@ -43,10 +49,12 @@ def get_question_counters(request):
             if choice_counters.get(choice['id']):
                 el['answers'].append({
                     'answer': choice['choice_text'],
+                    'choice_id': choice['id'],
                     'count': choice_counters[choice['id']]})
             else:
                 el['answers'].append({
                     'answer': choice['choice_text'],
+                    'choice_id': choice['id'],
                     'count': 0})
         response.append(el)
     return JsonResponse(list(response), safe=False)
