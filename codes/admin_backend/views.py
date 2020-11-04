@@ -8,12 +8,49 @@ from sfapp2.utils import twilio
 def parse_question_answers(question_answers):
     response = []
     for question_id in question_answers.keys():
-        choice_id = question_answers[question_id]
         question = Question.objects.get(id=int(question_id)).question_text
         answer = Choice.objects.get(
             id=int(question_answers[question_id])).choice_text
         response.append({'question': question, 'answer': answer})
     return response
+
+
+@csrf_exempt
+def get_question_counters(request):
+    members = Member.objects.all().values()
+    choice_counters = {}
+    response = []
+    for member in members:
+        if member.get('question_answers'):
+            question_answers = json.loads(member['question_answers'])
+            for key in question_answers.keys():
+                choice = int(question_answers[key])
+                if choice not in choice_counters:
+                    choice_counters[choice] = 0
+                choice_counters[choice] += 1
+
+    questions = Question.objects.filter().values().all()
+    choices = Choice.objects.filter().values().all()
+    for question in questions:
+        el = {
+            'question': question['question_text'],
+            'answers': [],
+        }
+        for choice in choices:
+            if choice['question_id'] != question['id']:
+                continue
+
+            if choice_counters.get(choice['id']):
+                el['answers'].append({
+                    'answer': choice['choice_text'],
+                    'count': choice_counters[choice['id']]})
+            else:
+                el['answers'].append({
+                    'answer': choice['choice_text'],
+                    'count': 0})
+        response.append(el)
+    return JsonResponse(list(response), safe=False)
+
 
 
 @csrf_exempt
