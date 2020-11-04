@@ -111,10 +111,15 @@ def get_member_from_headers(headers):
 def set_user_info(request):
     if request.POST:
         name = request.POST.get('name')
+        question_answers = request.POST.get('question_answers')
         member = get_member_from_headers(request.headers)
         if name and member:
             print("SAVE NAME!!")
             member.name = name
+            member.save()
+        if question_answers and member:
+            print("SAVE NAME!!")
+            member.question_answers = question_answers
             member.save()
 
         return JsonResponse({'message': 'success'})
@@ -181,7 +186,7 @@ def list_meds(request):
 def del_med(request, med_id):
     member = get_member_from_headers(request.headers)
     if member:
-        meds = MyMed.objects.filter(member=member, id=med_id).delete()
+        MyMed.objects.filter(member=member, id=med_id).delete()
         return JsonResponse({'message': 'success'})
 
 

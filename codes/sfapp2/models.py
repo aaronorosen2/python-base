@@ -21,6 +21,7 @@ class Member(models.Model):
     code_2fa = models.CharField(max_length=20, blank=True, null=True)
     has_verified_phone = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
+    question_answers = models.TextField(blank=True, null=True)
 
 
 class GpsCheckin(models.Model):
