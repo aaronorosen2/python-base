@@ -19,7 +19,6 @@ def list_sms_api(request):
 
 @csrf_exempt
 def twilio_call_status(request):
-    # XXX first call this which creates an inbound call to source_number
     print(request.POST)
 
 
