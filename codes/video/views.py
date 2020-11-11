@@ -24,8 +24,7 @@ def video_upload(request):
 
     print("I am here video_upload")
     print(request.FILES)
-    print(request.data)
-    video = request.data.get('video')
+    video = request.FILES.get('video')
     if not video:
         print("no vidoe file foudn")
         return JsonResponse({'message': 'video is required'}, 400)
@@ -54,10 +53,11 @@ def convert_and_save_video(myfile, request, member):
     # now lets create the db entry
     video = VideoUpload.objects.create(
         videoUrl=uploaded_file_url,
-        source=request.data.get("source"),
+        source='',
         member=member,
         # s3_upload=myfile,
     )
+    print(video.id)
 
     return video
 

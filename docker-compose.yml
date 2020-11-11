@@ -6,7 +6,7 @@ services:
         build: .
         volumes:
             - ./codes:/home/web/codes
-            - /opt/mystic-images:/home/web/codes/media
+            - /opt/pysfapp/media:/home/web/codes/media
         ports:
             - 8040:8000
         # command: bash -c "python3 manage.py runserver 0.0.0.0:8000"

@@ -6,7 +6,8 @@ from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from sfapp2.utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
-from sfapp2.models import Member, Token, Upload, Service, GpsCheckin
+from sfapp2.models import Member, Token, Service, GpsCheckin
+from sfapp2.models import VideoUpload
 from sfapp2.models import MyMed, Question, Choice
 
 
@@ -147,6 +148,10 @@ def checkin_activity(request):
     if member:
         gps_checkins = GpsCheckin.objects.filter(
             member=member).order_by('-created_at').all()
+
+        video_events = VideoUpload.objects.filter(
+            member=member).order_by('-created_at').all()
+
         events = []
         for gps_checkin in gps_checkins:
             t = gps_checkin.created_at
@@ -157,6 +162,14 @@ def checkin_activity(request):
                 'msg': gps_checkin.msg,
                 'created_at': time.mktime(t.timetuple()),
             })
+
+        for event in video_events:
+            t = event.created_at
+            events.append({
+                'type': 'video',
+                'url': event.videoUrl,
+                'created_at': time.mktime(t.timetuple())})
+
         return JsonResponse({'events': events})
 
 

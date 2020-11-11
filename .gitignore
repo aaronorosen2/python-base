@@ -10,3 +10,4 @@ venv
 agent_data.csv
 *.csv
 images
+codes/media
