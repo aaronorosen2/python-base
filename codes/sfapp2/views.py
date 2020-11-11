@@ -168,6 +168,7 @@ def checkin_activity(request):
             events.append({
                 'type': 'video',
                 'url': event.videoUrl,
+                'video_uuid': event.video_uuid,
                 'created_at': time.mktime(t.timetuple())})
 
         return JsonResponse({'events': events})

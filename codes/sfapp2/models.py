@@ -37,6 +37,7 @@ class VideoUpload(models.Model):
     member = models.ForeignKey(to=Member, on_delete=models.CASCADE, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     source = models.CharField(max_length=500, default="")
+    video_uuid = models.CharField(max_length=500, default='')
 
 
 class MyMed(models.Model):

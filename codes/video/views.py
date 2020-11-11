@@ -55,6 +55,7 @@ def convert_and_save_video(myfile, request, member):
         videoUrl=uploaded_file_url,
         source='',
         member=member,
+        video_uuid=str(uuid.uuid4()),
         # s3_upload=myfile,
     )
     print(video.id)
