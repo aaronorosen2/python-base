@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'admin_backend',
     'voip',
     'courses',
+    'video',
 ]
 
 MIDDLEWARE = [

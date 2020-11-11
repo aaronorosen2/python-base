@@ -32,6 +32,12 @@ class GpsCheckin(models.Model):
     lng = models.CharField(max_length=500, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
+class VideoUpload(models.Model):
+    videoUrl = models.CharField(max_length=500)
+    member = models.ForeignKey(to=Member, on_delete=models.CASCADE, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    source = models.CharField(max_length=500, default="")
+
 
 class MyMed(models.Model):
     member = models.ForeignKey(to=Member, on_delete=models.CASCADE,

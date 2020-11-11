@@ -23,6 +23,9 @@ urlpatterns = [
     path('voip', include(
         ('voip.urls', 'voip'),
         namespace='sfapp2')),
+    path('video', include(
+        ('video.urls', 'video'),
+        namespace='sfapp2')),
     path('sfapp2', include(
         ('sfapp2.urls', 'sfapp2'),
         namespace='sfapp2')),
