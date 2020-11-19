@@ -171,7 +171,10 @@ def checkin_activity(request):
                 'video_uuid': event.video_uuid,
                 'created_at': time.mktime(t.timetuple())})
 
-        return JsonResponse({'events': events})
+        return JsonResponse({
+            'events': sorted(events,
+                             key=lambda i: i['created_at'], reverse=True)
+        })
 
 
 @csrf_exempt
@@ -214,6 +217,15 @@ def list_questions(request):
     print(questions)
 
     return JsonResponse({'questions': list(questions)}, safe=False)
+
+
+@csrf_exempt
+def get_suggestions(request):
+    member = get_member_from_headers(request.headers)
+    if member:
+        return JsonResponse({'status': 'okay'}, safe=False)
+
+    return JsonResponse({'status': 'error'}, safe=False)
 
 
 @csrf_exempt
