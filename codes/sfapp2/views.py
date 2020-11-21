@@ -83,7 +83,7 @@ def verify_2fa(request):
         if not member:
             raise HttpResponseBadRequest()
 
-        if phone == '8434259777' and code == 4444:
+        if phone == '8434259777' and code == '4444':
             member.has_verified_phone = True
             # clear code_2fa after use
             member.code_2fa = ''
