@@ -1,6 +1,13 @@
-FROM ubuntu:xenial
+# FROM ubuntu:xenial
+FROM ubuntu:latest
+ENV TZ=Europe/Kiev
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ENV PYTHONIOENCODING=utf-8
+
+RUN apt-get update --fix-missing
+# RUN apt-get install -y software-properties-common
+# RUN add-apt-repository ppa:deadsnakes/ppa
 
 RUN apt-get update --fix-missing
 RUN apt-get install -y python3
@@ -8,7 +15,7 @@ RUN apt-get install -y python3-pip
 
 RUN apt-get install -y locales
 RUN apt-get install -y ffmpeg
-RUN apt-get install -y libav-tools
+# RUN apt-get install -y libav-tools
 RUN pip3 install --upgrade pip
 
 COPY ./requirements.txt /tmp/requirements.txt

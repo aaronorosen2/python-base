@@ -8,3 +8,6 @@ gunicorn
 stripe
 twilio
 django-storages
+channels
+asgi_redis
+channels_redis

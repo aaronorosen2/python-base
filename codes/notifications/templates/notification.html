@@ -1,0 +1,56 @@
+<script>
+function init() {
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications');
+
+  socket.onopen = function open() {
+    console.log('WebSockets connection created.');
+  };
+
+  socket.onmessage = function (event) {
+    if(document.getElementById("notifications")){
+      document.getElementById("notifications").innerHTML += "<br>"+event.data
+    }
+  }
+  if(document.getElementById("notify_form")){
+  document.getElementById("notify_form").addEventListener("submit",function (event){
+    event.preventDefault()
+
+    if(document.getElementById("message").value == ""){
+      alert("Message should no be empty");
+    }else{
+    socket.send(document.getElementById("message").value);
+    document.getElementById("message").value = "";
+    }
+  });
+
+  }
+}
+
+window.addEventListener("DOMContentLoaded", init, false);
+
+
+</script>
+
+
+
+{% block content %}
+  {% load staticfiles %}
+  <h1>{{ room.label }}</h1>
+  <form id="notify_form" style="width:30%;margin: 20px auto">
+      <div>
+        <td><p style="font-size:30px">Send a messages:</p></td>
+        <td colspan=2>
+          <input id="message" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Your message Here">
+          <button type="submit" id="go" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Send</button>
+        </td>
+  </form>
+{% endblock content %}
+
+{% block afterbody %}
+  <style>
+    *{
+      font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif
+    }
+  </style>
+{% endblock afterbody %}
+
