@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'courses',
     'video',
     'channels',
-    'notifications'
+    'notifications',
+    'rest_framework',
+    'courses_api'
 ]
 
 MIDDLEWARE = [

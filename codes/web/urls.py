@@ -22,6 +22,7 @@ from notifications.views import notification
 
 urlpatterns = [
     path('notify/', notify),
+    path('courses_api/',include("courses_api.urls")),
     path('notification/', notification),
     path('admin/', admin.site.urls),
     path('voip', include(
