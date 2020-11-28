@@ -57,22 +57,49 @@ def lesson_delete(request,pk):
 # Flashcard API Start
 
 @api_view(['POST'])
-def flashcard_create(request):
-    lessons = Lesson.objects.all()
-    serializer = LessonSerializer(lessons)
-    return Response("This is flashcard create")
+def flashcard_create(request,lessonId):
+    database_data = {}
+    lesson_data = {}
+    with open("db.json","r") as db:
+        database_data = json.load(db)
+        lesson_data = database_data[lessonId]
+
+    with open("db.json","w") as db:
+        lesson_data.append(request.data)
+        database_data[lessonId] = lesson_data
+        json.dump(database_data,db)
+        return Response("Flashcard Created")
 
 @api_view(['GET'])
-def flashcard_read(request,pk):
+def flashcard_read(request,lessonId,pk):
 
-    return Response("This is flashcard read")
+    with open("db.json","r") as db:
+        database_data = json.load(db)
+        lesson_data = database_data[lessonId]
+        flashcard_data = lesson_data[pk]
+        return Response(flashcard_data)
 
 @api_view(['POST'])
-def flashcard_update(request,pk):
-
-    return Response("This is flashcard update")
+def flashcard_update(request,lessonId,pk):
+    with open("db.json","r") as db:
+        database_data = json.load(db)
+        lesson_data = database_data[lessonId]
+        flashcard_data = request.data
+        
+    with open("db.json","w") as db:
+        lesson_data[pk] = flashcard_data
+        database_data[lessonId] = lesson_data
+        json.dump(database_data,db)
+        return Response("Flashcard updated")
 
 @api_view(['DELETE'])
-def flashcard_delete(request,pk):
+def flashcard_delete(request,lessonId,pk):
+    with open("db.json","r") as db:
+        database_data = json.load(db)
+        lesson_data = database_data[lessonId]
+        del lesson_data[pk]
 
-    return Response("This is flashcard delete")
+    with open("db.json","w") as db:
+        database_data[lessonId] = lesson_data
+        json.dump(database_data,db)
+        return Response("Flashcard deleted")
