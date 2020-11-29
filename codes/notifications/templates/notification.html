@@ -1,14 +1,18 @@
 <script>
 function init() {
-  var socket = new WebSocket('wss://' + window.location.host + '/notifications');
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications/123/');
 
   socket.onopen = function open() {
     console.log('WebSockets connection created.');
   };
 
   socket.onmessage = function (event) {
-    if(document.getElementById("notifications")){
-      document.getElementById("notifications").innerHTML += "<br>"+event.data
+    console.log(event.data)
+    if(document.getElementById("users")){
+      console.log("users")
+      daySelect = document.getElementById('users');
+      daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
+      // document.getElementById("notifications").innerHTML += "<br>"+event.data
     }
   }
   if(document.getElementById("notify_form")){
@@ -24,6 +28,14 @@ function init() {
   });
 
   }
+  var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
 }
 
 window.addEventListener("DOMContentLoaded", init, false);
@@ -39,6 +51,16 @@ window.addEventListener("DOMContentLoaded", init, false);
   <form id="notify_form" style="width:30%;margin: 20px auto">
       <div>
         <td><p style="font-size:30px">Send a messages:</p></td>
+        <td>
+          <label for="users_class">Choose a User:</label>
+
+          <select name="users_class" id="users">
+            <option value="volvo">Volvo</option>
+            <option value="saab">Saab</option>
+            <option value="mercedes">Mercedes</option>
+            <option value="audi">Audi</option>
+          </select>
+        </td>
         <td colspan=2>
           <input id="message" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Your message Here">
           <button type="submit" id="go" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Send</button>
