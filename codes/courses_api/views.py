@@ -24,6 +24,7 @@ def lesson_create(request):
 
 @api_view(['GET'])
 def lesson_read(request,pk):
+    flashcards = {}
     les_= Lesson.objects.get(id=pk)
     less_serialized = LessonSerializer(les_)
     return Response(less_serialized.data)
