@@ -9,7 +9,8 @@ class Lesson(models.Model):
 
 class FlashCard(models.Model):
     lesson = models.ForeignKey(Lesson,on_delete=models.CASCADE)
-    lesson_type = models.IntegerField()
+    lesson_type = models.CharField(max_length=250)
     question = models.CharField(max_length=250)
     options = models.CharField(max_length=250)
-    answer = models.IntegerField()
+    answer = models.CharField(max_length=250)
+    image = models.CharField(max_length=250)

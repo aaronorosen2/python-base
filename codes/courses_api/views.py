@@ -3,7 +3,9 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import LessonSerializer
+from .serializers import FlashCardSerializer
 from .models import Lesson
+from .models import FlashCard
 import json
 import uuid
 
@@ -15,91 +17,83 @@ def apiOverview(request):
 
 @api_view(['POST'])
 def lesson_create(request):
-    database_data = ""
-    with open("db.json","r") as db:
-        database_data = json.load(db)
-
-    with open("db.json","w") as db:
-        database_data[str(uuid.uuid4())] = request.data
-        json.dump(database_data,db)
-        return Response("Created")
-
+    les_ = Lesson()
+    les_.lesson_name = request.data["lesson_name"]
+    les_.save()
+    return Response("Lesson Created")
 
 @api_view(['GET'])
 def lesson_read(request,pk):
-    with open("db.json","r") as db:
-        data_json = json.load(db)
-        return Response(data_json[pk])
+    les_= Lesson.objects.get(id=pk)
+    less_serialized = LessonSerializer(les_)
+    return Response(less_serialized.data)
 
 @api_view(['POST'])
 def lesson_update(request,pk):
-    database_data = ""
-
-    with open("db.json","r") as db:
-        database_data = json.load(db)
-
-    with open("db.json","w") as db:
-        database_data[pk] = request.data
-        json.dump(database_data,db)
-        return Response("Updated")
+    Lesson.objects.filter(id=pk).update(lesson_name=request.data["lesson_name"])
+    return Response("updated")
 
 @api_view(['DELETE'])
 def lesson_delete(request,pk):
-    database_data = ""
-    with open("db.json","r") as db:
-        database_data = json.load(db)
-
-    del database_data[pk]
-    with open("db.json","w") as db:
-        json.dump(database_data,db)
-        return Response("Deleted")
+    Lesson.objects.filter(id=pk).delete()
+    return Response("deleted")
 
 # Flashcard API Start
 
 @api_view(['POST'])
 def flashcard_create(request,lessonId):
-    database_data = {}
-    lesson_data = {}
-    with open("db.json","r") as db:
-        database_data = json.load(db)
-        lesson_data = database_data[lessonId]
+    question=""
+    options=""
+    answer=""
+    image=""
+    lesson_type = request.data["lesson_type"]
+    if "question" in request.data:
+        question = request.data["question"]
 
-    with open("db.json","w") as db:
-        lesson_data.append(request.data)
-        database_data[lessonId] = lesson_data
-        json.dump(database_data,db)
-        return Response("Flashcard Created")
+    if "options" in request.data:
+        options = request.data["options"]
+
+    if "answer" in request.data:
+        answer = request.data["answer"]
+    
+    if "image" in request.data:
+        image = request.data["image"]
+    lesson = Lesson.objects.filter(id=lessonId).get()
+
+    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image)
+    f.save()
+    return Response("FlashCard Created!")
 
 @api_view(['GET'])
-def flashcard_read(request,lessonId,pk):
-
-    with open("db.json","r") as db:
-        database_data = json.load(db)
-        lesson_data = database_data[lessonId]
-        flashcard_data = lesson_data[pk]
-        return Response(flashcard_data)
+def flashcard_read(request,pk):
+    fc= FlashCard.objects.get(id=pk)
+    fc_serialized = FlashCardSerializer(fc)
+    return Response(fc_serialized.data)
 
 @api_view(['POST'])
-def flashcard_update(request,lessonId,pk):
-    with open("db.json","r") as db:
-        database_data = json.load(db)
-        lesson_data = database_data[lessonId]
-        flashcard_data = request.data
-        
-    with open("db.json","w") as db:
-        lesson_data[pk] = flashcard_data
-        database_data[lessonId] = lesson_data
-        json.dump(database_data,db)
-        return Response("Flashcard updated")
+def flashcard_update(request,pk):
+    f = FlashCard.objects.filter(id=pk).get()
+    question=f.question
+    options=f.options
+    answer=f.answer
+    image=f.image
+
+    if "question" in request.data:
+        question = request.data["question"]
+
+    if "options" in request.data:
+        options = request.data["options"]
+
+    if "answer" in request.data:
+        answer = request.data["answer"]
+    
+    if "image" in request.data:
+        image = request.data["image"]
+
+    FlashCard.objects.filter(id=pk).update(question=question,options=options,answer=answer,image=image)
+    return Response("updated")
 
 @api_view(['DELETE'])
-def flashcard_delete(request,lessonId,pk):
-    with open("db.json","r") as db:
-        database_data = json.load(db)
-        lesson_data = database_data[lessonId]
-        del lesson_data[pk]
-
-    with open("db.json","w") as db:
-        database_data[lessonId] = lesson_data
-        json.dump(database_data,db)
-        return Response("Flashcard deleted")
+def flashcard_delete(request,pk):
+    FlashCard.objects.filter(id=pk).delete()
+    return Response("deleted")
