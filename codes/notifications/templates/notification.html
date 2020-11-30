@@ -7,13 +7,27 @@ function init() {
   };
 
   socket.onmessage = function (event) {
-    console.log(event.data)
-    if(document.getElementById("users")){
-      console.log("users")
+    // console.log(event.data)
+    web_socket_data = JSON.parse(event.data);
+    if(web_socket_data.action === 'users_list'){
+      // console.log("users")
+      console.log(web_socket_data)
       daySelect = document.getElementById('users');
-      daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
-      // document.getElementById("notifications").innerHTML += "<br>"+event.data
+      // console.log(daySelect)
+      console.log(web_socket_data.users)
+      for(i=0; i < web_socket_data.users.length; i = i + 1){
+        console.log(web_socket_data)
+        daySelect.options[i] = new Option(web_socket_data.users[i], i);
+      }
+      // daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
     }
+    // if(document.getElementById("users")){
+    //   console.log("users")
+      
+    //   daySelect = document.getElementById('users');
+    //   daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
+    //   // document.getElementById("notifications").innerHTML += "<br>"+event.data
+    // }
   }
   if(document.getElementById("notify_form")){
   document.getElementById("notify_form").addEventListener("submit",function (event){
@@ -22,20 +36,33 @@ function init() {
     if(document.getElementById("message").value == ""){
       alert("Message should no be empty");
     }else{
-    socket.send(document.getElementById("message").value);
+    //   var dict = {
+    //    action:"broadcast",
+    //    message:document.getElementById("message").value
+    //  }
+    // socket.send(JSON.stringify(dict));
+    
+    var dict = {
+       action:"solo",
+       sender:"123",
+       reciever:"124",
+       message:document.getElementById("message").value
+     }
+    socket.send(JSON.stringify(dict));
+    
     document.getElementById("message").value = "";
     }
   });
 
   }
-  var dropdowns = document.getElementsByClassName("dropdown-content");
-    var i;
-    for (i = 0; i < dropdowns.length; i++) {
-      var openDropdown = dropdowns[i];
-      if (openDropdown.classList.contains('show')) {
-        openDropdown.classList.remove('show');
-      }
-    }
+  // var dropdowns = document.getElementsByClassName("dropdown-content");
+  //   var i;
+  //   for (i = 0; i < dropdowns.length; i++) {
+  //     var openDropdown = dropdowns[i];
+  //     if (openDropdown.classList.contains('show')) {
+  //       openDropdown.classList.remove('show');
+  //     }
+  //   }
 }
 
 window.addEventListener("DOMContentLoaded", init, false);
@@ -55,10 +82,10 @@ window.addEventListener("DOMContentLoaded", init, false);
           <label for="users_class">Choose a User:</label>
 
           <select name="users_class" id="users">
-            <option value="volvo">Volvo</option>
+            <!-- <option value="volvo">Volvo</option>
             <option value="saab">Saab</option>
             <option value="mercedes">Mercedes</option>
-            <option value="audi">Audi</option>
+            <option value="audi">Audi</option> -->
           </select>
         </td>
         <td colspan=2>
