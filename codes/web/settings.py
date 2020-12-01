@@ -46,8 +46,13 @@ INSTALLED_APPS = [
     'video',
     'channels',
     'notifications',
+<<<<<<< HEAD
     'rest_framework',
     'courses_api'
+=======
+    'pdf_sign',
+    'store',
+>>>>>>> a9036c7070448b0fa4c562a74509c245b0a486fd
 ]
 
 MIDDLEWARE = [
@@ -70,9 +75,9 @@ TWILIO = {
 }
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_ACCESS_KEY_ID = 'AKIAU7EQAGZOMEU6KP4M'
-AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'sfapp'
+AWS_ACCESS_KEY_ID = 'AKIAU7EQAGZOM3PXN4YN'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'sfapp-v2'
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 
 

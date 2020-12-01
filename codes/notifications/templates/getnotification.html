@@ -2,16 +2,23 @@
 {% block content %}
 {% load staticfiles %}
 <script>
-var socket = new WebSocket('wss://' + window.location.host + '/notifications');
+var socket = new WebSocket('ws://' + window.location.host + '/notifications/124/');
 
 socket.onopen = function open() {
   console.log('WebSockets connection created.');
 };
 
 socket.onmessage = function (event) {
-  if(document.getElementById("notifications")){
-    document.getElementById("notifications").innerHTML += "<br>"+event.data
+  web_socket_data = JSON.parse(event.data);
+  console.log(web_socket_data)
+  if(web_socket_data.action === 'broadcast'){
+    document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.message
+  }else if(web_socket_data.action === 'solo'){
+    document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.sender+" ==> "+web_socket_data.message
   }
+  // if(document.getElementById("notifications")){
+  //   document.getElementById("notifications").innerHTML += "<br>"+event.data
+  // }
 }
 if(document.getElementById("notify_form")){
 document.getElementById("notify_form").addEventListener("submit",function (event){
