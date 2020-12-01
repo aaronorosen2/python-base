@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'channels',
     'notifications',
     'pdf_sign',
+    'store',
 ]
 
 MIDDLEWARE = [
