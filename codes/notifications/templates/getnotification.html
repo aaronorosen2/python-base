@@ -10,8 +10,11 @@ socket.onopen = function open() {
 
 socket.onmessage = function (event) {
   web_socket_data = JSON.parse(event.data);
+  console.log(web_socket_data)
   if(web_socket_data.action === 'broadcast'){
     document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.message
+  }else if(web_socket_data.action === 'solo'){
+    document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.sender+" ==> "+web_socket_data.message
   }
   // if(document.getElementById("notifications")){
   //   document.getElementById("notifications").innerHTML += "<br>"+event.data

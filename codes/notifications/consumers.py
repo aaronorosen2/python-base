@@ -21,12 +21,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         # print(self.room_name)
         # print(self.scope['url_route'])
         # print(self.scope['url_route']['kwargs'])
-        self.user_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
         # print(self.user_name)
-        self.user_room_name = "notif_room_for_user_" + str(self.user_name)  ##Notification room name
-        print(self.user_room_name)
-        self.user_dictionary[self.user_name] = self.user_room_name
-        print(self.user_dictionary)
+        self.room_group_name = "notif_room_for_user_" + str(self.room_name)  ##Notification room name
+        # print(self.room_group_name)
+        self.user_dictionary[self.room_name] = self.room_group_name
+        # print(self.user_dictionary)
         # self.room_group_name = 'chat_%s' % self.room_name
         # await self.channel_layer.group_add(
         #     self.room_name,
@@ -35,15 +35,24 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         # )
         # self.user = self.scope["user"]
 
-        print(self.room_name)
+        # print(self.room_name)
         await self.channel_layer.group_add(
-            self.room_name,
+            self.room_group_name,
             self.channel_name
         )
-        print(self.getList(self.user_dictionary))
+        # print(self.getList(self.user_dictionary))
         users_list = self.getList(self.user_dictionary)
+        # for key, value in self.user_dictionary.items():
+        #     print(key,value)
+        #     await self.channel_layer.send(
+        #         value,
+        #         {
+        #             'type': 'users_list',
+        #             'users': json.dumps({'users': users_list, 'action': 'users_list'}),
+        #         },
+        #     )
         await self.channel_layer.group_send(
-            self.room_name,
+            self.room_group_name,
             {
                 'type': 'users_list',
                 'users': json.dumps({'users':users_list,'action':'users_list'}),
@@ -70,7 +79,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         #     self.channel_name,
         #     # self.user_name
         # )
-        print(text_data)
+        # print(text_data)
         send_data = json.loads(text_data)
         print(type(send_data))
         print(send_data)
@@ -78,11 +87,13 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if(send_data['action'] == 'solo'):
             reciever = self.user_dictionary[send_data['reciever']]
             print(reciever)
-            await self.channel_layer.send(
-                self.room_name,
+            del send_data['reciever']
+            # message = send_data['message']
+            await self.channel_layer.group_send(
+                reciever,
                 {
                     'type': 'notification_to_user',
-                    'message': text_data,
+                    'message': json.dumps(send_data),
                 },
             )
         else:
