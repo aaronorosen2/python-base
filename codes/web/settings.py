@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'courses',
     'video',
     'channels',
-    'notifications'
+    'notifications',
+    'pdf_sign',
 ]
 
 MIDDLEWARE = [
