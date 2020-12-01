@@ -46,13 +46,10 @@ INSTALLED_APPS = [
     'video',
     'channels',
     'notifications',
-<<<<<<< HEAD
     'rest_framework',
-    'courses_api'
-=======
+    'courses_api',
     'pdf_sign',
     'store',
->>>>>>> a9036c7070448b0fa4c562a74509c245b0a486fd
 ]
 
 MIDDLEWARE = [
