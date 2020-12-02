@@ -2,40 +2,106 @@
 {% block content %}
 {% load staticfiles %}
 <script>
-var socket = new WebSocket('ws://' + window.location.host + '/notifications/124/');
+function init() {
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications/');
 
-socket.onopen = function open() {
-  console.log('WebSockets connection created.');
-};
+  socket.onopen = function open() {
+    console.log('WebSockets connection created.');
+  };
 
-socket.onmessage = function (event) {
-  web_socket_data = JSON.parse(event.data);
-  console.log(web_socket_data)
-  if(web_socket_data.action === 'broadcast'){
-    document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.message
-  }else if(web_socket_data.action === 'solo'){
-    document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.sender+" ==> "+web_socket_data.message
+  socket.onmessage = function (event) {
+      web_socket_data = JSON.parse(event.data);
+      console.log(web_socket_data)
+      if(web_socket_data.action === 'broadcast'){
+        document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.message
+      }else if(web_socket_data.action === 'solo'){
+        document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.sender+" ==> "+web_socket_data.message
+      }
+      // if(document.getElementById("notifications")){
+      //   document.getElementById("notifications").innerHTML += "<br>"+event.data
+      // }
   }
-  // if(document.getElementById("notifications")){
-  //   document.getElementById("notifications").innerHTML += "<br>"+event.data
-  // }
-}
-if(document.getElementById("notify_form")){
-document.getElementById("notify_form").addEventListener("submit",function (event){
-  event.preventDefault()
+  if(document.getElementById("notify_form")){
+        document.getElementById("notify_form").addEventListener("submit",function (event){
+          event.preventDefault()
 
-  if(document.getElementById("message").value == ""){
-    alert("Message should no be empty");
-  }else{
-  socket.send(document.getElementById("message").value);
-  alert("Message broadcasted :\n"+document.getElementById("message").value+" ");
-  document.getElementById("message").value = "";
+          // send the user name to websocket
+          if(document.getElementById("user_name").value == ""){
+            alert("USERNAME should no be empty");
+          }else{
+          var dict = {
+            action:"store_user_name",
+            user_name:document.getElementById("user_name").value
+          }
+          // socket.send(document.getElementById("message").value);
+          socket.send(JSON.stringify(dict));
+          // alert("Message broadcasted :\n"+document.getElementById("message").value+" ");
+          document.getElementById("message").value = "";
+          }
+        });
   }
-});
-
 }
+// function sendName(){
+//   if(document.getElementById("user_name").value == ""){
+//       alert("Name should no be empty");
+//   }else{
+//     //   var dict = {
+//     //    action:"broadcast",
+//     //    message:document.getElementById("message").value
+//     //  }
+//     // socket.send(JSON.stringify(dict));
+//     event.preventDefault()
+//     console.log(document.getElementById("user_name").value)
+//     var dict = {
+//         action:"store_user_name",
+//         user_name:document.getElementById("user_name").value
+//     }
+//     // socket.send(document.getElementById("message").value);
+//     socket.send(JSON.stringify(dict));
+//     // var socket = new WebSocket('ws://' + window.location.host + '/notifications/'+document.getElementById("user_name").value+'/');
+//     // var socket = new WebSocket('ws://' + window.location.host + '/notifications/');
 
-//window.addEventListener("DOMContentLoaded", init, false);
+//     // socket.onopen = function open() {
+//     //   console.log('WebSockets connection created.');
+//     // };
+//     // if(document.getElementById("message").value == ""){
+//     //   alert("Message should no be empty");
+//     // }else{
+//     //   var dict = {
+//     //     action:"store_user_name",
+//     //     user_name:document.getElementById("user_name").value
+//     // }
+//     //   socket.send(JSON.stringify(dict));
+//     //   // alert("Message broadcasted :\n"+document.getElementById("message").value+" ");
+//     //   // document.getElementById("message").value = "";
+//     // }
+    
+//     // if(document.getElementById("notify_form")){
+//     //   document.getElementById("notify_form").addEventListener("submit",function (event){
+//     //     event.preventDefault()
+
+//     //     // send the user name to websocket
+//     //     if(document.getElementById("message").value == ""){
+//     //       alert("Message should no be empty");
+//     //     }else{
+//     //     var dict = {
+//     //       action:"store_user_name",
+//     //       user_name:document.getElementById("user_name").value
+//     //     }
+//     //     socket.send(document.getElementById("message").value);
+//     //     alert("Message broadcasted :\n"+document.getElementById("message").value+" ");
+//     //     document.getElementById("message").value = "";
+//     //     }
+//     //   });
+//     // }
+
+//     }
+//   }
+  
+
+
+
+window.addEventListener("DOMContentLoaded", init, false);
 
 
 </script>
@@ -43,6 +109,10 @@ document.getElementById("notify_form").addEventListener("submit",function (event
 
 
 <h1>Notifications</h1>
+  <form id="notify_form" style="width:100%">
+  <input id="user_name" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Your Name!">
+  <button type="submit" id="send_name" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Submit</button>
+  </form>
 <p id="notifications"></p>
 </div>
 {% endblock content %}

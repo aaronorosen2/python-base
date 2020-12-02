@@ -1,6 +1,6 @@
 <script>
 function init() {
-  var socket = new WebSocket('ws://' + window.location.host + '/notifications/123/');
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications/');
 
   socket.onopen = function open() {
     console.log('WebSockets connection created.');
@@ -29,6 +29,31 @@ function init() {
     //   // document.getElementById("notifications").innerHTML += "<br>"+event.data
     // }
   }
+  socket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly');
+  };
+
+  if(document.getElementById("user_form")){
+      document.getElementById("user_form").addEventListener("submit",function (event){
+          event.preventDefault()
+          console.log(document.getElementById("user_name").value)
+          // send the user name to websocket
+          if(document.getElementById("user_name").value == ""){
+            alert("USERNAME should no be empty");
+          }else{
+            var dict = {
+              action:"store_user_name",
+              user_name:document.getElementById("user_name").value
+            }
+            // socket.send(document.getElementById("message").value);
+            socket.send(JSON.stringify(dict));
+          // alert("Message broadcasted :\n"+document.getElementById("message").value+" ");
+          // document.getElementById("message").value = "";
+          }
+      });
+  }
+
+
   if(document.getElementById("notify_form")){
   document.getElementById("notify_form").addEventListener("submit",function (event){
     event.preventDefault()
@@ -41,14 +66,25 @@ function init() {
     //    message:document.getElementById("message").value
     //  }
     // socket.send(JSON.stringify(dict));
-    var selectedValue = document.getElementById("users").value;
-    var dict = {
-       action:"solo",
-       sender:"123",
-       reciever:selectedValue,
-       message:document.getElementById("message").value
-     }
-    socket.send(JSON.stringify(dict));
+    if(document.getElementById("notification_mode").value == ""){
+      alert("Mode should no be empty");
+    }else if(document.getElementById("notification_mode").value == "solo"){
+      var selectedValue = document.getElementById("users").value;
+      var dict = {
+        action:document.getElementById("notification_mode").value,
+        sender:document.getElementById("user_name").value,
+        reciever:selectedValue,
+        message:document.getElementById("message").value
+      }
+      socket.send(JSON.stringify(dict));
+    }else if(document.getElementById("notification_mode").value == "broadcast"){
+      var dict = {
+        action:"broadcast",
+        message:document.getElementById("message").value
+      }
+      socket.send(JSON.stringify(dict));
+    }
+    
     
     document.getElementById("message").value = "";
     }
@@ -64,11 +100,11 @@ function init() {
   //     }
   //   }
 }
-<!--function getSelectValue()-->
-<!--  {-->
-<!--      var selectedValue = document.getElementById("users").value;-->
-<!--      alert(selectedValue);-->
-<!--  }-->
+// <!--function getSelectValue()-->
+// <!--  {-->
+// <!--      var selectedValue = document.getElementById("users").value;-->
+// <!--      alert(selectedValue);-->
+// <!--  }-->
 window.addEventListener("DOMContentLoaded", init, false);
 
 
@@ -79,9 +115,23 @@ window.addEventListener("DOMContentLoaded", init, false);
 {% block content %}
   {% load staticfiles %}
   <h1>{{ room.label }}</h1>
+  <form id="user_form" style="width:30%;margin: 20px auto">
+      <input id="user_name" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Your Name!">
+      <button type="submit" id="send_name" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Submit</button>
+  </form>
   <form id="notify_form" style="width:30%;margin: 20px auto">
       <div>
         <td><p style="font-size:30px">Send a messages:</p></td>
+        
+        <td>
+          <label for="users_class">Choose a Notification Mode:</label>
+
+          <select name="mode_class" id="notification_mode" onchange="getSelectValue();">
+            <option value="">Please Select</option>
+            <option value="solo">Solo</option>
+            <option value="broadcast">Broadcast</option>
+          </select>
+        </td>
         <td>
           <label for="users_class">Choose a User:</label>
 

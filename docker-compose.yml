@@ -6,8 +6,8 @@ services:
         build: .
         volumes:
             - ./codes:/home/web/codes
-            # - /opt/pysfapp/media:/home/web/codes/media
-            - ./tmp/media:/home/web/codes/media
+             - /opt/pysfapp/media:/home/web/codes/media
+#            - ./tmp/media:/home/web/codes/media
         ports:
             - 8040:8000
         command: bash -c "python3 manage.py runserver 0.0.0.0:8000"
@@ -21,14 +21,14 @@ services:
         image: redis
         hostname: redis
         volumes:
-        #   - /opt/redis-app:/data
-          - ./tmp/redis-app:/data
+           - /opt/redis-app:/data
+#          - ./tmp/redis-app:/data
           - ./codes:/home/web/codes
         networks:
             - backend
 
 networks:
     backend:
-        external: false
-            # name: api_network
+        external: true
+             name: api_network
 
