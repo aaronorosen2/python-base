@@ -11,3 +11,7 @@ agent_data.csv
 *.csv
 images
 codes/media
+
+# PyCharm Dev
+.idea
+sqlite3.db
