@@ -162,3 +162,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
+# CORS
+CORS_ORIGIN_ALLOW_ALL = True
