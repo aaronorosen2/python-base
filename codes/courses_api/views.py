@@ -48,6 +48,7 @@ def flashcard_create(request,lessonId):
     answer=""
     image=""
     lesson_type = request.data["lesson_type"]
+    position =request.data["position"]
     if "question" in request.data:
         question = request.data["question"]
 
@@ -61,7 +62,7 @@ def flashcard_create(request,lessonId):
         image = request.data["image"]
     lesson = Lesson.objects.filter(id=lessonId).get()
 
-    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image)
+    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
     f.save()
     return Response("FlashCard Created!")
 
