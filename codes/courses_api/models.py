@@ -14,3 +14,4 @@ class FlashCard(models.Model):
     options = models.CharField(max_length=250)
     answer = models.CharField(max_length=250)
     image = models.CharField(max_length=250)
+    position = models.IntegerField()

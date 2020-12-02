@@ -48,6 +48,7 @@ def flashcard_create(request,lessonId):
     answer=""
     image=""
     lesson_type = request.data["lesson_type"]
+    position =request.data["position"]
     if "question" in request.data:
         question = request.data["question"]
 
@@ -61,7 +62,7 @@ def flashcard_create(request,lessonId):
         image = request.data["image"]
     lesson = Lesson.objects.filter(id=lessonId).get()
 
-    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image)
+    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
     f.save()
     return Response("FlashCard Created!")
 
@@ -78,6 +79,7 @@ def flashcard_update(request,pk):
     options=f.options
     answer=f.answer
     image=f.image
+    position=f.position
 
     if "question" in request.data:
         question = request.data["question"]
@@ -90,8 +92,11 @@ def flashcard_update(request,pk):
     
     if "image" in request.data:
         image = request.data["image"]
+    
+    if "position" in request.data:
+        position = request.data["position"]
 
-    FlashCard.objects.filter(id=pk).update(question=question,options=options,answer=answer,image=image)
+    FlashCard.objects.filter(id=pk).update(question=question,options=options,answer=answer,image=image,position=position)
     return Response("updated")
 
 @api_view(['DELETE'])
