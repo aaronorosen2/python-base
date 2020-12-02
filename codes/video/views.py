@@ -200,7 +200,6 @@ def create_presigned_post( bucket_name, object_name, fields=None, conditions=Non
 
     key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
     secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
-    key = None
 
     if not key or not secret:
         print("No key or secret found")
