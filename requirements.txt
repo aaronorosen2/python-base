@@ -14,3 +14,4 @@ channels_redis
 djangorestframework
 markdown
 django-filter
+boto3
