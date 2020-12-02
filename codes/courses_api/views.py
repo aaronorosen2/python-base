@@ -79,6 +79,7 @@ def flashcard_update(request,pk):
     options=f.options
     answer=f.answer
     image=f.image
+    position=f.position
 
     if "question" in request.data:
         question = request.data["question"]
@@ -91,8 +92,11 @@ def flashcard_update(request,pk):
     
     if "image" in request.data:
         image = request.data["image"]
+    
+    if "position" in request.data:
+        position = request.data["position"]
 
-    FlashCard.objects.filter(id=pk).update(question=question,options=options,answer=answer,image=image)
+    FlashCard.objects.filter(id=pk).update(question=question,options=options,answer=answer,image=image,position=position)
     return Response("updated")
 
 @api_view(['DELETE'])
