@@ -1,15 +1,33 @@
 <script>
 function init() {
-  var socket = new WebSocket('wss://' + window.location.host + '/notifications');
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications/123/');
 
   socket.onopen = function open() {
     console.log('WebSockets connection created.');
   };
 
   socket.onmessage = function (event) {
-    if(document.getElementById("notifications")){
-      document.getElementById("notifications").innerHTML += "<br>"+event.data
+    // console.log(event.data)
+    web_socket_data = JSON.parse(event.data);
+    if(web_socket_data.action === 'users_list'){
+      // console.log("users")
+      console.log(web_socket_data)
+      daySelect = document.getElementById('users');
+      // console.log(daySelect)
+      console.log(web_socket_data.users)
+      for(i=0; i < web_socket_data.users.length; i = i + 1){
+        console.log(web_socket_data)
+        daySelect.options[i] = new Option(web_socket_data.users[i], web_socket_data.users[i]);
+      }
+      // daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
     }
+    // if(document.getElementById("users")){
+    //   console.log("users")
+      
+    //   daySelect = document.getElementById('users');
+    //   daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
+    //   // document.getElementById("notifications").innerHTML += "<br>"+event.data
+    // }
   }
   if(document.getElementById("notify_form")){
   document.getElementById("notify_form").addEventListener("submit",function (event){
@@ -18,14 +36,39 @@ function init() {
     if(document.getElementById("message").value == ""){
       alert("Message should no be empty");
     }else{
-    socket.send(document.getElementById("message").value);
+    //   var dict = {
+    //    action:"broadcast",
+    //    message:document.getElementById("message").value
+    //  }
+    // socket.send(JSON.stringify(dict));
+    var selectedValue = document.getElementById("users").value;
+    var dict = {
+       action:"solo",
+       sender:"123",
+       reciever:selectedValue,
+       message:document.getElementById("message").value
+     }
+    socket.send(JSON.stringify(dict));
+    
     document.getElementById("message").value = "";
     }
   });
 
   }
+  // var dropdowns = document.getElementsByClassName("dropdown-content");
+  //   var i;
+  //   for (i = 0; i < dropdowns.length; i++) {
+  //     var openDropdown = dropdowns[i];
+  //     if (openDropdown.classList.contains('show')) {
+  //       openDropdown.classList.remove('show');
+  //     }
+  //   }
 }
-
+<!--function getSelectValue()-->
+<!--  {-->
+<!--      var selectedValue = document.getElementById("users").value;-->
+<!--      alert(selectedValue);-->
+<!--  }-->
 window.addEventListener("DOMContentLoaded", init, false);
 
 
@@ -39,6 +82,16 @@ window.addEventListener("DOMContentLoaded", init, false);
   <form id="notify_form" style="width:30%;margin: 20px auto">
       <div>
         <td><p style="font-size:30px">Send a messages:</p></td>
+        <td>
+          <label for="users_class">Choose a User:</label>
+
+          <select name="users_class" id="users" onchange="getSelectValue();">
+            <!-- <option value="volvo">Volvo</option>
+            <option value="saab">Saab</option>
+            <option value="mercedes">Mercedes</option>
+            <option value="audi">Audi</option> -->
+          </select>
+        </td>
         <td colspan=2>
           <input id="message" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Your message Here">
           <button type="submit" id="go" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Send</button>
