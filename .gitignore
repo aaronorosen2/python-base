@@ -11,4 +11,11 @@ agent_data.csv
 *.csv
 images
 codes/media
+<<<<<<< HEAD
 tmp
+=======
+
+# PyCharm Dev
+.idea
+sqlite3.db
+>>>>>>> 1dda3f7384a8adbb708b165ce4657ec304c66a03

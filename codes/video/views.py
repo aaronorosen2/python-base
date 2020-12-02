@@ -2,6 +2,8 @@ import re
 import uuid
 import os
 import mimetypes
+
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.http.response import StreamingHttpResponse
@@ -9,7 +11,9 @@ from django.core.files.storage import FileSystemStorage
 from sfapp2.models import Token, VideoUpload
 from wsgiref.util import FileWrapper
 from django.conf import settings
-
+import logging
+import boto3
+from botocore.exceptions import ClientError
 
 @csrf_exempt
 def video_play(request):
@@ -144,3 +148,82 @@ class RangeFileWrapper(object):
                 raise StopIteration()
             self.remaining -= len(data)
             return data
+
+
+@csrf_exempt
+def get_s3_signed_url(request):
+    os.environ['S3_USE_SIGV4'] = 'True'
+
+    # Get form fields
+    seconds_per_day = 24 * 60 * 60
+    member = get_member_from_headers(request.headers)
+
+    # Get unique filename using UUID
+    file_name = request.GET.get('file_name')
+    file_name_uuid = uuid_file_path(file_name)
+    final_file_name = 'videos/{0}/{1}'.format(member.id, file_name_uuid)
+
+    print("file_name_uuid:", file_name_uuid)
+
+    # Get pre-signed post url and fields
+    resp = create_presigned_post(bucket_name=settings.AWS_STORAGE_BUCKET_NAME, object_name=final_file_name,
+                                 expiration=seconds_per_day)
+
+    del os.environ['S3_USE_SIGV4']
+
+    return JsonResponse(resp)
+
+
+@csrf_exempt
+def save_video_upload(request):
+    member = get_member_from_headers(request.headers)
+    if not member:
+        return JsonResponse({'message': 'not logged in'})
+
+    uploaded_file_url = request.POST.get('uploaded_file_url')
+
+    print(f"Saving Video details. member: {member.id}, file: {uploaded_file_url}")
+
+    video = VideoUpload.objects.create(
+        videoUrl=uploaded_file_url,
+        source='',
+        member=member,
+        video_uuid=str(uuid.uuid4()),
+        # s3_upload=myfile,
+    )
+    print('video id: ', video.id)
+
+    return JsonResponse({'message': 'Success', 'video_id': video.id})
+
+
+def create_presigned_post( bucket_name, object_name, fields=None, conditions=None, expiration=3600):
+
+    key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
+    secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
+
+    if not key or not secret:
+        print("No key or secret found")
+        s3_client = boto3.client('s3')
+    else:
+        print("Use host. key or secret found")
+        s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
+
+    # Generate a presigned S3 POST URL
+    try:
+        response = s3_client.generate_presigned_post(bucket_name,
+                                                     object_name,
+                                                     Fields=fields,
+                                                     Conditions=conditions,
+                                                     ExpiresIn=expiration)
+    except ClientError as e:
+        logging.error(e)
+        return None
+
+    # The response contains the presigned URL and required fields
+    return response
+
+
+def uuid_file_path(filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (uuid.uuid4(), ext)
+    return os.path.join(filename)

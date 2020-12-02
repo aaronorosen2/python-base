@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'video',
     'channels',
     'notifications',
+    'rest_framework',
+    'courses_api',
     'pdf_sign',
     'store',
 ]
@@ -160,3 +162,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
+# CORS
+CORS_ORIGIN_ALLOW_ALL = True

@@ -11,3 +11,7 @@ django-storages
 channels
 asgi_redis
 channels_redis
+djangorestframework
+markdown
+django-filter
+boto3
