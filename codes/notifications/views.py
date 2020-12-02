@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 def notify(request):
-    return render(request, "templates/notification.html")
+    return render(request, "notification.html")
 
 def notification(request):
-    return render(request, "templates/getnotification.html")
+    return render(request, "getnotification.html")
