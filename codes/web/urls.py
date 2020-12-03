@@ -22,7 +22,7 @@ from notifications.views import notification
 
 urlpatterns = [
     path('notify/', notify),
-    path('courses_api/',include("courses_api.urls")),
+    path('courses_api/', include("courses_api.urls")),
     path('notification/', notification),
     path('admin/', admin.site.urls),
     path('voip', include(
@@ -34,6 +34,9 @@ urlpatterns = [
     path('sfapp2', include(
         ('sfapp2.urls', 'sfapp2'),
         namespace='sfapp2')),
+    path('bookbikerescue', include(
+        ('bookbikerescue.urls', 'bookbikerescue'),
+        namespace='bookbikerescue')),
     path('admin_backend', include(
         ('admin_backend.urls', 'admin_backend'),
         namespace='admin_backend')),
