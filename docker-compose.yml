@@ -28,6 +28,6 @@ services:
 
 networks:
     backend:
-        external: false
-            #  name: api_network
+        external: 
+             name: api_network
 
