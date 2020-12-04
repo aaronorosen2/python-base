@@ -159,7 +159,7 @@ def get_s3_signed_url(request):
     member = get_member_from_headers(request.headers)
 
     # Get unique filename using UUID
-    file_name = request.GET.get('file_name')
+    file_name = request.POST.get('file_name')
     file_name_uuid = uuid_file_path(file_name)
     final_file_name = 'videos/{0}/{1}'.format(member.id, file_name_uuid)
 
@@ -186,7 +186,7 @@ def save_video_upload(request):
 
     video = VideoUpload.objects.create(
         videoUrl=uploaded_file_url,
-        source='',
+        source='s3',
         member=member,
         video_uuid=str(uuid.uuid4()),
         # s3_upload=myfile,
