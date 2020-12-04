@@ -15,3 +15,4 @@ djangorestframework
 markdown
 django-filter
 boto3==1.16.28
+django-cors-headers

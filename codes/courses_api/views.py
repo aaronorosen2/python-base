@@ -20,7 +20,32 @@ def lesson_create(request):
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
     les_.save()
-    return Response("Lesson Created")
+
+    for flashcard in request.data["flashcards"]:
+        question=""
+        options=""
+        answer=""
+        image=""
+        lesson_type = flashcard["lesson_type"]
+        position =flashcard["position"]
+
+        if "question" in flashcard:
+            question = flashcard["question"]
+
+        if "options" in flashcard:
+            options = flashcard["options"]
+
+        if "answer" in flashcard:
+            answer = flashcard["answer"]
+        
+        if "image" in flashcard:
+            image = flashcard["image"]
+
+        lesson = les_
+
+        f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
+        f.save()
+    return Response(LessonSerializer(les_).data)
 
 @api_view(['GET'])
 def lesson_read(request,pk):
