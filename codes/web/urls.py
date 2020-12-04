@@ -37,6 +37,9 @@ urlpatterns = [
     path('bookbikerescue', include(
         ('bookbikerescue.urls', 'bookbikerescue'),
         namespace='bookbikerescue')),
+    path('form_lead', include(
+        ('form_lead.urls', 'form_lead'),
+        namespace='form_lead')),
     path('admin_backend', include(
         ('admin_backend.urls', 'admin_backend'),
         namespace='admin_backend')),
