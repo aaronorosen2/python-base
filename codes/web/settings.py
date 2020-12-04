@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'courses_api',
     'pdf_sign',
     'store',
+    'bookbikerescue',
+    'form_lead',
 ]
 
 MIDDLEWARE = [
