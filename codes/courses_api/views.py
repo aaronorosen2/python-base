@@ -45,7 +45,7 @@ def lesson_create(request):
 
         f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
         f.save()
-    return Response(les_)
+    return Response(LessonSerializer(les_).data)
 
 @api_view(['GET'])
 def lesson_read(request,pk):
