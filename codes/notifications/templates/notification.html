@@ -1,22 +1,22 @@
 <script>
 function init() {
-  var socket = new WebSocket('wss://' + window.location.host + '/notifications/');
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications/');
 
   socket.onopen = function open() {
     console.log('WebSockets connection created.');
   };
 
   socket.onmessage = function (event) {
-    // console.log(event.data)
+    console.log(event.data)
     web_socket_data = JSON.parse(event.data);
     if(web_socket_data.action === 'users_list'){
       // console.log("users")
       console.log(web_socket_data)
       daySelect = document.getElementById('users');
       // console.log(daySelect)
-      console.log(web_socket_data.users)
+      // console.log(web_socket_data.users)
       for(i=0; i < web_socket_data.users.length; i = i + 1){
-        console.log(web_socket_data)
+        // console.log(web_socket_data)
         daySelect.options[i] = new Option(web_socket_data.users[i], web_socket_data.users[i]);
       }
       // daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
@@ -30,7 +30,10 @@ function init() {
     // }
   }
   socket.onclose = function(e) {
-      console.error('Chat socket closed unexpectedly');
+      console.error('Chat socket closed unexpectedly',e);
+  };
+  socket.onerror = function(e) {
+      console.error('Error From Websocket',e);
   };
 
   if(document.getElementById("user_form")){
@@ -113,7 +116,7 @@ window.addEventListener("DOMContentLoaded", init, false);
 
 
 {% block content %}
-  {% load staticfiles %}
+  {% load static %}
   <h1>{{ room.label }}</h1>
   <form id="user_form" style="width:30%;margin: 20px auto">
       <input id="user_name" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Your Name!">

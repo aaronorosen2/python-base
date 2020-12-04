@@ -15,7 +15,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         return list
 
     async def connect(self):
-        # self.room_name = 'user'
+        self.room_name = 'user'
         # self.user = self.scope["user"]
         # print(self.user.id)
         # print(self.channel_name)
@@ -27,7 +27,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         # self.room_group_name = "sender_" + str(self.room_name)  ##Notification room name
         # # # print(self.room_group_name)
         # self.user_dictionary[self.room_name] = self.room_group_name
-        # # print(self.user_dictionary)
+        # print(self.user_dictionary)
         # # self.room_group_name = 'chat_%s' % self.room_name
         # await self.channel_layer.group_add(
         #     self.room_name,
@@ -70,7 +70,27 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         #         'users': json.dumps({'users': users_list, 'action': 'users_list'}),
         #     },
         # )
+        # await self.channel_layer.group_add(
+        #     self.room_name,
+        #     self.channel_name
+        # )
+        from channels.layers import get_channel_layer
+
+        channel_layer = get_channel_layer()
+        print(channel_layer)
+        await channel_layer.send("channel_name", {
+            "type": "chat.message",
+            "text": "Hello there!",
+        })
+        # print(self.channel_name)
+        # await self.channel_layer.send(self.channel_name, {
+        #     "type": "chat_message",
+        #     "text": "Hello there!",
+        # })
         await self.accept()
+        
+        # print(self.channel_layer)
+        
         # print(self.channel_layer.__dict__)
         # await self.channel_layer.group_send(
         #     self.room_group_name,
@@ -91,6 +111,10 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     #         raise ValueError("You must pass one of bytes_data or text_data")
     #     if close:
     #         await self.close(close)
+    async def chat_message(self, event):
+        # Handles the "chat.message" event when it's sent to us.
+        self.send(text_data=event["text"])
+
     async def receive(self, text_data):
         # print(self.channel_name)
         # print(self.channel_layer)
@@ -109,7 +133,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         # print(send_data)
         # await
         if(send_data['action'] == 'store_user_name'):
-            # self.room_name = send_data['user_name']
+            self.room_name = send_data['user_name']
             self.user_name = send_data['user_name']
             self.user_room_name = "notif_room_for_user_" + str(self.user_name)
             # self.room_group_name = "notif_room_for_user_" + str(self.room_name)  ##Notification room name
@@ -171,22 +195,26 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=event["message"])
 
     async def disconnect(self, close_code):
-        # print("Disconnect!!!!")
+        print("Disconnect!!!!")
         # await self.channel_layer.group_discard(
         #     self.room_group_name,
         #     self.channel_name
         # )
-        # print(self.user_dictionary[self.user_name])
-        # print(close_code)
+        
+        print(close_code)
+        await self.close()
         if(self.user_name in self.user_dictionary):
+            print(self.user_dictionary[self.user_name])
+            print(self.room_name)
+            # print(self.user_name)
             del self.user_dictionary[self.user_name]
-            # print(self.user_dictionary)
+            print(self.user_dictionary)
             users_list = self.getList(self.user_dictionary)
             await self.channel_layer.group_discard(
                 self.user_dictionary[self.user_name],
                 self.channel_name
             )
-            # print(users_list)
+            print(users_list)
             for key in users_list:
                 # print(key)
                 await self.channel_layer.group_send(
@@ -201,6 +229,43 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         # print(self.user_dictionary[self.room_name])
         # del self.user_dictionary[self.room_name]
 
+from channels.layers import get_channel_layer
+# from channels import Clients
+
+class ChatConsumer(WebsocketConsumer):
+
+    def connect(self):
+        # Make a database row with our channel name
+        async_to_sync(self.channel_layer.send(
+            self.channel_name,
+            {
+                'type': 'chat_message',
+                'users': json.dumps({'users':users_list,'action':'users_list'}),
+            },
+        ))
+        # Clients.objects.create(channel_name=self.channel_name)
+        # print(Clients.objects.all())
+
+    def disconnect(self, close_code):
+        # Note that in some rare cases (power loss, etc) disconnect may fail
+        # to run; this naive example would leave zombie channel names around.
+        # Clients.objects.filter(channel_name=self.channel_name).delete()
+        pass
+
+    # def receive(self, text_data):
+    #     channel_layer = get_channel_layer()
+
+    #     async_to_sync(self.channel_layer.send(
+    #         self.room_name,
+    #         {
+    #             'type': 'users_list',
+    #             'users': json.dumps({'users':users_list,'action':'users_list'}),
+    #         },
+    #     ))
+
+    def chat_message(self, event):
+        # Handles the "chat.message" event when it's sent to us.
+        self.send(text_data=event["text"])
 
 # class NotificationConsumerSync(WebsocketConsumer):
 #     user_dictionary = {}
