@@ -56,8 +56,52 @@ def lesson_read(request,pk):
 
 @api_view(['POST'])
 def lesson_update(request,pk):
-    Lesson.objects.filter(id=pk).update(lesson_name=request.data["lesson_name"])
-    return Response("updated")
+    lesson = Lesson.objects.get(id=pk)
+
+    for fc in FlashCard.objects.filter(lesson=lesson):
+        toDelete = True
+        for flashcard in request.data["flashcards"]:
+            if "id" in flashcard:
+                if fc.id == flashcard["id"]:
+                    toDelete = False
+                    break
+                else:
+                    toDelete=True
+                    continue
+        if toDelete:
+            fc.delete()
+
+    for flashcard in request.data["flashcards"]:
+        question=""
+        options=""
+        answer=""
+        image=""
+        position =flashcard["position"]
+        id_ = None
+        if "id" in flashcard:
+            id_ = flashcard["id"]
+
+        if "question" in flashcard:
+            question = flashcard["question"]
+
+        if "options" in flashcard:
+            options = flashcard["options"]
+
+        if "answer" in flashcard:
+            answer = flashcard["answer"]
+        
+        if "image" in flashcard:
+            image = flashcard["image"]
+
+        if "id" in flashcard:
+            f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,image=image,position=position)
+        else:
+            lesson_type = flashcard["lesson_type"]
+            f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
+            f.save()
+
+            
+    return Response(LessonSerializer(lesson).data)
 
 @api_view(['DELETE'])
 def lesson_delete(request,pk):
