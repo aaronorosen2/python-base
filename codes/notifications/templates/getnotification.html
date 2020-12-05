@@ -3,7 +3,7 @@
 {% load static %}
 <script>
 function init() {
-  var socket = new WebSocket('ws://' + window.location.host + '/notifications/');
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications/users/');
 
   socket.onopen = function open() {
     console.log('WebSockets connection created.');

@@ -1,9 +1,12 @@
 <script>
 function init() {
-  var socket = new WebSocket('ws://' + window.location.host + '/notifications/');
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications/users/');
 
   socket.onopen = function open() {
     console.log('WebSockets connection created.');
+    if(document.getElementById("user_name").value == ""){
+        document.getElementById("user_name").value = "Anonymous";
+    }
   };
 
   socket.onmessage = function (event) {
@@ -13,6 +16,7 @@ function init() {
       // console.log("users")
       console.log(web_socket_data)
       daySelect = document.getElementById('users');
+      daySelect.options.length = 0;
       // console.log(daySelect)
       // console.log(web_socket_data.users)
       for(i=0; i < web_socket_data.users.length; i = i + 1){
@@ -73,6 +77,7 @@ function init() {
       alert("Mode should no be empty");
     }else if(document.getElementById("notification_mode").value == "solo"){
       var selectedValue = document.getElementById("users").value;
+      
       var dict = {
         action:document.getElementById("notification_mode").value,
         sender:document.getElementById("user_name").value,
