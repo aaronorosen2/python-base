@@ -8,7 +8,7 @@ def send_raw_email(to_email, reply_to, subject,
                    message_text, message_html=None):
     
 
-    SENDER = "AgentStat <lead@dreampotential.org>" # change from email when you are in production server
+    SENDER = "DreamPotential <lead@dreampotential.org>" # change from email when you are in production server
     msg = MIMEMultipart('mixed')
     msg.set_charset("utf-8")
     msg['Subject'] = subject
