@@ -4,8 +4,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer
+from .serializers import UserSessionEventSerializer
 from .models import Lesson
 from .models import FlashCard
+from .models import UserSessionEvent
 import json
 import uuid
 
@@ -100,6 +102,33 @@ def flashcard_update(request,pk):
     return Response("updated")
 
 @api_view(['DELETE'])
-def flashcard_delete(request,pk):
+def flashcard_delete(request,lessonId, flashcardId):
     FlashCard.objects.filter(id=pk).delete()
     return Response("deleted")
+
+
+@api_view(['POST'])
+def session_create(request, lessonId, flashcardId):
+    ip_address = ""
+    user_device = ""
+    start_time = ""
+    end_time = ""
+    if ip_address in request.data:
+        ip_address = request.data['ip_address']
+    if user_device in request.data:
+        user_device = request.data['user_device']
+    if start_time in request.data:
+        start_time = request.data['start_time']
+    if end_time in request.data:
+        end_time = request.data['end_time']
+    lesson = Lesson.objects.filter(id=lessonId).get()
+    flashcard = flashcard.objects.filter(id=flashcardId).get()
+
+    use=UserSessionEvent(ip_address=ip_address, user_device=user_device, \
+        start_time=start_time, end_time=end_time, lesson=lesson, flashcard=flashcard)
+    user.save()
+    return Response("Session user add")
+
+# @api_view(['GET'])
+# def 
+    
