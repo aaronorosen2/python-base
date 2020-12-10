@@ -26,7 +26,7 @@ class Leadcreate(APIView):
                 send_raw_email(to_email='AgentStat <lead@dreampotential.org>',  # change to email after you moving ses out of sandbox
                 reply_to='AgentStat <lead@dreampotential.org>', # change to email after you moving ses out of sandbox
                 subject='New Lead',
-                message_text= json.dumps(serializer.data, indent=4)
+                message_text= json.dumps(serializer.validated_data, indent=4)
                 )
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
