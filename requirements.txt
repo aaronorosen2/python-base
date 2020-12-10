@@ -1,4 +1,4 @@
-Django==2.2.8
+Django==3.1.4
 psycopg2-binary
 django-cors-headers
 django-model-utils
@@ -8,10 +8,11 @@ gunicorn
 stripe
 twilio
 django-storages
-channels
+channels==3.0.0
 asgi_redis
 channels_redis
-djangorestframework==3.11.0
+djangorestframework
 markdown
 django-filter
-boto3
+boto3==1.16.28
+django-cors-headers

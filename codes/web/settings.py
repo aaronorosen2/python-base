@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'pdf_sign',
     'store',
     'bookbikerescue',
-    'form_lead',
+    'form_lead.apps.FormLeadConfig',
 ]
 
 MIDDLEWARE = [
