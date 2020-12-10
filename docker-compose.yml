@@ -25,6 +25,33 @@ services:
            - ./codes:/home/web/codes
         networks:
             - backend
+    
+    celery:
+        image: "python_sfapp_celery_worker"
+        restart: always
+#        build: .
+        command: bash -c "cd codes/ && celery -A web worker -l info"
+#        command: bash -c "python3 ./codes/manage.py runserver 0.0.0.0:8001"
+        volumes:
+            - ./codes:/code/codes
+        networks:
+            - backend
+        depends_on:
+            - redis
+
+    celery-beat:
+        image: "python_sfapp_celery_worker"
+        restart: always
+#        build: .
+#        command: celery -A web beat -l info
+        command: bash -c "cd codes/ && celery -A web beat -l info"
+#        command: bash -c "python3 ./codes/manage.py runserver 0.0.0.0:8002"
+        volumes:
+            - ./codes:/code/codes
+        networks:
+            - backend
+        depends_on:
+            - redis
 
 networks:
     backend:

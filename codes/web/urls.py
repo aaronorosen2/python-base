@@ -18,10 +18,11 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from notifications.views import notify
-from notifications.views import notification
+from notifications.views import notification, notify_queue
 
 urlpatterns = [
     path('notify/', notify),
+    path('notify_queue/', notify_queue),
     path('courses_api/', include("courses_api.urls")),
     path('notification/', notification),
     path('admin/', admin.site.urls),
