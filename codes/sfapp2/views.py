@@ -182,21 +182,15 @@ def checkin_activity(request):
 
         for event in video_events:
             t = event.created_at
+            # Disable server streaming, Only show videos that are uploaded to S3
             if event.source == 's3':
                 video_url = get_presigned_video_url(event.videoUrl)
-            else:
-                video_url = None
-            resp = {
-                'type': 'video',
-                'url': event.videoUrl,
-                'video_uuid': event.video_uuid,
-                'created_at': time.mktime(t.timetuple()),
-
-            }
-            if video_url:
-                resp['video_url'] = video_url
-
-            events.append(resp)
+                events.append({
+                    'type': 'video',
+                    'video_url': video_url,
+                    'video_uuid': event.video_uuid,
+                    'created_at': time.mktime(t.timetuple())
+                })
 
         return JsonResponse({
             'events': sorted(events,
