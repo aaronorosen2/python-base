@@ -9,6 +9,10 @@ from django.views.decorators.csrf import csrf_exempt
 from sfapp2.models import Member, Token, Service, GpsCheckin
 from sfapp2.models import VideoUpload
 from sfapp2.models import MyMed, Question, Choice
+from django.conf import settings
+import logging
+import boto3
+from botocore.exceptions import ClientError
 
 
 def to_list(el):
@@ -178,11 +182,21 @@ def checkin_activity(request):
 
         for event in video_events:
             t = event.created_at
-            events.append({
+            if event.source == 's3':
+                video_url = get_presigned_video_url(event.videoUrl)
+            else:
+                video_url = None
+            resp = {
                 'type': 'video',
                 'url': event.videoUrl,
                 'video_uuid': event.video_uuid,
-                'created_at': time.mktime(t.timetuple())})
+                'created_at': time.mktime(t.timetuple()),
+
+            }
+            if video_url:
+                resp['video_url'] = video_url
+
+            events.append(resp)
 
         return JsonResponse({
             'events': sorted(events,
@@ -254,3 +268,29 @@ def test_store(request):
 @csrf_exempt
 def test_product(request):
     return render(request, 'test/product.html')
+
+
+def get_presigned_video_url(object_name, expiration=3600, fields=None, conditions=None):
+    bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+    key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
+    secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
+
+    if not key or not secret:
+        print("No key or secret found")
+        s3_client = boto3.client('s3')
+    else:
+        print("Use host. key or secret found")
+        s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
+
+    # Generate a presigned S3 POST URL
+    try:
+        response = s3_client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': bucket_name,
+                                                            'Key': object_name},
+                                                    ExpiresIn=expiration)
+    except ClientError as e:
+        logging.error(e)
+        return None
+
+    # The response contains the presigned URL and required fields
+    return response
