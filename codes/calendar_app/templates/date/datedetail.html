@@ -1,0 +1,48 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+
+
+<div   >
+    <div class="modal-dialog modal-dialog-centered" role="document" >
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #EB7E4D; color: #fff;" >
+                <h5 class="modal-title" id="exampleModalLongTitle">Events on {{date}}</h5>
+ 
+            </div>
+            <div class="modal-body">
+                
+                <ul class="list-group">
+                    {% for event in events %}
+                    <li class="list-group-item">   {{event.get_html_url | safe}}
+
+                        <span class="float-right" style="color: #EB7E4D">
+                            {{event.priority}}   
+                         </span>   
+                    
+                    
+                    </li>
+                    
+                    {% endfor %}
+                     
+                  </ul>
+                 
+                
+  
+
+            </div>
+            
+            <div class="modal-footer">
+               
+               {% if is_eligible %}
+                <a href="{% url 'event-delete' event.id %}" class="btn btn-danger">delete</a> 
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
