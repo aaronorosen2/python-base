@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'voip',
     'courses',
     'video',
-    'channels',
+    # 'channels',
     'notifications',
     'rest_framework',
     'courses_api',
