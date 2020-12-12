@@ -64,6 +64,21 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+# Braintree Settings
+
+if DEBUG:
+    # test keys
+    BT_ENVIRONMENT='sandbox'
+    BT_MERCHANT_ID='26343xxtxwwwgfqs'
+    BT_PUBLIC_KEY='nj723gtbqz2s6229'
+    BT_PRIVATE_KEY='6998bfeb28304c9b97c59460791f84ed'
+else:
+    # live keys
+    BT_ENVIRONMENT=''
+    BT_MERCHANT_ID=''
+    BT_PUBLIC_KEY=''
+    BT_PRIVATE_KEY=''
+    
 CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'web.urls'
 
@@ -103,14 +118,25 @@ ASGI_APPLICATION = 'web.routing.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'HOST': 'sfapp.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com',
+#         'PORT': '5432',
+#         'PASSWORD': 'EhB4bINnDFmzI0Bg'
+#     }
+# }
+# testing
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
         'USER': 'postgres',
-        'HOST': 'sfapp.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com',
+        'HOST': 'localhost',
         'PORT': '5432',
-        'PASSWORD': 'EhB4bINnDFmzI0Bg'
+        'PASSWORD': 'Digitallab'
     }
 }
 

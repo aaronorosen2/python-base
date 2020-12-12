@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Checkout</title>
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      type="text/css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div class="container">
+
+      <div id="collapseStripe" class="wrapper">
+        <form action="/store/Checkout" method="post" id="payment-form">
+          {% csrf_token %}
+          <div id="checkoutMethods">
+            <div style="margin: 10px">
+              <h2>Checkout with Braintree</h2>
+              Name: <input
+              type="text"
+              name="name"
+              id="name"
+              value="braintree"
+              />
+              Phone: <input
+              type="text"
+              name="phone"
+              id="phone"
+              value="0509754317"
+              />
+              Email: <input
+              type="email"
+              name="email"
+              id="email"
+              value="braintree@gmail.com"
+              />
+              Price of {{item.title}}:<input
+              type="text"
+              name="itemPrice"
+              id="itemPrice"
+              value="{{ item.price }}"
+              />
+              <br><br>
+              Item ID :<input
+              type="text"
+              name="item_ID"
+              id="item_ID"
+              value="{{ item.id }}"
+              />
+              <div id="bt-dropin"></div>
+                <!-- Used to display form errors. -->
+                <div id="card-errors" role="alert"></div>
+              </div>
+              <input type="hidden" id="nonce" name="payment_method_nonce" />
+            </div>
+          </div>
+          <button id="checkout">Submit Payment</button>
+        </form>
+      </div>
+
+      <!-- <div id="stripe-token-handler" class="is-hidden">
+        Success! Got token: <span class="token"></span>
+      </div> -->
+    </div>
+
+    <!-- script for the stripe form -->
+    <!-- <script src="{% static 'js/checkout.js' %}"></script> -->
+
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="https://js.braintreegateway.com/web/dropin/1.13.0/js/dropin.min.js"></script>
+    <script>
+      var form = document.querySelector("#payment-form");
+      var client_token = "{{ client_token }}";
+
+      braintree.dropin.create(
+        {
+          authorization: client_token,
+          container: "#bt-dropin",
+          paypal: {
+            flow: "vault",
+          },
+        },
+        function (createErr, instance) {
+          form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            instance.requestPaymentMethod(function (err, payload) {
+              if (err) {
+                console.log("Error", err);
+                return;
+              }
+
+              // Add the nonce to the form and submit
+              document.querySelector("#nonce").value = payload.nonce;
+              form.submit();
+            });
+          });
+        }
+      );
+    </script>
+
+    <!-- script for toggling display of the form -->
+    <script type="text/javascript">
+      function toggleDisplay() {
+        var x = document.getElementById("collapseStripe");
+        if (x.style.display === "none") {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      }
+    </script>
+
+    <!-- ajax call script -->
+    <!-- <script>
+      $("#checkout").click(function(){
+      
+      var name = $("#nameItem").val();
+      alert(name);
+      //alert(extractText);
+      // $.ajax({
+      //         type: 'POST',
+      //         url: 'http://localhost:8000/login/',
+      //         data: {'username':username, 'password':password,csrfmiddlewaretoken: $("input[name='csrfmiddlewaretoken']").val()},       // some params
+      //         success: function (response){
+      //         console.log(response);
+      //         window.location = "http://localhost:8000/dashboard/";
+      //         }
+      //     });
+        });
+    </script> -->
+  </body>
+</html>

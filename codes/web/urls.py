@@ -34,6 +34,9 @@ urlpatterns = [
     path('sfapp2', include(
         ('sfapp2.urls', 'sfapp2'),
         namespace='sfapp2')),
+    path('store', include(
+        ('store.urls', 'store'),
+        namespace='sfapp2')),
     path('bookbikerescue', include(
         ('bookbikerescue.urls', 'bookbikerescue'),
         namespace='bookbikerescue')),
