@@ -140,8 +140,6 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     user_counter = 0
     user_name = 'Anonymous'
     user_list = []
-    user_queue = Queue(maxsize = 2)
-    requested_user_queue = Queue()
 
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
@@ -152,6 +150,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        # enter in back queue
         redisconn.hset('back',
                        self.channel_name,
                        self.room_group_name)
@@ -167,45 +166,11 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         )
         await self.accept()
 
-    async def enter_queue(self, channel):
-        
-        live_count = redisconn.zcard("live")
-        if(live_count < 2):
-            redisconn.zrem("backstage", self.channel_name)
-            live = redisconn.zadd("live",{self.channel_name})
-            await self.channel_layer.send(
-                self.channel_name,
-                {
-                    'type': 'notification_to_user',
-                    'message': json.dumps(send_data),
-                },
-            )
-        # if(self.user_queue.full() == False):
-        #     self.user_queue.put(channel)
-        #     await self.channel_layer.send(
-        #         channel,
-        #         {
-        #             'type': 'notification_to_queue_member',
-        #             'message': "Go Live",
-        #         },
-        #     )
-        # else:
-        #     requested_user_queue.put(channel)
 
     # Receive message from WebSocket
     async def receive(self, text_data):
 
         send_data = json.loads(text_data)
-        if(send_data['action'] == 'enter_queue'):
-            # del self.user_dictionary[self.channel_name]
-            # self.user_dictionary[self.channel_name] = send_data['user_name']
-            # self.user_list.clear()
-            # self.user_list.extend(self.user_dictionary.values())
-            # self.user_channels_details[send_data['user_name']] = self.channel_name
-            self.enter_queue(self.channel_name)
-            # print(self.requested_user_queue)
-            # print(self.user_queue)
-
         if(send_data['action'] == 'store_user_name'):
             
             del self.user_dictionary[self.channel_name]

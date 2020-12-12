@@ -14,8 +14,8 @@ application = ProtocolTypeRouter({
             # URLRouter just takes standard Django path() or url() entries.
             # path("notifications/<str:room_name>/", NotificationConsumer.as_asgi(),name="ws_notifications"),
             # path("notifications/", NotificationConsumer.as_asgi(),name="ws_notifications"),
-            re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumer.as_asgi()),
-            re_path(r'notification/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
+            # re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumer.as_asgi()),
+            re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
             
         ]),
 })
