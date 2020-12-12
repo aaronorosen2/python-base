@@ -152,6 +152,9 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        redisconn.hset('back',
+                       self.channel_name,
+                       self.room_group_name)
         # store user details
         await self.store_user_name(self.channel_name)
         # sends the user list
@@ -280,7 +283,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         await self.send(text_data=event["message"])
     
     async def notification_to_queue_member(self,event):
-        await self.send(text_data=event["message"])
+        await self.send(text_data=json.dumps(event["message"]))
 
 
     async def notification_broadcast(self,event):

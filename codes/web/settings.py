@@ -174,9 +174,9 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
-    'hello': {
-        'task': 'web.celery.hello',
-        'schedule': timedelta(seconds=4)  # execute every minute
+    'schedule_member': {
+        'task': 'web.celery.schedule_member',
+        'schedule': timedelta(minutes=1)  # execute every minute
     }
     # ,
     # 'hello1': {
