@@ -44,14 +44,16 @@ INSTALLED_APPS = [
     'voip',
     'courses',
     'video',
-    'channels',
+    # 'channels',
     'notifications',
     'rest_framework',
     'courses_api',
     'pdf_sign',
     'store',
     'bookbikerescue',
-    'form_lead',
+    'form_lead.apps.FormLeadConfig',
+    # added by dextersol
+    'calendar_app',
 ]
 
 MIDDLEWARE = [
@@ -98,7 +100,7 @@ AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -178,10 +180,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR , 'static') , ]
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",

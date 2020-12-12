@@ -27,3 +27,6 @@ RUN ["chmod", "+x", "/entrypoint.sh"]
 
 WORKDIR /home/web/codes
 
+
+
+

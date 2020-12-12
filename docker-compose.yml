@@ -17,6 +17,7 @@ services:
             - backend
 
     redis:
+        restart: always
         image: redis
         hostname: redis
         volumes:
@@ -27,6 +28,6 @@ services:
 
 networks:
     backend:
-        external:
+        external: 
              name: api_network
 
