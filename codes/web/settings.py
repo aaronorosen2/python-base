@@ -70,17 +70,16 @@ MIDDLEWARE = [
 
 if DEBUG:
     # test keys
-    BT_ENVIRONMENT='sandbox'
-    BT_MERCHANT_ID='26343xxtxwwwgfqs'
-    BT_PUBLIC_KEY='nj723gtbqz2s6229'
-    BT_PRIVATE_KEY='6998bfeb28304c9b97c59460791f84ed'
+    BT_ENVIRONMENT = 'sandbox'
+    BT_MERCHANT_ID = '26343xxtxwwwgfqs'
+    BT_PUBLIC_KEY = 'nj723gtbqz2s6229'
+    BT_PRIVATE_KEY = '6998bfeb28304c9b97c59460791f84ed'
 else:
     # live keys
-    BT_ENVIRONMENT=''
-    BT_MERCHANT_ID=''
-    BT_PUBLIC_KEY=''
-    BT_PRIVATE_KEY=''
-    
+    BT_ENVIRONMENT = ''
+    BT_MERCHANT_ID = ''
+    BT_PUBLIC_KEY = ''
+    BT_PRIVATE_KEY = ''
 CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'web.urls'
 
@@ -120,27 +119,27 @@ ASGI_APPLICATION = 'web.routing.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'HOST': 'sfapp.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com',
-#         'PORT': '5432',
-#         'PASSWORD': 'EhB4bINnDFmzI0Bg'
-#     }
-# }
-# testing
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
         'USER': 'postgres',
-        'HOST': 'localhost',
+        'HOST': 'sfapp.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com',
         'PORT': '5432',
-        'PASSWORD': 'Digitallab'
+        'PASSWORD': 'EhB4bINnDFmzI0Bg'
     }
 }
+# testing
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#         'PASSWORD': 'Digitallab'
+#     }
+# }
 
 
 # Password validation
@@ -185,7 +184,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR , 'static') , ]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CHANNEL_LAYERS = {
     "default": {
