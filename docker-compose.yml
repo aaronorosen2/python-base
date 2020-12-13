@@ -27,27 +27,29 @@ services:
             - backend
     
     celery:
-        image: "python_sfapp_celery_worker"
+#        image: "python_sfapp_celery_worker"
         restart: always
-#        build: .
-        command: bash -c "cd codes/ && celery -A web worker -l info"
-#        command: bash -c "python3 ./codes/manage.py runserver 0.0.0.0:8001"
+        build: .
+#        command: bash -c "cd codes/ && celery -A web worker -l info"
+        command: bash -c "celery -A web worker -l info"
         volumes:
-            - ./codes:/code/codes
+            - ./codes:/home/web/codes
+#            - ./codes:/code/codes
         networks:
             - backend
         depends_on:
             - redis
 
     celery-beat:
-        image: "python_sfapp_celery_worker"
+#        image: "python_sfapp_celery_worker"
         restart: always
-#        build: .
+        build: .
 #        command: celery -A web beat -l info
-        command: bash -c "cd codes/ && celery -A web beat -l info"
-#        command: bash -c "python3 ./codes/manage.py runserver 0.0.0.0:8002"
+#        command: bash -c "cd codes/ && celery -A web beat -l info"
+        command: bash -c "celery -A web beat -l info"
         volumes:
-            - ./codes:/code/codes
+            - ./codes:/home/web/codes
+#            - ./codes:/code/codes
         networks:
             - backend
         depends_on:

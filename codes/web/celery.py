@@ -16,7 +16,7 @@ redisconn = redis.StrictRedis(host='redis', port=6379, db=0, decode_responses=Tr
 
 @app.task()
 def schedule_member():
-    print("schedule member!!!!")
+    print("schedule member!")
     backstage = redisconn.hkeys('back')
     live = redisconn.hkeys('live')
     if(len(live) > 0):
@@ -30,7 +30,7 @@ def schedule_member():
 def remove_live(live_channels_name):
     for key in live_channels_name:
         redisconn.hdel('live', key)
-        print("sending notification expired!!!")
+        print("sending notification expired!!!!")
         message = {
             'action': 'queue_status',
             'message': 'expired'

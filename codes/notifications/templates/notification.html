@@ -1,6 +1,16 @@
 <script>
+   console.log(Notification.permission);
+   if (Notification.permission === "granted") {
+      alert("we have permission");
+   } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(permission => {
+         console.log(permission);
+      });
+   }
+</script>
+<script>
 function init() {
-  var socket = new WebSocket('wss://' + window.location.host + '/notifications/users/');
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications/users/');
 
   socket.onopen = function open() {
     console.log('WebSockets connection created.');
@@ -12,9 +22,11 @@ function init() {
   socket.onmessage = function (event) {
     web_socket_data = JSON.parse(event.data);
     console.log(web_socket_data);
-    if(web_socket_data.action === 'users_list'){
+    if(web_socket_data.action === 'queue_status'){
+      showNotification(web_socket_data.message)
+    }else if(web_socket_data.action === 'users_list'){
       // console.log("users")
-      console.log(web_socket_data)
+<!--      console.log(web_socket_data)-->
       daySelect = document.getElementById('users');
       daySelect.options.length = 0;
       // console.log(daySelect)
@@ -107,6 +119,11 @@ function init() {
   //       openDropdown.classList.remove('show');
   //     }
   //   }
+}
+function showNotification(message) {
+   const notification = new Notification("Queue Status", {
+      body: message
+   })
 }
 // <!--function getSelectValue()-->
 // <!--  {-->
