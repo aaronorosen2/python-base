@@ -10,6 +10,8 @@ from .models import FlashCard
 from .models import UserSessionEvent
 import json
 import uuid
+import datetime
+from datetime import time
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -95,6 +97,7 @@ def flashcard_create(request,lessonId):
 
 @api_view(['GET'])
 def flashcard_read(request,pk):
+    usersessionevent = {}
     fc= FlashCard.objects.get(id=pk)
     fc_serialized = FlashCardSerializer(fc)
     return Response(fc_serialized.data)
@@ -107,7 +110,7 @@ def flashcard_update(request,pk):
     answer=f.answer
     image=f.image
     position=f.position
-
+   
     if "question" in request.data:
         question = request.data["question"]
 
@@ -133,27 +136,38 @@ def flashcard_delete(request,lessonId, flashcardId):
 
 
 @api_view(['POST'])
-def session_create(request, lessonId, flashcardId):
+def session_create(request, flashcardId):
     ip_address = ""
     user_device = ""
-    start_time = ""
-    end_time = ""
-    if ip_address in request.data:
+    if "ip_address" in request.data:
         ip_address = request.data['ip_address']
-    if user_device in request.data:
+    if "user_device" in request.data:
         user_device = request.data['user_device']
-    if start_time in request.data:
-        start_time = request.data['start_time']
-    if end_time in request.data:
-        end_time = request.data['end_time']
-    lesson = Lesson.objects.filter(id=lessonId).get()
-    flashcard = flashcard.objects.filter(id=flashcardId).get()
-
+    flashcard = FlashCard.objects.filter(id=flashcardId).get()
     use=UserSessionEvent(ip_address=ip_address, user_device=user_device, \
-        start_time=start_time, end_time=end_time, lesson=lesson, flashcard=flashcard)
-    user.save()
+        flash_card=flashcard)
+    use.save()
     return Response("Session user add")
 
-# @api_view(['GET'])
-# def 
+
+@api_view(['GET'])
+def session_list(request):
+    ses = UserSessionEvent.objects.all()
+    serializer = UserSessionEventSerializer(ses, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+def session_update(request, flashcardId, pk):
+    flashcard = FlashCard.objects.filter(id=flashcardId).get()
+    sess = UserSessionEvent.objects.filter(flash_card=flashcardId).get(id=pk)
+    start = sess.start_time
+    cur_s = start.strftime('%s')
+    now = datetime.datetime.now()
+    cur_n = now.strftime('%s')
+    durate = int(cur_n) - int(cur_s)
+    UserSessionEvent.objects.filter(id=pk).update(end_time=now, view_duration=durate)
+    return Response("Move slide")
+    
+
     
