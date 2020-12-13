@@ -1,6 +1,9 @@
 FROM python:3.6
 
 ENV PYTHONUNBUFFERED=1
+ENV TZ=Europe/Kiev
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+ENV PYTHONIOENCODING=utf-8
 
 COPY ./requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
