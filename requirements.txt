@@ -1,5 +1,5 @@
 DateTimeRange
-braintree
+braintree==4.5.0
 Django==3.1.4
 psycopg2-binary
 django-cors-headers
