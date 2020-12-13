@@ -1,3 +1,5 @@
+DateTimeRange
+braintree
 Django==3.1.4
 psycopg2-binary
 django-cors-headers
@@ -18,3 +20,4 @@ boto3==1.16.28
 django-cors-headers
 celery==4.2.1
 redis==3.2.0
+

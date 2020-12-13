@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8" />
+    <title>Subscription</title>
+    <link
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    type="text/css"
+    rel="stylesheet"
+    />
+    </head>
+    <body>
+    <div class="container">
+        <div id="collapseStripe" class="wrapper">
+        <form action="/store/brainTreeSubscription" method="post" id="payment-form">
+            {% csrf_token %}
+            <div id="checkoutMethods">
+            <div style="margin: 10px">
+                <h2>Subscription with Braintree</h2>
+                Plan ID: <input
+                type="text"
+                name="plan_id"
+                id="plan_id"
+                value="007"
+                />
+                First Name: <input
+                type="text"
+                name="first_name"
+                id="first_name"
+                value="brain"
+                />
+                Last Name: <input
+                type="text"
+                name="last_name"
+                id="last_name"
+                value="tree"
+                />
+                Company Name: <input
+                type="text"
+                name="company_name"
+                id="company_name"
+                value="Brain Tree Test Company"
+                />
+                Phone: <input
+                type="text"
+                name="phone"
+                id="phone"
+                value="0509754317"
+                />
+                Email: <input
+                type="email"
+                name="email"
+                id="email"
+                value="braintree@gmail.com"
+                />
+                <br><br>
+                Company Address: <input
+                type="text"
+                name="address"
+                id="address"
+                value="Brain Tree Test Company demo address"
+                />
+                Company City: <input
+                type="text"
+                name="city"
+                id="city"
+                value="Abu Dhabi"
+                />
+                Company State: <input
+                type="text"
+                name="state"
+                id="state"
+                value="Abu Dhabi"
+                />
+                Company Postal Code: <input
+                type="text"
+                name="postal_code"
+                id="postal_code"
+                value="000000"
+                />
+                <br><br>
+                <div id="bt-dropin"></div>
+                <!-- Used to display form errors. -->
+                <div id="card-errors" role="alert"></div>
+                </div>
+                <input type="hidden" id="nonce" name="payment_method_nonce" />
+            </div>
+            </div>
+            <button>Subscribe</button>
+        </form>
+        </div>
+    </div>
+    <script
+        src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"
+    ></script>
+
+    <script src="https://js.braintreegateway.com/web/dropin/1.13.0/js/dropin.min.js"></script>
+    <script>
+        var form = document.querySelector("#payment-form");
+        var client_token = "{{ client_token }}";
+
+        braintree.dropin.create(
+        {
+            authorization: client_token,
+            container: "#bt-dropin",
+            paypal: {
+            flow: "vault",
+            },
+        },
+        function (createErr, instance) {
+            form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            instance.requestPaymentMethod(function (err, payload) {
+                if (err) {
+                console.log("Error", err);
+                return;
+                }
+
+                // Add the nonce to the form and submit
+                document.querySelector("#nonce").value = payload.nonce;
+                form.submit();
+            });
+            });
+        }
+        );
+    </script>
+
+    <!-- script for toggling display of the form -->
+    <script type="text/javascript">
+        function toggleDisplay() {
+        var x = document.getElementById("collapseStripe");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+        }
+    </script>
+    </body>
+</html>
