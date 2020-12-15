@@ -54,6 +54,13 @@ def lesson_read(request,pk):
     less_serialized = LessonSerializer(les_)
     return Response(less_serialized.data)
 
+@api_view(['GET'])
+def lesson_all(request):
+    flashcards = {}
+    les_= Lesson.objects.all()
+    less_serialized = LessonSerializer(les_,many=True)
+    return Response(less_serialized.data)
+
 @api_view(['POST'])
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
