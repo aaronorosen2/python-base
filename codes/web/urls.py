@@ -34,6 +34,9 @@ urlpatterns = [
     path('sfapp2', include(
         ('sfapp2.urls', 'sfapp2'),
         namespace='sfapp2')),
+    path('store', include(
+        ('store.urls', 'store'),
+        namespace='sfapp2')),
     path('bookbikerescue', include(
         ('bookbikerescue.urls', 'bookbikerescue'),
         namespace='bookbikerescue')),
@@ -43,5 +46,9 @@ urlpatterns = [
     path('admin_backend', include(
         ('admin_backend.urls', 'admin_backend'),
         namespace='admin_backend')),
+
+        #  calendar URLS
+path('calendar' , include('calendar_app.urls'))
+    
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

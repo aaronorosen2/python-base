@@ -151,7 +151,7 @@ class RangeFileWrapper(object):
 
 
 @csrf_exempt
-def get_s3_signed_url(request):
+def generate_s3_signed_url(request):
     os.environ['S3_USE_SIGV4'] = 'True'
 
     # Get form fields
@@ -166,8 +166,7 @@ def get_s3_signed_url(request):
     print("file_name_uuid:", file_name_uuid)
 
     # Get pre-signed post url and fields
-    resp = create_presigned_post(bucket_name=settings.AWS_STORAGE_BUCKET_NAME, object_name=final_file_name,
-                                 expiration=seconds_per_day)
+    resp = get_presigned_s3_url(object_name=final_file_name, expiration=seconds_per_day)
 
     del os.environ['S3_USE_SIGV4']
 
@@ -196,8 +195,8 @@ def save_video_upload(request):
     return JsonResponse({'message': 'Success', 'video_id': video.id})
 
 
-def create_presigned_post( bucket_name, object_name, fields=None, conditions=None, expiration=3600):
-
+def get_presigned_s3_url(object_name, expiration=3600, fields=None, conditions=None):
+    bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
     secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
 
@@ -224,6 +223,10 @@ def create_presigned_post( bucket_name, object_name, fields=None, conditions=Non
 
 
 def uuid_file_path(filename):
-    ext = filename.split('.')[-1]
+    if filename:
+        ext = filename.split('.')[-1]
+    else:
+        ext = ".mp4"
+
     filename = "%s.%s" % (uuid.uuid4(), ext)
     return os.path.join(filename)

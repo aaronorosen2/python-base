@@ -1,6 +1,5 @@
 # Django
 
-
 ## Build project
 
 ```
