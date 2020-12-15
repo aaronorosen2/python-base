@@ -24,8 +24,8 @@ class Leadcreate(APIView):
             serializer = LeadSerializer(data=request.data)
             
             if serializer.is_valid():
-                send_raw_email(to_email='AgentStat <lead@dreampotential.org>',  # change to email after you moving ses out of sandbox
-                reply_to='AgentStat <lead@dreampotential.org>', # change to email after you moving ses out of sandbox
+                send_raw_email(to_email=['aaronorosen@gmail.com','sage@analogyplus.com'],  # change to email after you moving ses out of sandbox
+                reply_to=['aaronorosen@gmail.com','sage@analogyplus.com'],  # change to email after you moving ses out of sandbox
                 subject='New Lead',
                 message_text= json.dumps(serializer.validated_data, indent=4)
                 )

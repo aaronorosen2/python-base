@@ -12,6 +12,8 @@ agent_data.csv
 images
 codes/media
 #tmp
+codes/celerybeat-schedule.db
+codes/celerybeat.pid
 
 
 # PyCharm Dev
