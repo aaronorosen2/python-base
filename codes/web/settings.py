@@ -207,7 +207,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'schedule_member': {
         'task': 'web.celery.schedule_member',
-        'schedule': timedelta(seconds=10)  # execute every minute
+        'schedule': timedelta(seconds=50)  # execute every minute
     }
 }
 # CORS

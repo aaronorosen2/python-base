@@ -18,7 +18,9 @@ function init() {
         document.getElementById("user_name").value = "Anonymous";
     }
   };
-
+  var liveUserlist= document.getElementById("liveUsers");
+  var backUserlist= document.getElementById("backUsers");
+  
   socket.onmessage = function (event) {
     web_socket_data = JSON.parse(event.data);
     console.log(web_socket_data);
@@ -26,14 +28,21 @@ function init() {
       showNotification(web_socket_data.message)
     }else if(web_socket_data.action === 'users_list'){
       // console.log("users")
-<!--      console.log(web_socket_data)-->
       daySelect = document.getElementById('users');
       daySelect.options.length = 0;
       // console.log(daySelect)
       // console.log(web_socket_data.users)
-      for(i=0; i < web_socket_data.users.length; i = i + 1){
+      liveUserlist.innerHTML = ''
+      backUserlist.innerHTML = ''
+      for(i=0; i < web_socket_data.live_users.length; i = i + 1){
         // console.log(web_socket_data)
-        daySelect.options[i] = new Option(web_socket_data.users[i], web_socket_data.users[i]);
+        daySelect.options[i] = new Option(web_socket_data.live_users[i],
+        web_socket_data.live_users[i]);
+        liveUserlist.innerHTML += "<li>" + web_socket_data.live_users[i] + "</li>";
+
+      }
+      for(i=0; i < web_socket_data.back_users.length; i = i + 1){
+        backUserlist.innerHTML += "<li>" + web_socket_data.back_users[i] + "</li>";
       }
       // daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
     }
@@ -170,6 +179,18 @@ window.addEventListener("DOMContentLoaded", init, false);
         <td colspan=2>
           <input id="message" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Your message Here">
           <button type="submit" id="go" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Send</button>
+        </td>
+        <td>
+          <label for="liveUsers">Live Users:</label>
+          <ul name="liveUsers" id="liveUsers">
+            
+            </ul>
+        </td>
+        <td>
+          <label for="backUsers">Backstage Users:</label>
+          <ul name="backUsers" id="backUsers">
+            
+            </ul>
         </td>
   </form>
 {% endblock content %}

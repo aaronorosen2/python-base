@@ -3,6 +3,7 @@ from celery import Celery
 import redis
 from asgiref.sync import async_to_sync
 import channels.layers
+import json
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 
@@ -17,12 +18,27 @@ redisconn = redis.StrictRedis(host='redis', port=6379, db=0, decode_responses=Tr
 @app.task()
 def schedule_member():
     print("schedule member!")
+    # print("room name",redisconn.get('room_name'))
+    room_name = redisconn.get('room_name')
+    # print(room_name)
+    if (room_name == None):
+        room_name = "sample"
     backstage = redisconn.hkeys('back')
     live = redisconn.hkeys('live')
     if(len(live) > 0):
         remove_live(live)
     if(len(backstage) > 0):
         send_live(backstage[0:2])
+
+    listOfLiveUsers = redisconn.hvals('live')
+    listOfBackUsers = redisconn.hvals('back')
+    dataListOfUsers = {'type': 'users_list',
+                    'users': json.dumps(
+                        {'live_users': listOfLiveUsers,
+                        'action': 'users_list',
+                        'back_users':listOfBackUsers}
+                    ),}
+    async_to_sync(channel_layer.group_send)(room_name, dataListOfUsers)
 
     return
 
@@ -37,6 +53,17 @@ def remove_live(live_channels_name):
         }
         data = {"type": "notification_to_queue_member", "message": message}
         async_to_sync(channel_layer.send)(key, data)
+    
+    # listOfLiveUsers = redisconn.hvals('live')
+    # listOfBackUsers = redisconn.hvals('back')
+    # dataListOfUsers = {'type': 'users_list',
+    #                 'users': json.dumps(
+    #                     {'live_users': listOfLiveUsers,
+    #                     'action': 'users_list',
+    #                     'back_users':listOfBackUsers}
+    #                 ),}
+                    
+    # async_to_sync(channel_layer.group_send)('chat_users', dataListOfUsers)
 
 
 def send_live(back_channel_names):
@@ -45,7 +72,7 @@ def send_live(back_channel_names):
     backstage = redisconn.hmget('back', back_channel_names)
     # print(backstage)
     res = {back_channel_names[i]: backstage[i] for i in range(len(back_channel_names))}
-    # print(res)
+    print(res)
     redisconn.hmset('live', res)
     for key in back_channel_names:
         redisconn.hdel('back', key)
@@ -56,6 +83,8 @@ def send_live(back_channel_names):
         }
         data = {"type": "notification_to_queue_member", "message": message}
         async_to_sync(channel_layer.send)(key, data)
+    
+    
 
 
 @app.task()
