@@ -16,36 +16,87 @@ redisconn = redis.StrictRedis(host='redis', port=6379, db=0, decode_responses=Tr
 # sudo docker build --no-cache -t python_sfapp_celery_worker -f celery.Dockerfile .
 
 @app.task()
+def room_details():
+    room_list = redisconn.smembers('room_names')
+    all_users = []
+    room_list = list(room_list)
+    room_list.remove('chat_admin')
+    for room in room_list:
+        listOfLiveUsers = redisconn.hvals(room+'@live')
+        listOfBackUsers = redisconn.hvals(room+'@back')
+        # if(len(listOfLiveUsers) > 0 or len(listOfBackUsers) > 0):
+        users_dict = {'room_name':room, 'live_users':listOfLiveUsers, 'back_users':listOfBackUsers}
+        all_users.append(users_dict)
+    
+    if(len(all_users) > 0):
+        dataListOfUsers = {'type': 'users_list',
+                        'users': json.dumps(
+                            {'all_users': all_users,
+                            'action': 'all_users'}
+                        ),}
+        async_to_sync(channel_layer.group_send)('chat_admin', dataListOfUsers)
+
+@app.task()
 def schedule_member():
     print("schedule member!")
     # print("room name",redisconn.get('room_name'))
-    room_name = redisconn.get('room_name')
-    # print(room_name)
-    if (room_name == None):
-        room_name = "sample"
-    backstage = redisconn.hkeys('back')
-    live = redisconn.hkeys('live')
-    if(len(live) > 0):
-        remove_live(live)
-    if(len(backstage) > 0):
-        send_live(backstage[0:2])
+    # room_name = redisconn.get('room_name')
+    room_list = redisconn.smembers('room_names')
+    all_users = []
+    room_list = list(room_list)
+    room_list.remove('chat_admin')
+    for room in room_list:
+        backstage = redisconn.hkeys(room+'@back')
+        live = redisconn.hkeys(room+'@live')
+        if(len(live) > 0):
+            remove_live(room, live)
+        if(len(backstage) > 0):
+            send_live(room, backstage[0:2])
 
-    listOfLiveUsers = redisconn.hvals('live')
-    listOfBackUsers = redisconn.hvals('back')
-    dataListOfUsers = {'type': 'users_list',
+        listOfLiveUsers = redisconn.hvals(room+'@live')
+        listOfBackUsers = redisconn.hvals(room+'@back')
+        users_dict = {'room_name':room, 'live_users':listOfLiveUsers, 'back_users':listOfBackUsers}
+        all_users.append(users_dict)
+        details_room = {'type': 'users_list',
                     'users': json.dumps(
                         {'live_users': listOfLiveUsers,
                         'action': 'users_list',
                         'back_users':listOfBackUsers}
                     ),}
-    async_to_sync(channel_layer.group_send)(room_name, dataListOfUsers)
+        async_to_sync(channel_layer.group_send)(room, details_room)
+    
+    # dataListOfUsers = {'type': 'users_list',
+    #                 'users': json.dumps(
+    #                     {'all_users': all_users,
+    #                     'action': 'all_users'}
+    #                 ),}
+    # async_to_sync(channel_layer.group_send)('all_users', dataListOfUsers)
+
+    # if (room_name == None):
+    #     room_name = "sample"
+    # backstage = redisconn.hkeys('back')
+    # live = redisconn.hkeys('live')
+    # if(len(live) > 0):
+    #     remove_live(live)
+    # if(len(backstage) > 0):
+    #     send_live(backstage[0:2])
+
+    # listOfLiveUsers = redisconn.hvals('live')
+    # listOfBackUsers = redisconn.hvals('back')
+    # dataListOfUsers = {'type': 'users_list',
+    #                 'users': json.dumps(
+    #                     {'live_users': listOfLiveUsers,
+    #                     'action': 'users_list',
+    #                     'back_users':listOfBackUsers}
+    #                 ),}
+    # async_to_sync(channel_layer.group_send)(room_name, dataListOfUsers)
 
     return
 
 
-def remove_live(live_channels_name):
+def remove_live(room_name, live_channels_name):
     for key in live_channels_name:
-        redisconn.hdel('live', key)
+        redisconn.hdel(room_name+'@live', key)
         print("sending notification expired!!!!")
         message = {
             'action': 'queue_status',
@@ -66,16 +117,16 @@ def remove_live(live_channels_name):
     # async_to_sync(channel_layer.group_send)('chat_users', dataListOfUsers)
 
 
-def send_live(back_channel_names):
+def send_live(room_name, back_channel_names):
     # print("send_live")
     # print(back_channel_names)
-    backstage = redisconn.hmget('back', back_channel_names)
+    backstage = redisconn.hmget(room_name+'@back', back_channel_names)
     # print(backstage)
     res = {back_channel_names[i]: backstage[i] for i in range(len(back_channel_names))}
     print(res)
-    redisconn.hmset('live', res)
+    redisconn.hmset(room_name+'@live', res)
     for key in back_channel_names:
-        redisconn.hdel('back', key)
+        redisconn.hdel(room_name+'@back', key)
         print("sending notification live!!!")
         message = {
             'action': 'queue_status',
