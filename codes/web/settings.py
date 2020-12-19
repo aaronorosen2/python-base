@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'form_lead.apps.FormLeadConfig',
     # added by dextersol
     'calendar_app',
+    'manifest_app',
 ]
 
 MIDDLEWARE = [
