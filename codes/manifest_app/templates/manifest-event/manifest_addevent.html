@@ -13,11 +13,10 @@
          <form action="{% url 'manifest-create-evetn' %}" method="post" id="payment-form">
              {% csrf_token %}
 
-                 <input type="text" id="title" name="title" placeholder="Enter Event name" class="form-control form-group" required>
-                 <textarea type="text" name="description" placeholder="Enter description" cols="103" rows="5" class="form-control form-group" required></textarea>           
-                 <input type="date" name="date"  class="form-control form-group" required>
-                 <input type="time" name="start_time"   class="form-control form-group" required>
-                 <input type="time" name="end_time"  class="form-control form-group" required>
+                 <input type="text" id="name" name="name" placeholder="Enter Name" class="form-control form-group" required>
+                 <input type="text" id="email" name="email" placeholder="Enter E-mail" class="form-control form-group" required>
+                 <input type="text" id="phone" name="phone" placeholder="Enter Mobile Number" class="form-control form-group" required>
+                 <input type="hidden" name="date" id="date"  class="form-control form-group" required>
                 
                  <!-- braintree -->
                  <div id="bt-dropin"></div>

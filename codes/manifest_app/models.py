@@ -7,19 +7,18 @@ from django.utils.text import slugify
 User = get_user_model()
 
 class Event(models.Model):
-    title         = models.CharField(max_length=200)
-    description   = models.TextField()
-    date          = models.DateField()
-    start_time    = models.TimeField()
-    end_time      = models.TimeField()
-    created_date  = models.DateTimeField(auto_now_add=True)
-    is_payment    = models.BooleanField(default=False)
-    braintreeID   = models.CharField(max_length=70, blank=True, null=True, default="")
+    name         = models.CharField(max_length=70, blank=False, default="")
+    email        = models.EmailField(max_length=50, default="")
+    phone        = models.CharField(max_length=200, default="", blank=True)
+    date         = models.DateField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    is_payment   = models.BooleanField(default=False)
+    braintreeID  = models.CharField(max_length=70, blank=True, null=True, default="")
   
     @property
     def get_html_url(self):
         url = reverse('manifestevent-detail', args=(self.id,))
-        return f' <a href="{url}"> {self.title} </a>'
+        return f' <a href="{url}"> {self.name} </a>'
 
     def create_event(self):
         return f"http://localhost:8000/manifest-event/create/"
