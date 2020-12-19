@@ -1,44 +1,48 @@
 <script>
 function init() {
-  var socket = new WebSocket('ws://' + window.location.host + '/notification/users/');
-
+  var socket = new WebSocket('ws://' + window.location.host + '/notifications/admin/');
+  var container = document.getElementById('container')
   socket.onopen = function open() {
     console.log('WebSockets connection created.');
-    if(document.getElementById("user_name").value == ""){
-        document.getElementById("user_name").value = "Anonymous";
-        var dict = {
-          action:"enter_queue"
-        }
-        // socket.send(document.getElementById("message").value);
-        socket.send(JSON.stringify(dict));
-    }
-    
   };
   
 
   socket.onmessage = function (event) {
-    console.log(event.data)
+    // console.log(event.data)
     web_socket_data = JSON.parse(event.data);
-    if(web_socket_data.action === 'users_list'){
-      // console.log("users")
-      console.log(web_socket_data)
-      daySelect = document.getElementById('users');
-      daySelect.options.length = 0;
-      // console.log(daySelect)
-      // console.log(web_socket_data.users)
-      for(i=0; i < web_socket_data.users.length; i = i + 1){
-        // console.log(web_socket_data)
-        daySelect.options[i] = new Option(web_socket_data.users[i], web_socket_data.users[i]);
+    container.innerHTML = ''
+    var all_users = web_socket_data.all_users;
+    var row = "";
+    
+    for (var i=0; i < all_users.length; i++){
+      var liveUsersList = `<ul name="liveUsers" id="liveUsers">`;
+      var backUserList = `<ul name="backUsers" id="backUsers">`;
+      var live_user = all_users[i].live_users;
+      for (var j=0; j < live_user.length; j++){
+        liveUsersList += `<li>`+live_user[j]+`</li>`;
       }
-      // daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
-    }
-    // if(document.getElementById("users")){
-    //   console.log("users")
+      liveUsersList += `</ul>`
+      var back_user = all_users[i].back_users;
+      for (var k=0; k < back_user.length; k++){
+        backUserList += `<li>`+back_user[k]+`</li>`;
+      }
+      backUserList += `</ul>`;
+      row += `<div class="row">
+      <div class="column" style="background-color:#CACACA;">
+        <h2>`+ all_users[i].room_name +`</h2>
+        <div class="column">
+          <label for="liveUsers">Live Users:</label>`+liveUsersList+`
+        </div>
+        <div class="column">
+          <label for="backUsers">Backstage Users:</label>`+backUserList+`
+        </div>
+        
+      </div>
       
-    //   daySelect = document.getElementById('users');
-    //   daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
-    //   // document.getElementById("notifications").innerHTML += "<br>"+event.data
-    // }
+    </div>`;
+    
+    }
+    container.innerHTML += row
   }
   socket.onclose = function(e) {
       console.error('Chat socket closed unexpectedly',e);
@@ -47,79 +51,9 @@ function init() {
       console.error('Error From Websocket',e);
   };
 
-  if(document.getElementById("user_form")){
-      document.getElementById("user_form").addEventListener("submit",function (event){
-          event.preventDefault()
-          console.log(document.getElementById("user_name").value)
-          // send the user name to websocket
-          if(document.getElementById("user_name").value == ""){
-            alert("USERNAME should no be empty");
-          }else{
-            var dict = {
-              action:"store_user_name",
-              user_name:document.getElementById("user_name").value
-            }
-            // socket.send(document.getElementById("message").value);
-            socket.send(JSON.stringify(dict));
-          // alert("Message broadcasted :\n"+document.getElementById("message").value+" ");
-          // document.getElementById("message").value = "";
-          }
-      });
-  }
-
-
-  if(document.getElementById("notify_form")){
-  document.getElementById("notify_form").addEventListener("submit",function (event){
-    event.preventDefault()
-
-    if(document.getElementById("message").value == ""){
-      alert("Message should no be empty");
-    }else{
-    //   var dict = {
-    //    action:"broadcast",
-    //    message:document.getElementById("message").value
-    //  }
-    // socket.send(JSON.stringify(dict));
-    if(document.getElementById("notification_mode").value == ""){
-      alert("Mode should no be empty");
-    }else if(document.getElementById("notification_mode").value == "solo"){
-      var selectedValue = document.getElementById("users").value;
-      
-      var dict = {
-        action:document.getElementById("notification_mode").value,
-        sender:document.getElementById("user_name").value,
-        reciever:selectedValue,
-        message:document.getElementById("message").value
-      }
-      socket.send(JSON.stringify(dict));
-    }else if(document.getElementById("notification_mode").value == "broadcast"){
-      var dict = {
-        action:"broadcast",
-        message:document.getElementById("message").value
-      }
-      socket.send(JSON.stringify(dict));
-    }
-    
-    
-    document.getElementById("message").value = "";
-    }
-  });
-
-  }
-  // var dropdowns = document.getElementsByClassName("dropdown-content");
-  //   var i;
-  //   for (i = 0; i < dropdowns.length; i++) {
-  //     var openDropdown = dropdowns[i];
-  //     if (openDropdown.classList.contains('show')) {
-  //       openDropdown.classList.remove('show');
-  //     }
-  //   }
+  
 }
-// <!--function getSelectValue()-->
-// <!--  {-->
-// <!--      var selectedValue = document.getElementById("users").value;-->
-// <!--      alert(selectedValue);-->
-// <!--  }-->
+
 window.addEventListener("DOMContentLoaded", init, false);
 
 
@@ -129,39 +63,12 @@ window.addEventListener("DOMContentLoaded", init, false);
 
 {% block content %}
   {% load static %}
-  <h1>{{ room.label }}</h1>
-  <form id="user_form" style="width:30%;margin: 20px auto">
-      <input id="user_name" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Your Name!">
-      <button type="submit" id="send_name" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Submit</button>
-  </form>
-  <form id="notify_form" style="width:30%;margin: 20px auto">
-      <div>
-        <td><p style="font-size:30px">Send a messages:</p></td>
-        
-        <td>
-          <label for="users_class">Choose a Notification Mode:</label>
-
-          <select name="mode_class" id="notification_mode" onchange="getSelectValue();">
-            <option value="">Please Select</option>
-            <option value="solo">Solo</option>
-            <option value="broadcast">Broadcast</option>
-          </select>
-        </td>
-        <td>
-          <label for="users_class">Choose a User:</label>
-
-          <select name="users_class" id="users" onchange="getSelectValue();">
-            <!-- <option value="volvo">Volvo</option>
-            <option value="saab">Saab</option>
-            <option value="mercedes">Mercedes</option>
-            <option value="audi">Audi</option> -->
-          </select>
-        </td>
-        <td colspan=2>
-          <input id="message" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Your message Here">
-          <button type="submit" id="go" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Send</button>
-        </td>
-  </form>
+  <link rel="stylesheet" type="text/css" href="{% static 'notification/css/notification-admin.css' %}">
+  <h1>Admin Room Monitoring</h1>
+  <div id="container">
+    
+  </div>
+  
 {% endblock content %}
 
 {% block afterbody %}

@@ -207,6 +207,10 @@ CELERY_BEAT_SCHEDULE = {
     'schedule_member': {
         'task': 'web.celery.schedule_member',
         'schedule': timedelta(seconds=50)  # execute every minute
+    },
+    'room_details': {
+        'task': 'web.celery.room_details',
+        'schedule': timedelta(seconds=1)  # execute every seconds
     }
 }
 # CORS

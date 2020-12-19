@@ -151,8 +151,14 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        await self.channel_layer.group_add(
+            'all_users',
+            self.channel_name
+        )
         # enter in back queue
-        redisconn.set('room_name',self.room_group_name)
+        # redisconn.set('room_name',self.room_group_name)
+        # redisconn.lpush('roomlist', self.room_group_name)
+        redisconn.sadd('room_names', self.room_group_name)
         # redisconn.hset('back',
         #                self.channel_name,
         #                self.room_group_name)
@@ -162,20 +168,21 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         #                self.user_name)
         await self.store_user_name(self.channel_name)
         # sends the user list
-        listOfLiveUsers = redisconn.hvals('live')
+        listOfLiveUsers = redisconn.hvals(self.channel_name+'@live')
         # print(listOfLiveUsers)
-        listOfBackUsers = redisconn.hvals('back')
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'users_list',
-                'users': json.dumps(
-                    {'live_users': listOfLiveUsers,
-                        'action': 'users_list',
-                        'back_users':listOfBackUsers
-                    }),
-            },
-        )
+        listOfBackUsers = redisconn.hvals(self.channel_name+'@back')
+        if(self.room_group_name != 'chat_admin'):
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'users_list',
+                    'users': json.dumps(
+                        {'live_users': listOfLiveUsers,
+                            'action': 'users_list',
+                            'back_users':listOfBackUsers
+                        }),
+                },
+            )
         await self.accept()
 
 
@@ -191,11 +198,11 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.user_list.extend(self.user_dictionary.values())
             self.user_channels_details[send_data['user_name']] = self.channel_name
             # await self.print_details(send_data)
-            redisconn.hset('back',
+            redisconn.hset(self.room_group_name+'@back',
                        self.channel_name,
                        send_data['user_name'])
-            listOfLiveUsers = redisconn.hvals('live')
-            listOfBackUsers = redisconn.hvals('back')
+            listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
+            listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -239,12 +246,12 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         del self.user_dictionary[self.channel_name]
         self.user_list.clear()
         self.user_list.extend(self.user_dictionary.values())
-        if(redisconn.hexists('live',self.channel_name)):
-            redisconn.hdel('live', self.channel_name)
+        if(redisconn.hexists(self.room_group_name+'@live',self.channel_name)):
+            redisconn.hdel(self.room_group_name+'@live', self.channel_name)
         else:
-            redisconn.hdel('back', self.channel_name)
-        listOfLiveUsers = redisconn.hvals('live')
-        listOfBackUsers = redisconn.hvals('back')
+            redisconn.hdel(self.room_group_name+'@back', self.channel_name)
+        listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
+        listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
         dataListOfUsers = {'type': 'users_list',
                         'users': json.dumps(
                             {'live_users': listOfLiveUsers,

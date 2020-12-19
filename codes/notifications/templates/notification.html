@@ -10,20 +10,32 @@
 </script>
 <script>
 function init() {
-  var socket = new WebSocket('wss://' + window.location.host + '/notifications/users/');
+  
 
-  socket.onopen = function open() {
-    console.log('WebSockets connection created.');
-    if(document.getElementById("user_name").value == ""){
-        document.getElementById("user_name").value = "Anonymous";
-    }
-  };
-  var liveUserlist= document.getElementById("liveUsers");
+  var socket;
+  
+
+  if(document.getElementById("room_form")){
+      document.getElementById("room_form").addEventListener("submit",function (event){
+          event.preventDefault()
+          console.log(document.getElementById("room_name").value)
+          // send the user name to websocket
+          if(document.getElementById("room_name").value == ""){
+            alert("USERNAME should no be empty");
+          }else{
+            socket = new WebSocket('ws://' + window.location.host + '/notifications/'+document.getElementById("room_name").value+'/');
+            socket.onopen = function open() {
+              console.log('WebSockets connection created.');
+              if(document.getElementById("user_name").value == ""){
+                  document.getElementById("user_name").value = "Anonymous";
+              }
+            };
+            var liveUserlist= document.getElementById("liveUsers");
   var backUserlist= document.getElementById("backUsers");
   
   socket.onmessage = function (event) {
     web_socket_data = JSON.parse(event.data);
-    console.log(web_socket_data);
+    // console.log(web_socket_data);
     if(web_socket_data.action === 'queue_status'){
       showNotification(web_socket_data.message)
     }else if(web_socket_data.action === 'users_list'){
@@ -45,6 +57,8 @@ function init() {
         backUserlist.innerHTML += "<li>" + web_socket_data.back_users[i] + "</li>";
       }
       // daySelect.options[daySelect.options.length] = new Option('Text 1', 'Value1');
+    }else if(web_socket_data.action === 'all_users'){
+      console.log(web_socket_data)
     }
     // if(document.getElementById("users")){
     //   console.log("users")
@@ -60,6 +74,17 @@ function init() {
   socket.onerror = function(e) {
       console.error('Error From Websocket',e);
   };
+            // var dict = {
+            //   action:"store_user_name",
+            //   user_name:document.getElementById("user_name").value
+            // }
+            // // socket.send(document.getElementById("message").value);
+            // socket.send(JSON.stringify(dict));
+          // alert("Message broadcasted :\n"+document.getElementById("message").value+" ");
+          // document.getElementById("message").value = "";
+          }
+      });
+  }
 
   if(document.getElementById("user_form")){
       document.getElementById("user_form").addEventListener("submit",function (event){
@@ -149,6 +174,10 @@ window.addEventListener("DOMContentLoaded", init, false);
 {% block content %}
   {% load static %}
   <h1>{{ room.label }}</h1>
+  <form id="room_form" style="width:30%;margin: 20px auto">
+    <input id="room_name" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Room Name!">
+    <button type="submit" id="send_room_name" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Submit</button>
+  </form>
   <form id="user_form" style="width:30%;margin: 20px auto">
       <input id="user_name" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Your Name!">
       <button type="submit" id="send_name" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Submit</button>
