@@ -168,9 +168,9 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         #                self.user_name)
         await self.store_user_name(self.channel_name)
         # sends the user list
-        listOfLiveUsers = redisconn.hvals(self.channel_name+'@live')
+        listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
         # print(listOfLiveUsers)
-        listOfBackUsers = redisconn.hvals(self.channel_name+'@back')
+        listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
         if(self.room_group_name != 'chat_admin'):
             await self.channel_layer.group_send(
                 self.room_group_name,
