@@ -5,7 +5,7 @@ import uuid
 from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Doc
+from pdf_sign.models import Doc
 import os
 from django.conf import settings
 from django.http import HttpResponse

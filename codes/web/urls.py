@@ -50,6 +50,9 @@ urlpatterns = [
     path('api_pdf/', include(
         ('pdf_sign.urls', 'pdf_sign'),
         namespace='pdf_sign')),
+    path('parking_api/', include(
+        ('parking.urls', 'parking_app'),
+        namespace='parking_app')),
 
     #  calendar URLS
     path('calendar', include('calendar_app.urls')),

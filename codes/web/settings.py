@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     # added by dextersol
     'calendar_app',
     'manifest_app',
+    'parking'
 ]
 
 MIDDLEWARE = [
