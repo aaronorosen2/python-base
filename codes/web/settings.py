@@ -214,5 +214,3 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': timedelta(seconds=1)  # execute every seconds
     }
 }
-# CORS
-CORS_ORIGIN_ALLOW_ALL = True
