@@ -70,6 +70,7 @@ def lesson_all(request):
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
     lesson_name = request.data['lesson_name']
+    Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
     for fc in FlashCard.objects.filter(lesson=lesson):
         toDelete = True
         for flashcard in request.data["flashcards"]:
@@ -109,7 +110,7 @@ def lesson_update(request,pk):
             f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,image=image,position=position)
         else:
             lesson_type = flashcard["lesson_type"]
-            f=FlashCard(lesson=lesson,lesson_name=lesson_name,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
+            f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
             f.save()
 
             
