@@ -8,6 +8,7 @@ from .serializers import UserSessionEventSerializer
 from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
+from .models import FlashCardResponse
 import json
 import uuid
 import datetime
@@ -219,6 +220,8 @@ def session_update(request, flashcardId, pk):
     durate = int(cur_n) - int(cur_s)
     UserSessionEvent.objects.filter(id=pk).update(end_time=now, view_duration=durate)
     return Response("Move slide")
-    
 
-    
+@api_view(['POST'])
+def flashcard_resposne(request):
+    flashcard_id = request.data['flashcard']
+    return Response("Hi")

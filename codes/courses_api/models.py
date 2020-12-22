@@ -31,3 +31,8 @@ class UserSessionEvent(models.Model):
     @property
     def duration(self):
         return self.end_time - self.start_time
+
+class FlashCardResponse(models.Model):
+    user = models.ForeignKey(UserSessionEvent,on_delete=models.CASCADE)
+    FlashCard = models.ForeignKey(FlashCard,on_delete=models.CASCADE)
+    answer = models.CharField(max_length=250)
