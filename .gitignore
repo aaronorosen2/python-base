@@ -10,6 +10,8 @@ venv
 agent_data.csv
 *.csv
 images
+sfenv
+.vscode
 codes/media
 #tmp
 codes/celerybeat-schedule.db

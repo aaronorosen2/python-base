@@ -26,13 +26,13 @@ urlpatterns = [
     path('courses_api/', include("courses_api.urls")),
     path('notification/', notification),
     path('admin/', admin.site.urls),
-    path('voip', include(
+    path('voip/', include(
         ('voip.urls', 'voip'),
-        namespace='sfapp2')),
-    path('video', include(
+        namespace='sfapp2_voip')),
+    path('video/', include(
         ('video.urls', 'video'),
-        namespace='sfapp2')),
-    path('sfapp2', include(
+        namespace='sfapp2_video')),
+    path('sfapp2/', include(
         ('sfapp2.urls', 'sfapp2'),
         namespace='sfapp2')),
     path('store', include(
@@ -47,6 +47,12 @@ urlpatterns = [
     path('admin_backend', include(
         ('admin_backend.urls', 'admin_backend'),
         namespace='admin_backend')),
+    path('api_pdf/', include(
+        ('pdf_sign.urls', 'pdf_sign'),
+        namespace='pdf_sign')),
+    path('parking_api/', include(
+        ('parking.urls', 'parking_app'),
+        namespace='parking_app')),
 
     #  calendar URLS
     path('calendar', include('calendar_app.urls')),
