@@ -34,5 +34,5 @@ class UserSessionEvent(models.Model):
 
 class FlashCardResponse(models.Model):
     user = models.ForeignKey(UserSessionEvent,on_delete=models.CASCADE)
-    FlashCard = models.ForeignKey(FlashCard,on_delete=models.CASCADE)
+    flashcard = models.ForeignKey(FlashCard,on_delete=models.CASCADE)
     answer = models.CharField(max_length=250)

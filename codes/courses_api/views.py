@@ -69,7 +69,7 @@ def lesson_all(request):
 @api_view(['POST'])
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
-
+    lesson_name = request.data['lesson_name']
     for fc in FlashCard.objects.filter(lesson=lesson):
         toDelete = True
         for flashcard in request.data["flashcards"]:
@@ -109,7 +109,7 @@ def lesson_update(request,pk):
             f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,image=image,position=position)
         else:
             lesson_type = flashcard["lesson_type"]
-            f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
+            f=FlashCard(lesson=lesson,lesson_name=lesson_name,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
             f.save()
 
             
@@ -222,6 +222,12 @@ def session_update(request, flashcardId, pk):
     return Response("Move slide")
 
 @api_view(['POST'])
-def flashcard_resposne(request):
+def flashcard_response(request):
     flashcard_id = request.data['flashcard']
-    return Response("Hi")
+    session_id = request.data['session_id']
+    user = UserSessionEvent.objects.get(id=session_id)
+    answer = request.data['answer']
+    flashcard = FlashCard.objects.get(id=flashcard_id)
+    flashcard_response = FlashCardResponse(user=user,flashcard=flashcard,answer=answer)
+    flashcard_response.save()
+    return Response("Response Recorded")
