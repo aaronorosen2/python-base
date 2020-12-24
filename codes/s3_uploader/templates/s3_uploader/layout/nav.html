@@ -1,0 +1,56 @@
+
+
+<header class="site-header" style="background-color: #e2e2e2;">
+
+    {% if true or current_user.is_authenticated %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <img src="" style="width: 130px; height: 130px;">
+            </div>
+            <div class="col-md-6 mt-4 text-center">
+                <h2>My Dream Jobs</h2>
+                <h5>Slogan here!</h5>
+            </div>
+            <div class="col-md-3">
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <nav class="navbar navbar-expand-md navbar-dark bg-steel ">
+        <div class="container">
+            <a class="navbar-brand mr-4" href="/">Home</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle"
+                    aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarToggle">
+                <div class="navbar-nav mr-auto">
+
+                    {% if current_user.is_authenticated %}
+                    <a class="nav-item nav-link" href="#">My Jobs</a>
+                    {% endif %}
+
+                    <a class="nav-item nav-link" href="#">Search Jobs</a>
+
+                    <a class="nav-item nav-link" href="#">About</a>
+                    <a class="nav-item nav-link d-none" href="#">Contact Us</a>
+                </div>
+
+                <!-- Navbar Right Side -->
+                <div class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                    <a class="nav-item nav-link" href="#">Modify Job</a>
+                    <a class="nav-item nav-link" href="#">Create Job</a>
+
+                    <a class="nav-item nav-link" href="#">My Profile</a>
+
+                    <a class="nav-item nav-link" href="#">Logout</a>
+
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>

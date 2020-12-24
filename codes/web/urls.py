@@ -50,7 +50,11 @@ urlpatterns = [
 
     #  calendar URLS
     path('calendar', include('calendar_app.urls')),
-    path('manifest', include('manifest_app.urls'))
+    path('manifest', include('manifest_app.urls')),
+
+    path('s3_uploader', include(
+        ('s3_uploader.urls', 's3_uploader'),
+        namespace='s3_uploader')),
 
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

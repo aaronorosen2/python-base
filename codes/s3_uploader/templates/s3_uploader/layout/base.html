@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+{% include 's3_uploader/layout/head.html' %}
+<body>
+
+{% include 's3_uploader/layout/nav.html' %}
+
+{% include 's3_uploader/layout/messages.html' %}
+
+<main role="main" class="container">
+    <div class="row">
+        <div class="col-md-12">
+            {% block content %}
+
+            {% endblock %}
+        </div>
+    </div>
+</main>
+
+
+</body>
+{% include 's3_uploader/layout/footer.html' %}
+</html>
