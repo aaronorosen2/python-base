@@ -8,6 +8,7 @@ from .serializers import UserSessionEventSerializer
 from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
+from .models import FlashCardResponse
 import json
 import uuid
 import datetime
@@ -68,7 +69,8 @@ def lesson_all(request):
 @api_view(['POST'])
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
-
+    lesson_name = request.data['lesson_name']
+    Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
     for fc in FlashCard.objects.filter(lesson=lesson):
         toDelete = True
         for flashcard in request.data["flashcards"]:
@@ -219,6 +221,14 @@ def session_update(request, flashcardId, pk):
     durate = int(cur_n) - int(cur_s)
     UserSessionEvent.objects.filter(id=pk).update(end_time=now, view_duration=durate)
     return Response("Move slide")
-    
 
-    
+@api_view(['POST'])
+def flashcard_response(request):
+    flashcard_id = request.data['flashcard']
+    session_id = request.data['session_id']
+    user = UserSessionEvent.objects.get(id=session_id)
+    answer = request.data['answer']
+    flashcard = FlashCard.objects.get(id=flashcard_id)
+    flashcard_response = FlashCardResponse(user=user,flashcard=flashcard,answer=answer)
+    flashcard_response.save()
+    return Response("Response Recorded")

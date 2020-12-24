@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'calendar_app',
     'manifest_app',
     's3_uploader',
+    'parking'
 ]
 
 MIDDLEWARE = [
@@ -194,7 +195,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -226,9 +226,9 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': timedelta(seconds=1)  # execute every seconds
     }
 }
+
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
-
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -242,3 +242,4 @@ DEFAULT_FROM_EMAIL = 'user@gmail.com'
 # Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
 # output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
