@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'knox',
+    'django_rest_passwordreset',
     'sfapp',
     'sfapp2',
     'storages',
@@ -57,6 +59,7 @@ INSTALLED_APPS = [
     # added by dextersol
     'calendar_app',
     'manifest_app',
+    's3_uploader',
     'parking'
 ]
 
@@ -165,6 +168,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Make knox’s Token Authentication default
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'knox.auth.TokenAuthentication',
+    ]
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -214,3 +226,20 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': timedelta(seconds=1)  # execute every seconds
     }
 }
+
+# CORS
+CORS_ORIGIN_ALLOW_ALL = True
+
+# Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'user@gmail.com'
+EMAIL_HOST_PASSWORD = 'user-token'
+DEFAULT_FROM_EMAIL = 'user@gmail.com'
+
+# Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
+# output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
