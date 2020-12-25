@@ -128,7 +128,7 @@ class S3SignedUrl(generics.GenericAPIView):
         # Get unique filename using UUID
         file_name = request.POST.get('file_name')
         file_name_uuid = uuid_file_path(file_name)
-        final_file_name = 'Test/upload/{0}'.format(file_name_uuid)
+        final_file_name = 'uploads/{0}'.format(file_name_uuid)
 
         # Get pre-signed post url and fields
         resp = get_presigned_s3_url(object_name=final_file_name, expiration=seconds_per_day)
