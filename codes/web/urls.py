@@ -29,7 +29,7 @@ urlpatterns = [
     path('voip/', include(
         ('voip.urls', 'voip'),
         namespace='sfapp2_voip')),
-    path('video/', include(
+    path('video', include(
         ('video.urls', 'video'),
         namespace='sfapp2_video')),
     path('sfapp2/', include(
