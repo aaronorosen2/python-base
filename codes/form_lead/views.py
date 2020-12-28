@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponse
 from .models import Lead
 from .serializers import LeadSerializer
 from django.http import Http404
@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .utils.email_util import send_raw_email
 import json
+import pandas
 # Create your views here.
 
 @api_view(['GET'])
@@ -23,8 +24,8 @@ class Leadcreate(APIView):
             serializer = LeadSerializer(data=request.data)
             
             if serializer.is_valid():
-                send_raw_email(to_email='AgentStat <lead@dreampotential.org>',  # change to email after you moving ses out of sandbox
-                reply_to='AgentStat <lead@dreampotential.org>', # change to email after you moving ses out of sandbox
+                send_raw_email(to_email=['aaronorosen@gmail.com','sage@analogyplus.com'],  # change to email after you moving ses out of sandbox
+                reply_to=['aaronorosen@gmail.com','sage@analogyplus.com'],  # change to email after you moving ses out of sandbox
                 subject='New Lead',
                 message_text= json.dumps(serializer.validated_data, indent=4)
                 )
@@ -35,3 +36,19 @@ class Leadcreate(APIView):
             serializer = LeadSerializer()
             return Response(serializer.Meta)
     
+
+@api_view(['GET'])
+def get_leads_csv(request):
+    leads = Lead.objects.filter().values()
+    df = pandas.DataFrame(leads)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=export.csv'
+    df.to_csv(path_or_buf=response)
+    return response
+
+
+@api_view(['GET'])
+def get_leads_html(request):
+    leads = Lead.objects.filter().values()
+    df = pandas.DataFrame(leads)
+    return HttpResponse(df.to_html())

@@ -15,3 +15,24 @@ class FlashCard(models.Model):
     answer = models.CharField(max_length=250)
     image = models.CharField(max_length=250)
     position = models.IntegerField()
+
+class UserSessionEvent(models.Model):
+    flash_card = models.ForeignKey(FlashCard, on_delete=models.CASCADE)
+    ip_address = models.CharField(max_length=15, blank=True, null=True)
+    user_device = models.CharField(max_length=100, blank=True, null=True)
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(auto_now=True)
+    view_duration = models.IntegerField(blank=True, null=True)
+    create_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.ip_address
+
+    @property
+    def duration(self):
+        return self.end_time - self.start_time
+
+class FlashCardResponse(models.Model):
+    user = models.ForeignKey(UserSessionEvent,on_delete=models.CASCADE)
+    flashcard = models.ForeignKey(FlashCard,on_delete=models.CASCADE)
+    answer = models.CharField(max_length=250)

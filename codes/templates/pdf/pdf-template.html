@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <base href="http://127.0.0.1:8000/">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
+    <link href="file:///D:\upwork\python-sfapp\codes\static\rest_framework\css\bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E Sign Collection</title>
+    <style>
+        body{
+            font-weight: 400;
+            font-size:12px !important;
+        }
+        h5{
+            font-weight:400;
+            font-size:13px;
+        }
+        input {
+            max-width: 100% !important;
+        }
+        .row {
+            display: -webkit-box;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row;
+            margin-right: -15px;
+            margin-left: -15px; 
+            margin-top: 16px;
+        }        
+        .m-fix{
+            margin-top: -16px !important
+        }
+        .underline{
+            border-bottom: 1px solid #3a3838;
+            width: 100%;
+            display: block;
+            margin: 0 !important;
+            margin-top: 12px;
+        }
+        h3{
+            font-size:15px;
+        }
+        h4{
+            font-size:14px;
+        }
+        .justify-content-between {
+            -ms-flex-pack: justify!important;
+            justify-content: space-between!important;
+        }
+        
+    </style>
+</head>
+<body>
+    <!-- Bootstrap core JavaScript -->
+    <div class="container" id="printable">
+        <div class="">
+            <h3 class="text-center font-weight-bold"><u>REFERRAL AGREEMENT</u></h3>
+        </div>
+        <div class="row">           
+            <label class="col-form-label mt-2">Date:</label>
+            <u>{{data.date}}</u>
+        </div>
+        <h4 class="font-weight-bold row" style="margin-top: 30px">REFERRAL FEE STRUCTURE: </h4>
+        <div class="row"> 
+            <p class="m-0 mt-1"> <u>{{data.listing_firm_commission}}</u> % of Listing Firm Commission</p>
+        </div>
+        <div class="row">  
+            <p class="m-0 mt-1"><u>{{data.selling_firm_commission}}</u> % of Selling Firm Commission</p>
+        </div>
+        <div class="referring-section" style="margin-top: 32px">
+            <div class="row"> 
+                <span class="font-weight-bold d-inline display-5 mr-2">REFERRING FIRM: </span>  
+                <p class="underline">
+                    {{data.refer_firm}}
+                </p>
+            </div>   
+            
+            <div class="row"> 
+                <h4 class="d-inline mr-2">Broker Name: </h4>  
+                <p class="underline">
+                    {{data.ref_broker_name}}
+                </p>
+            </div> 
+            
+            <div class="row"> 
+                <h4 class="m-0 d-inline mr-2">Address: </h4>  
+                <p class="underline">
+                    {{data.refer_address}}
+                </p>
+            </div> 
+            
+            <div class="row"> 
+                <h4 class="d-inline mr-2">Phone: </h4> 
+                <p class="underline" style="width: 40%">{{data.refer_phone}}</p>
+                <h4 class="d-inline mr-2 ml-2">Email: </h4>  
+                <p class="underline">{{data.refer_email}}</p>
+            </div> 
+        </div>
+        
+        <div class="destination-section mt-4" style="margin-top: 32px">
+            <div class="row"> 
+                <span class="font-weight-bold d-inline display-5 mr-2">DESTINATION FIRM: </span>  
+                <p class="underline">{{data.destination_firm}}</p>
+            </div>   
+            
+            <div class="row"> 
+                <h4 class="d-inline mr-2">Broker Name: </h4>  
+                <p class="underline">{{data.dest_broker_name}}</p>
+            </div> 
+            
+            <div class="row"> 
+                <h4 class="m-0 d-inline mr-2">Address: </h4>  
+                <p class="underline">{{data.dest_address}}</p>
+            </div> 
+            
+            <div class="row"> 
+                <h4 class="d-inline mr-2">Phone: </h4> 
+                <p class="underline" style="width: 40%">{{data.dest_phone}}</p>
+                <h4 class="d-inline mr-2 ml-2">Email: </h4>  
+                <p class="underline">{{data.dest_email}}</p>
+            </div> 
+        </div>                
+        <div class="prospect-section mt-4"> 
+            <div class="form-group row">
+                <span class="font-weight-bold display-5 d-inline mr-2">PROSPECT INFORMATION: </span>                
+                <div class=" m-0 ml-3">
+                    <img src="https://www.flaticon.com/svg/static/icons/svg/61/61218.svg" style="height: 15px; width: 15px; z-index: 9999; margin-top:-5px" id="sellerChck">
+                    <label class="mt-1" for="defaultUnchecked1">Seller</label>
+                </div>                   
+                <div class="custom-control m-0 ml-3">
+                    <img src="https://www.flaticon.com/svg/static/icons/svg/61/61218.svg" style="height: 15px; width: 15px; z-index:9999; margin-top:-5px" id="buyerChck">
+                    <label class="mt-1" for="defaultUnchecked">Buyer</label>
+                </div>
+                <div class=" mt-1 ml-3">
+                    <h4 class="d-inline mr-2">Other: </h4>                        
+                </div>
+                <p class="underline" style="padding: 0 !important;">{{data.other}}</p>
+            </div>
+            <div class="row"> 
+                <h4 class="d-inline mr-2">Name: </h4>  
+                <p class="underline">{{data.pros_name}}</p>
+            </div> 
+            
+            <div class="row"> 
+                <h4 class="m-0 d-inline mr-2">Address: </h4>  
+                <p class="underline">{{data.pros_address}}</p>
+            </div> 
+            
+            <div class="row"> 
+                <h4 class="d-inline mr-2">Phone: </h4> 
+                <p class="underline" style="width: 40%">{{data.pros_phone}}</p>
+                <h4 class="d-inline mr-2 ml-2">Email: </h4>  
+                <p class="underline">{{data.pros_email}}</p>
+            </div>
+        </div>
+        
+        <div class="comment-section mt-4">
+            <h4 class="mt-3 mr-2 row">Comments: </h4>
+            <p class="row">{{data.comments}}</p>
+        </div>
+        <h4 class="font-weight-bold mt-5 row">TERMS OF REFERRAL: </h4>
+        <div class="terms-section row mt-1">                      
+            <p>
+                The Destination Firm accepts this referral. If within <u><span class="" style="width: 30px !important;border-bottom: 1px solid;">
+                    {{data.months}}</span></u> months (18 if not filled in) of the date of
+                    this agreement, the Destination Firm receives a commission due to services provided to the prospect,
+                    Destination Firm agrees to send the Referring Firm <u></u><span class="" style="width: 30px !important;border-bottom: 1px solid;">
+                        {{data.ref_firm_comm}}</span></u> % (of the gross commission)as a referral fee,
+                        and include commission details with the check.                            
+                    </p>
+                </div>
+                <div class="row justify-content-between"> 
+                    <div class="col-auto mr-auto text-center" style="max-width: 230px; margin-left: -15px">  
+                        {% if data.ref_sign %}
+                        <img src="{{data.ref_sign}}" style="width: 150px; height: 64px;" aria-hidden="true" id="referring-sign-img">
+                        {% endif %}                       
+                        <div class="" style="border-top: 1px solid black">
+                            Referring Firm (Signature)
+                        </div>
+                    </div>
+                    <div class="col-auto ml=5" style="max-width: 230px; margin-left: 270px">
+                        {% if data.dest_sign %}
+                        <img src="{{data.dest_sign}}" style="width: 150px; height: 64px;" aria-hidden="true" id="referring-sign-img">
+                        {% endif %}  
+                        <div class="" style="border-top: 1px solid black">
+                            Destination Firm (Signature)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if data.is_seller == True %}
+            <script>
+                document.getElementById('sellerChck').setAttribute('src','https://www.flaticon.com/premium-icon/icons/svg/2618/2618312.svg')
+            </script>
+            {% endif %}
+            {% if data.is_buyer == True %}
+            <script>
+                document.getElementById('buyerChck').setAttribute('src','https://www.flaticon.com/premium-icon/icons/svg/2618/2618312.svg')
+            </script>
+            {% endif %}
+        </body>
+        </html>

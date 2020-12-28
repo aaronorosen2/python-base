@@ -1,0 +1,63 @@
+{% extends 'manifest-layout/manifest_base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+
+
+<div   >
+    <div class="modal-dialog modal-dialog-centered" role="document" >
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #EB7E4D; color: #fff;" >
+                <h5 class="modal-title" id="exampleModalLongTitle">Event Details</h5>
+ 
+            </div>
+            <div class="modal-body">
+                <img src="{% static 'calendar.png' %}" class="avatar">
+
+                
+<div>
+     
+</div>
+                <h3 class="display-4">
+
+                    {{event.name}}
+                </h3>
+                <div class="description">
+
+                    <h5>{{event.email}}</h5>
+                </div>
+                <div class="event-date">
+                    <span class="material-icons">
+                        date_range
+                    </span>
+                    {{event.date}}
+
+                </div>
+                <hr>
+                <div class="timing" >
+
+                    <span class="material-icons">
+                        phone
+                    </span>
+                    <span>
+                        {{event.phone}}
+                    </span>
+                </div>
+                <hr>
+
+           
+             </div>
+            
+            <div class="modal-footer">
+               
+              
+                <a href="{% url 'manifestevent-delete' event.id %}" class="btn btn-danger">delete</a> 
+        
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -4,10 +4,15 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer
+from .serializers import UserSessionEventSerializer
 from .models import Lesson
 from .models import FlashCard
+from .models import UserSessionEvent
+from .models import FlashCardResponse
 import json
 import uuid
+import datetime
+from datetime import time
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -54,10 +59,62 @@ def lesson_read(request,pk):
     less_serialized = LessonSerializer(les_)
     return Response(less_serialized.data)
 
+@api_view(['GET'])
+def lesson_all(request):
+    flashcards = {}
+    les_= Lesson.objects.all()
+    less_serialized = LessonSerializer(les_,many=True)
+    return Response(less_serialized.data)
+
 @api_view(['POST'])
 def lesson_update(request,pk):
-    Lesson.objects.filter(id=pk).update(lesson_name=request.data["lesson_name"])
-    return Response("updated")
+    lesson = Lesson.objects.get(id=pk)
+    lesson_name = request.data['lesson_name']
+    Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
+    for fc in FlashCard.objects.filter(lesson=lesson):
+        toDelete = True
+        for flashcard in request.data["flashcards"]:
+            if "id" in flashcard:
+                if fc.id == flashcard["id"]:
+                    toDelete = False
+                    break
+                else:
+                    toDelete=True
+                    continue
+        if toDelete:
+            fc.delete()
+
+    for flashcard in request.data["flashcards"]:
+        question=""
+        options=""
+        answer=""
+        image=""
+        position =flashcard["position"]
+        id_ = None
+        if "id" in flashcard:
+            id_ = flashcard["id"]
+
+        if "question" in flashcard:
+            question = flashcard["question"]
+
+        if "options" in flashcard:
+            options = flashcard["options"]
+
+        if "answer" in flashcard:
+            answer = flashcard["answer"]
+        
+        if "image" in flashcard:
+            image = flashcard["image"]
+
+        if "id" in flashcard:
+            f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,image=image,position=position)
+        else:
+            lesson_type = flashcard["lesson_type"]
+            f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
+            f.save()
+
+            
+    return Response(LessonSerializer(lesson).data)
 
 @api_view(['DELETE'])
 def lesson_delete(request,pk):
@@ -93,6 +150,7 @@ def flashcard_create(request,lessonId):
 
 @api_view(['GET'])
 def flashcard_read(request,pk):
+    usersessionevent = {}
     fc= FlashCard.objects.get(id=pk)
     fc_serialized = FlashCardSerializer(fc)
     return Response(fc_serialized.data)
@@ -105,7 +163,7 @@ def flashcard_update(request,pk):
     answer=f.answer
     image=f.image
     position=f.position
-
+   
     if "question" in request.data:
         question = request.data["question"]
 
@@ -125,6 +183,52 @@ def flashcard_update(request,pk):
     return Response("updated")
 
 @api_view(['DELETE'])
-def flashcard_delete(request,pk):
+def flashcard_delete(request,lessonId, flashcardId):
     FlashCard.objects.filter(id=pk).delete()
     return Response("deleted")
+
+
+@api_view(['POST'])
+def session_create(request, flashcardId):
+    ip_address = ""
+    user_device = ""
+    if "ip_address" in request.data:
+        ip_address = request.data['ip_address']
+    if "user_device" in request.data:
+        user_device = request.data['user_device']
+    flashcard = FlashCard.objects.filter(id=flashcardId).get()
+    use=UserSessionEvent(ip_address=ip_address, user_device=user_device, \
+        flash_card=flashcard)
+    use.save()
+    return Response("Session user add")
+
+
+@api_view(['GET'])
+def session_list(request):
+    ses = UserSessionEvent.objects.all()
+    serializer = UserSessionEventSerializer(ses, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+def session_update(request, flashcardId, pk):
+    flashcard = FlashCard.objects.filter(id=flashcardId).get()
+    sess = UserSessionEvent.objects.filter(flash_card=flashcardId).get(id=pk)
+    start = sess.start_time
+    cur_s = start.strftime('%s')
+    now = datetime.datetime.now()
+    cur_n = now.strftime('%s')
+    durate = int(cur_n) - int(cur_s)
+    UserSessionEvent.objects.filter(id=pk).update(end_time=now, view_duration=durate)
+    return Response("Move slide")
+
+@api_view(['POST'])
+def flashcard_response(request):
+    flashcard_id = request.data['flashcard']
+    session_id = request.data['session_id']
+    user = UserSessionEvent.objects.get(id=session_id)
+    answer = request.data['answer']
+    flashcard = FlashCard.objects.get(id=flashcard_id)
+    flashcard_response = FlashCardResponse(user=user,flashcard=flashcard,answer=answer)
+    flashcard_response.save()
+    return Response("Response Recorded")

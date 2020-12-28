@@ -18,21 +18,25 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from notifications.views import notify
-from notifications.views import notification
+from notifications.views import notification, admin_monitoring
 
 urlpatterns = [
     path('notify/', notify),
+    path('admin_monitoring/', admin_monitoring),
     path('courses_api/', include("courses_api.urls")),
     path('notification/', notification),
     path('admin/', admin.site.urls),
-    path('voip', include(
+    path('voip/', include(
         ('voip.urls', 'voip'),
-        namespace='sfapp2')),
+        namespace='sfapp2_voip')),
     path('video', include(
         ('video.urls', 'video'),
-        namespace='sfapp2')),
-    path('sfapp2', include(
+        namespace='sfapp2_video')),
+    path('sfapp2/', include(
         ('sfapp2.urls', 'sfapp2'),
+        namespace='sfapp2')),
+    path('store', include(
+        ('store.urls', 'store'),
         namespace='sfapp2')),
     path('bookbikerescue', include(
         ('bookbikerescue.urls', 'bookbikerescue'),
@@ -43,6 +47,21 @@ urlpatterns = [
     path('admin_backend', include(
         ('admin_backend.urls', 'admin_backend'),
         namespace='admin_backend')),
+    path('api_pdf/', include(
+        ('pdf_sign.urls', 'pdf_sign'),
+        namespace='pdf_sign')),
+    path('parking_api/', include(
+        ('parking.urls', 'parking_app'),
+        namespace='parking_app')),
+
+    #  calendar URLS
+    path('calendar', include('calendar_app.urls')),
+    path('manifest', include('manifest_app.urls')),
+
+    path('s3_uploader', include(
+        ('s3_uploader.urls', 's3_uploader'),
+        namespace='s3_uploader')),
+
 
         #  calendar URLS
 # path('calendar' , include('calendar_app.urls'))

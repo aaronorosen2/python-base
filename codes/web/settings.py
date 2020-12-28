@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'knox',
+    'django_rest_passwordreset',
     'sfapp',
     'sfapp2',
     'storages',
@@ -44,7 +48,7 @@ INSTALLED_APPS = [
     'voip',
     'courses',
     'video',
-    # 'channels',
+    'channels',
     'notifications',
     'rest_framework',
     'courses_api',
@@ -54,6 +58,9 @@ INSTALLED_APPS = [
     'form_lead.apps.FormLeadConfig',
     # added by dextersol
     'calendar_app',
+    'manifest_app',
+    's3_uploader',
+    'parking'
 ]
 
 MIDDLEWARE = [
@@ -66,6 +73,20 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+# Braintree Settings
+
+if DEBUG:
+    # test keys
+    BT_ENVIRONMENT = 'sandbox'
+    BT_MERCHANT_ID = '26343xxtxwwwgfqs'
+    BT_PUBLIC_KEY = 'nj723gtbqz2s6229'
+    BT_PRIVATE_KEY = '6998bfeb28304c9b97c59460791f84ed'
+else:
+    # live keys
+    BT_ENVIRONMENT = ''
+    BT_MERCHANT_ID = ''
+    BT_PUBLIC_KEY = ''
+    BT_PRIVATE_KEY = ''
 CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'web.urls'
 
@@ -76,9 +97,10 @@ TWILIO = {
 }
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_ACCESS_KEY_ID = 'AKIAU7EQAGZOM3PXN4YN'
-AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'sfapp-v2'
+AWS_ACCESS_KEY_ID = 'AKIAYMPAXPYXGBUSLCO6'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'sfappv2'
+
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 
 
@@ -115,6 +137,17 @@ DATABASES = {
         'PASSWORD': 'EhB4bINnDFmzI0Bg'
     }
 }
+# testing
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#         'PASSWORD': 'Digitallab'
+#     }
+# }
 
 
 # Password validation
@@ -136,6 +169,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Make knox’s Token Authentication default
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'knox.auth.TokenAuthentication',
+    ]
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -154,12 +196,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR , 'static') , ]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CHANNEL_LAYERS = {
     "default": {
@@ -170,6 +211,36 @@ CHANNEL_LAYERS = {
     },
 }
 
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_BEAT_SCHEDULE = {
+    'schedule_member': {
+        'task': 'web.celery.schedule_member',
+        'schedule': timedelta(seconds=50)  # execute every minute
+    },
+    'room_details': {
+        'task': 'web.celery.room_details',
+        'schedule': timedelta(seconds=1)  # execute every seconds
+    }
+}
 
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
+
+# Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'user@gmail.com'
+EMAIL_HOST_PASSWORD = 'user-token'
+DEFAULT_FROM_EMAIL = 'user@gmail.com'
+
+# Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
+# output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+

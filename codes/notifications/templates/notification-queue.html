@@ -1,0 +1,81 @@
+<script>
+function init() {
+  var socket = new WebSocket('wss://' + window.location.host + '/notifications/admin/');
+  var container = document.getElementById('container')
+  socket.onopen = function open() {
+    console.log('WebSockets connection created.');
+  };
+  
+
+  socket.onmessage = function (event) {
+    // console.log(event.data)
+    web_socket_data = JSON.parse(event.data);
+    container.innerHTML = ''
+    var all_users = web_socket_data.all_users;
+    var row = "";
+    
+    for (var i=0; i < all_users.length; i++){
+      var liveUsersList = `<ul name="liveUsers" id="liveUsers">`;
+      var backUserList = `<ul name="backUsers" id="backUsers">`;
+      var live_user = all_users[i].live_users;
+      for (var j=0; j < live_user.length; j++){
+        liveUsersList += `<li>`+live_user[j]+`</li>`;
+      }
+      liveUsersList += `</ul>`
+      var back_user = all_users[i].back_users;
+      for (var k=0; k < back_user.length; k++){
+        backUserList += `<li>`+back_user[k]+`</li>`;
+      }
+      backUserList += `</ul>`;
+      row += `<div class="row">
+      <div class="column" style="background-color:#CACACA;">
+        <h2>`+ all_users[i].room_name +`</h2>
+        <div class="column">
+          <label for="liveUsers">Live Users:</label>`+liveUsersList+`
+        </div>
+        <div class="column">
+          <label for="backUsers">Backstage Users:</label>`+backUserList+`
+        </div>
+        
+      </div>
+      
+    </div>`;
+    
+    }
+    container.innerHTML += row
+  }
+  socket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly',e);
+  };
+  socket.onerror = function(e) {
+      console.error('Error From Websocket',e);
+  };
+
+  
+}
+
+window.addEventListener("DOMContentLoaded", init, false);
+
+
+</script>
+
+
+
+{% block content %}
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'notification/css/notification-admin.css' %}">
+  <h1>Admin Room Monitoring</h1>
+  <div id="container">
+    
+  </div>
+  
+{% endblock content %}
+
+{% block afterbody %}
+  <style>
+    *{
+      font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif
+    }
+  </style>
+{% endblock afterbody %}
+

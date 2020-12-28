@@ -13,8 +13,8 @@ def send_raw_email(to_email, reply_to, subject,
     msg.set_charset("utf-8")
     msg['Subject'] = subject
     msg['From'] = SENDER
-    msg['To'] = to_email
-    msg['Reply-to'] = reply_to
+    msg['To'] = ", ".join(to_email)
+    msg['Reply-to'] = ",".join(reply_to)
 
     CHARSET = "utf-8"
     textpart = MIMEText(message_text.encode(CHARSET), 'plain', CHARSET)
@@ -35,10 +35,11 @@ def send_raw_email(to_email, reply_to, subject,
         'ses', aws_access_key_id='AKIAU7EQAGZOOVFPYIWO',
         aws_secret_access_key='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',
         region_name='us-west-1')
+
     try:
         print(
             client.send_raw_email(
                 RawMessage={'Data': msg.as_string()},
-                Source=SENDER, Destinations=[to_email]))
-    except Exception as e:
+                Source=SENDER, Destinations=to_email))
+    except Exception as e:  
         print(f"ERROR here!@!!! {e}")

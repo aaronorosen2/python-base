@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>S3 Uploader</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+</head>
+<body>
+
+<h2>S3 Uploader</h2>
+
+<form id="fileinfo" enctype="multipart/form-data" name="fileinfo">
+    <label>Select File:</label>
+    <input type="file" name="file" required/>
+    <button type="submit" value="Stash the file!">Upload</button>
+</form>
+
+<hr>
+
+<div id="output">
+
+
+</div>
+
+<script>
+var SERVER = 'https://sfapp-api.dreamstate-4-all.org/'
+// var SERVER = 'http://localhost:8001/'
+
+$(document).ready(function(){
+
+    console.log("ready");
+
+    $('#fileinfo').submit(function(e) {
+        e.preventDefault();
+        console.log("Submitted");
+
+        swal({
+            title: "0%",
+            text: "File uploading please wait.",
+            icon: "info",
+            buttons: false,
+            closeOnEsc: false,
+            closeOnClickOutside: false,
+        });
+
+        var form = new FormData(this);
+
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "url": SERVER + 's3_uploader/upload',
+            "method": "POST",
+            "type": "POST",
+            "processData": false,
+            "contentType": false,
+            "mimeType": "multipart/form-data",
+            "data": form,
+            "headers": {
+                "Authorization": localStorage.getItem("token")
+            }
+        };
+
+        console.log(settings);
+        $.ajax(settings).done(function (response) {
+            swal({
+                  title: "Good job!",
+                  text: "File uploaded successfully!",
+                  icon: "success",
+            });
+
+            response = JSON.parse(response);
+            console.log(response);
+            file_url = response['file_url']
+            console.log(file_url);
+            $('#output').html("<div> Uploaded to S3 Url: "+ file_url + "</div>");
+
+            var img = $('<img>');
+            img.attr('src', file_url);
+            img.appendTo('#output');
+        }).fail(function (response) {
+            swal({
+                  title: "Error!",
+                  text: "File upload failed!",
+                  icon: "warning",
+            });
+        });
+    });
+
+});
+</script>
+
+</body>
+</html>

@@ -5,3 +5,6 @@ def notify(request):
 
 def notification(request):
     return render(request, "getnotification.html")
+
+def admin_monitoring(request):
+    return render(request, "notification-queue.html")

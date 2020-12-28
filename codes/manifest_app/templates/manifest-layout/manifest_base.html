@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% include 'manifest-layout/manifest_head.html' %}
+    
+    <body>
+        
+        
+    {% include 'manifest-layout/manifest_nav.html' %}
+    {% include 'manifest-layout/manifest_messages.html' %}
+    {% block content %}
+    {% endblock content %}
+</body>
+
+{% include 'manifest-layout/manifest_footer.html' %}
+
+</html>
