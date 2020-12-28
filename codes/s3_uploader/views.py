@@ -1,4 +1,5 @@
 import logging
+import mimetypes
 import os
 import uuid
 
@@ -205,7 +206,8 @@ def upload_to_s3(s3_key, uploaded_file):
         print("Use host. key or secret found")
         s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
 
-    s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key, ExtraArgs={'ACL': 'public-read'})
+    content_type, _ = mimetypes.guess_type(s3_key)
+    s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key, ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
 
     return f'https://s3.amazonaws.com/{bucket_name}/{s3_key}'
 
