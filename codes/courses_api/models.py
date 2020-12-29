@@ -33,11 +33,12 @@ class UserSessionEvent(models.Model):
         return self.end_time - self.start_time
 
 class UserSession(models.Model):
-    session_id = models.CharField(max_length=256)
+    session_id = models.CharField(max_length=256, blank=True, null=True)
     created_at = models.DateTimeField(auto_now=True)
 
 class FlashCardResponse(models.Model):
-    user_session = models.ForeignKey(UserSession, on_delete=models.CASCADE)
+    user_session = models.ForeignKey(
+        UserSession, on_delete=models.CASCADE, null=True, blank=True)
     flashcard = models.ForeignKey(FlashCard,on_delete=models.CASCADE)
     answer = models.CharField(max_length=250)
     signature = models.TextField(blank=True, null=True,default='')
