@@ -62,6 +62,9 @@ urlpatterns = [
         ('s3_uploader.urls', 's3_uploader'),
         namespace='s3_uploader')),
 
+    path('signature_api/', include(
+            ('signature.urls', 'signature_api'),
+            namespace='signature_app')),
 
         #  calendar URLS
 # path('calendar' , include('calendar_app.urls'))
