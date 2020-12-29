@@ -16,5 +16,6 @@ urlpatterns = [
     path("session/create/<int:flashcardId>/",views.session_create,name="session-create"),
     path("session/list",views.session_list,name="session-list"),
     path("session/update/<int:flashcardId>/<int:pk>/",views.session_update,name="session-update"),
-    path("flashcard/response/",views.flashcard_response, name="flashcard-response")
+    path("flashcard/response/",views.flashcard_response, name="flashcard-response"),
+    path("session/get",views.get_user_session, name="get-user-session")
 ]

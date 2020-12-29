@@ -9,6 +9,7 @@ from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
+from .models import UserSession
 import json
 import uuid
 import datetime
@@ -232,3 +233,12 @@ def flashcard_response(request):
     flashcard_response = FlashCardResponse(user=user,flashcard=flashcard,answer=answer)
     flashcard_response.save()
     return Response("Response Recorded")
+
+@api_view(['GET'])
+def get_user_session(response):
+    user_session = UserSession()
+    user_session.session_id = str(uuid.uuid4())
+    user_session.save()
+
+    return Response({'message': 'success',
+    'session_id': user_session.session_id})

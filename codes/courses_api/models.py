@@ -32,8 +32,12 @@ class UserSessionEvent(models.Model):
     def duration(self):
         return self.end_time - self.start_time
 
+class UserSession(models.Model):
+    session_id = models.CharField(max_length=256)
+    created_at = models.DateTimeField(auto_now=True)
+
 class FlashCardResponse(models.Model):
-    user = models.ForeignKey(UserSessionEvent,on_delete=models.CASCADE)
+    user_session = models.ForeignKey(UserSession, on_delete=models.CASCADE)
     flashcard = models.ForeignKey(FlashCard,on_delete=models.CASCADE)
     answer = models.CharField(max_length=250)
     signature = models.TextField(blank=True, null=True,default='')
