@@ -1,0 +1,67 @@
+
+   
+  <div class="modal fade" id="eventmodel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: #EB7E4D; color: #fff;">
+          <h5 class="modal-title" id="exampleModalLabel">Book bike rescue </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+         <form action="{% url 'bookbikerescue:create-evetn' %}" method="post">
+             {% csrf_token %}
+
+                 <input type="text" id="title" name="name" placeholder="Enter your name" class="form-control form-group" required>      
+                 <input type="email" name="email" placeholder="Enter email name" class="form-control form-group" required>
+                 <input type="number"  name="phone" placeholder="Enter phone number "  class="form-control form-group" required>
+                 <input type="datetime" class="form-control form-group" id="date" name="date"  readonly>
+                 <select name="start_time" class="form-control form-group" id="">
+                  <option selected disabled>start time</option>
+                  <option value="2:15">2:15</option>
+                   <option value="2:30">2:30</option>
+                   <option value="2:45">2:45</option>
+                   <option value="3:00">3:00</option>
+                   <option value="4:15">4:15</option>
+                   <option value="4:30">4:30</option>
+                   <option value="4:45">4:45</option>
+                   <option value="5:00">5:00</option>
+                   <option value="5:15">5:15</option>
+                   <option value="5:30">5:30</option>
+                   <option value="5:45">5:45</option>
+                   <option value="6:00">6:00</option>
+                   <option value="6:15">6:15</option>
+                   <option value="6:30">6:30</option>
+                   <option value="6:45">6:45</option>
+                   <option value="7:00">7:00</option>
+                 </select>
+
+                 <select name="end_time" class="form-control form-group" id="">
+                   <option selected disabled>endtime</option>
+                   <option value="2:15">2:15</option>
+                   <option value="2:30">2:30</option>
+                   <option value="2:45">2:45</option>
+                   <option value="3:00">3:00</option>
+                   <option value="4:15">4:15</option>
+                   <option value="4:30">4:30</option>
+                   <option value="4:45">4:45</option>
+                   <option value="5:00">5:00</option>
+                   <option value="5:15">5:15</option>
+                   <option value="5:30">5:30</option>
+                   <option value="5:45">5:45</option>
+                   <option value="6:00">6:00</option>
+                   <option value="6:15">6:15</option>
+                   <option value="6:30">6:30</option>
+                   <option value="6:45">6:45</option>
+                   <option value="7:00">7:00</option>
+                 </select>
+                 
+                 <div class="modal-footer">
+               <button type="submit" class="btn btn-primary">Create</button>
+             </div>
+         </form>
+        </div>
+      </div>
+    </div>
+  </div>

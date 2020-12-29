@@ -36,3 +36,4 @@ class FlashCardResponse(models.Model):
     user = models.ForeignKey(UserSessionEvent,on_delete=models.CASCADE)
     flashcard = models.ForeignKey(FlashCard,on_delete=models.CASCADE)
     answer = models.CharField(max_length=250)
+    signature = models.TextField(blank=True, null=True,default='')
