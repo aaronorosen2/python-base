@@ -16,8 +16,13 @@ class FlashCard(models.Model):
     image = models.CharField(max_length=250)
     position = models.IntegerField()
 
+class UserSession(models.Model):
+    session_id = models.CharField(max_length=256, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now=True)
+    
 class UserSessionEvent(models.Model):
     flash_card = models.ForeignKey(FlashCard, on_delete=models.CASCADE)
+    user_session = models.ForeignKey(UserSession, on_delete=models.CASCADE, null=True, blank=True)
     ip_address = models.CharField(max_length=15, blank=True, null=True)
     user_device = models.CharField(max_length=100, blank=True, null=True)
     start_time = models.DateTimeField(auto_now_add=True)
@@ -32,13 +37,8 @@ class UserSessionEvent(models.Model):
     def duration(self):
         return self.end_time - self.start_time
 
-class UserSession(models.Model):
-    session_id = models.CharField(max_length=256, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now=True)
-
 class FlashCardResponse(models.Model):
-    user_session = models.ForeignKey(
-        UserSession, on_delete=models.CASCADE, null=True, blank=True)
+    user_session = models.ForeignKey(UserSession, on_delete=models.CASCADE, null=True, blank=True)
     flashcard = models.ForeignKey(FlashCard,on_delete=models.CASCADE)
     answer = models.CharField(max_length=250)
     signature = models.TextField(blank=True, null=True,default='')
