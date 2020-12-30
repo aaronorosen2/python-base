@@ -24,6 +24,7 @@ class UserSession(models.Model):
     created_at = models.DateTimeField(auto_now=True)
     phone = models.CharField(max_length=20, null=True)
     name = models.CharField(max_length=128, blank=True, null=True)
+    email = models.EmailField(max_length=254, blank=True, null=True)
 
 
 class UserSessionEvent(models.Model):
