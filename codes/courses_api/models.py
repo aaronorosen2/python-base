@@ -22,6 +22,8 @@ class FlashCard(models.Model):
 class UserSession(models.Model):
     session_id = models.CharField(max_length=256, blank=True, null=True)
     created_at = models.DateTimeField(auto_now=True)
+    phone = models.CharField(max_length=20, null=True)
+    name = models.CharField(max_length=128, blank=True, null=True)
 
 
 class UserSessionEvent(models.Model):
