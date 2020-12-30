@@ -23,6 +23,8 @@ class UserSession(models.Model):
     session_id = models.CharField(max_length=256, blank=True, null=True)
     created_at = models.DateTimeField(auto_now=True)
     phone = models.CharField(max_length=20, null=True)
+    code_2fa = models.CharField(max_length=20, blank=True, null=True)
+    has_verified_phone = models.BooleanField(default=False)
     name = models.CharField(max_length=128, blank=True, null=True)
     email = models.EmailField(max_length=254, blank=True, null=True)
 
