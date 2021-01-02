@@ -24,5 +24,11 @@ urlpatterns = [
          views.session_update, name="session-update"),
     path("flashcard/response/",
          views.flashcard_response, name="flashcard-response"),
+
+    path("lesson/response/get/<str:lesson_id>/<str:session_id>",
+         views.lesson_flashcard_responses, name="get-lesson-response"),
+    path("lesson/response/get/<str:lesson_id>/",
+         views.overall_flashcard_responses, name="get-lesson-response"),
+         
     path("session/get", views.get_user_session, name="get-user-session")
 ]

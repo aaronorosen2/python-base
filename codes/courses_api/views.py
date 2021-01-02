@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer
 from .serializers import UserSessionEventSerializer
+from .serializers import FlashcardResponseSerializer
 from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
@@ -249,6 +250,19 @@ def flashcard_response(request):
             answer=answer)
     flashcard_response.save()
     return Response("Response Recorded")
+
+@api_view(['GET'])
+def lesson_flashcard_responses(request,lesson_id,session_id):
+    user_session = UserSession.objects.get(session_id=session_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    flashcard_responses = FlashCardResponse.objects.filter(user_session=user_session,lesson=lesson)
+    return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
+
+@api_view(['GET'])
+def overall_flashcard_responses(request,lesson_id):
+    lesson = Lesson.objects.get(id=lesson_id)
+    flashcard_responses = FlashCardResponse.objects.filter(lesson=lesson)
+    return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
 
 @api_view(['GET'])
 def get_user_session(response):
