@@ -234,7 +234,7 @@ def flashcard_response(request):
     print("%s %s %s" % (user_session, flashcard, answer))
 
     # first check if we have FlashCardResponse
-    flashcard_response = FlashCardResponse(
+    flashcard_response = FlashCardResponse.objects.filter(
         user_session=user_session,
         lesson=flashcard.lesson,
         flashcard=flashcard).first()
