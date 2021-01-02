@@ -227,13 +227,13 @@ def session_update(request, flashcardId, pk):
 def flashcard_response(request):
     flashcard_id = request.data['flashcard']
     session_id = request.data['session_id']
-    user = UserSessionEvent.objects.get(id=session_id)
     answer = request.data['answer']
     flashcard = FlashCard.objects.get(id=flashcard_id)
-    flashcard_response = FlashCardResponse(user=user,flashcard=flashcard,answer=answer)
+    user_session = UserSession.objects.get(session_id=session_id)
+    flashcard_response = FlashCardResponse(user_session=user_session,flashcard=flashcard,answer=answer)
     flashcard_response.save()
     return Response("Response Recorded")
-
+    
 @api_view(['GET'])
 def get_user_session(response):
     user_session = UserSession()
