@@ -231,7 +231,11 @@ def flashcard_response(request):
     flashcard = FlashCard.objects.get(id=flashcard_id)
     user_session = UserSession.objects.get(session_id=session_id)
     print("%s %s %s" % (user_session, flashcard, answer))
-    flashcard_response = FlashCardResponse(user_session=user_session,flashcard=flashcard,answer=answer)
+    flashcard_response = FlashCardResponse(
+        user_session=user_session,
+        lesson=flashcard.lesson,
+        flashcard=flashcard,
+        answer=answer)
     flashcard_response.save()
     return Response("Response Recorded")
 
