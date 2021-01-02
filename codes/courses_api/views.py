@@ -230,10 +230,11 @@ def flashcard_response(request):
     answer = request.data['answer']
     flashcard = FlashCard.objects.get(id=flashcard_id)
     user_session = UserSession.objects.get(session_id=session_id)
+    print("%s %s %s" % (user_session, flashcard, answer))
     flashcard_response = FlashCardResponse(user_session=user_session,flashcard=flashcard,answer=answer)
     flashcard_response.save()
     return Response("Response Recorded")
-    
+
 @api_view(['GET'])
 def get_user_session(response):
     user_session = UserSession()
