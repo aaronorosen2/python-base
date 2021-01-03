@@ -62,5 +62,12 @@ urlpatterns = [
         ('s3_uploader.urls', 's3_uploader'),
         namespace='s3_uploader')),
 
+    path('signature_api/', include(
+            ('signature.urls', 'signature_api'),
+            namespace='signature_app')),
+
+        #  calendar URLS
+# path('calendar' , include('calendar_app.urls'))
+    
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

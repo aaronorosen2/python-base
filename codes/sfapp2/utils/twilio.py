@@ -21,6 +21,19 @@ def send_sms(to_number, body):
 
     client.api.messages.create(to_number, from_=twilio_number, body=body)
 
+def send_sms_file(to_number,media_url):
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    twilio_number = settings.TWILIO['TWILIO_NUMBER']
+    client = Client(account_sid, auth_token)
+    message = client.messages.create(
+         media_url=[media_url],
+         from_=twilio_number,
+         to=to_number
+     )
+    # print(message)
+
+
 def list_sms(to_number):
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
