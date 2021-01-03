@@ -5,10 +5,12 @@ from rest_framework.response import Response
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer
 from .serializers import UserSessionEventSerializer
+from .serializers import FlashcardResponseSerializer
 from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
+from courses_api.models import UserSession
 import json
 import uuid
 import datetime
@@ -226,9 +228,47 @@ def session_update(request, flashcardId, pk):
 def flashcard_response(request):
     flashcard_id = request.data['flashcard']
     session_id = request.data['session_id']
-    user = UserSessionEvent.objects.get(id=session_id)
     answer = request.data['answer']
     flashcard = FlashCard.objects.get(id=flashcard_id)
-    flashcard_response = FlashCardResponse(user=user,flashcard=flashcard,answer=answer)
+    user_session = UserSession.objects.get(session_id=session_id)
+    print("%s %s %s" % (user_session, flashcard, answer))
+
+    # first check if we have FlashCardResponse
+    flashcard_response = FlashCardResponse.objects.filter(
+        user_session=user_session,
+        lesson=flashcard.lesson,
+        flashcard=flashcard).first()
+
+    if flashcard_response:
+        # update answer...
+        flashcard_response.answer = answer
+    else:
+        flashcard_response = FlashCardResponse(
+            user_session=user_session,
+            lesson=flashcard.lesson,
+            flashcard=flashcard,
+            answer=answer)
     flashcard_response.save()
     return Response("Response Recorded")
+
+@api_view(['GET'])
+def lesson_flashcard_responses(request,lesson_id,session_id):
+    user_session = UserSession.objects.get(session_id=session_id)
+    lesson = Lesson.objects.get(id=lesson_id)
+    flashcard_responses = FlashCardResponse.objects.filter(user_session=user_session,lesson=lesson)
+    return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
+
+@api_view(['GET'])
+def overall_flashcard_responses(request,lesson_id):
+    lesson = Lesson.objects.get(id=lesson_id)
+    flashcard_responses = FlashCardResponse.objects.filter(lesson=lesson)
+    return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
+
+@api_view(['GET'])
+def get_user_session(response):
+    user_session = UserSession()
+    user_session.session_id = str(uuid.uuid4())
+    user_session.save()
+
+    return Response({'message': 'success',
+    'session_id': user_session.session_id})

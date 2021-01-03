@@ -60,7 +60,8 @@ INSTALLED_APPS = [
     'calendar_app',
     'manifest_app',
     's3_uploader',
-    'parking'
+    'parking',
+    'signature'
 ]
 
 MIDDLEWARE = [
