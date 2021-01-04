@@ -229,6 +229,7 @@ def flashcard_response(request):
     flashcard_id = request.data['flashcard']
     session_id = request.data['session_id']
     answer = request.data['answer']
+    signature = request.data['signature']
     flashcard = FlashCard.objects.get(id=flashcard_id)
     user_session = UserSession.objects.get(session_id=session_id)
     print("%s %s %s" % (user_session, flashcard, answer))
@@ -247,7 +248,8 @@ def flashcard_response(request):
             user_session=user_session,
             lesson=flashcard.lesson,
             flashcard=flashcard,
-            answer=answer)
+            answer=answer,
+             signature=signature)
     flashcard_response.save()
     return Response("Response Recorded")
 
