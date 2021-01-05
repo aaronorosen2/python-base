@@ -7,8 +7,12 @@ from django_rest_passwordreset.signals import reset_password_token_created
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-    reset_url = 'http://localhost:8001' + "{}?token={}".format(reverse('courses:password_reset:reset-password-request'),
-                                                               reset_password_token.key)
+    # Link to password reset page
+    SERVER_URL = "https://sfapp.dreamstate-4-all.org"
+    # SERVER_URL = "http://localhost:8084"
+
+    reset_url = "{}/cardone.html?token={}".format(SERVER_URL, reset_password_token.key)
+
 
     email_plaintext_message = f'''To reset your password, visit the following link: 
 

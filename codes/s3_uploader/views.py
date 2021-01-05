@@ -56,7 +56,15 @@ class UserLogin(KnoxLoginView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
+        data = request.data
+
+        # Allow login using username/email both
+        try:
+            data['username'] = data['email']
+        except:
+            pass
+
+        serializer = AuthTokenSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         login(request, user)
@@ -117,11 +125,14 @@ class ChangePasswordView(generics.UpdateAPIView):
 # '''
 
 class S3SignedUrl(generics.GenericAPIView):
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
-    def get(self, request, *args, **kwargs):
-        os.environ['S3_USE_SIGV4'] = 'True'
+    def post(self, request, *args, **kwargs):
+        # os.environ['S3_USE_SIGV4'] = 'True'
+
+        # TODO: Implement auth here
+        member = 1
+        if not member:
+            return JsonResponse({'message': 'not logged in'})
 
         # Get form fields
         seconds_per_day = 24 * 60 * 60
@@ -134,12 +145,13 @@ class S3SignedUrl(generics.GenericAPIView):
         # Get pre-signed post url and fields
         resp = get_presigned_s3_url(object_name=final_file_name, expiration=seconds_per_day)
 
-        del os.environ['S3_USE_SIGV4']
+        # del os.environ['S3_USE_SIGV4']
 
         print(resp)
         return JsonResponse(resp)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class MakeS3FilePublic(generics.GenericAPIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
@@ -186,10 +198,10 @@ class S3Upload(generics.GenericAPIView):
             file_name_uuid = uuid_file_path(file_name)
             s3_key = 'Test/upload/{0}'.format(file_name_uuid)
 
-            file_url = upload_to_s3(s3_key, uploaded_file)
+            content_type, file_url = upload_to_s3(s3_key, uploaded_file)
             print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
 
-            return JsonResponse({'message': 'Success!', 'file_url': file_url})
+            return JsonResponse({'message': 'Success!', 'file_url': file_url, 'content_type': content_type})
         else:
             return JsonResponse({'message': 'No file provided!'})
 
@@ -207,9 +219,10 @@ def upload_to_s3(s3_key, uploaded_file):
         s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
 
     content_type, _ = mimetypes.guess_type(s3_key)
-    s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key, ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
+    s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key,
+                             ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
 
-    return f'https://s3.amazonaws.com/{bucket_name}/{s3_key}'
+    return content_type, f'https://s3.amazonaws.com/{bucket_name}/{s3_key}'
 
 
 def get_presigned_s3_url(object_name, expiration=3600):
@@ -218,24 +231,32 @@ def get_presigned_s3_url(object_name, expiration=3600):
     secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
 
     if not key or not secret:
-        print("No key or secret found")
+        print("No Access Key and Secret Found")
         s3_client = boto3.client('s3')
     else:
-        print("Use host. key or secret found")
+        print("Access Key and Secret Found")
         s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
+
+    # Get content type
+    content_type, _ = mimetypes.guess_type(object_name)
 
     # Generate a presigned S3 POST URL
     try:
         response = s3_client.generate_presigned_post(bucket_name,
                                                      object_name,
-                                                     Fields=None,
-                                                     Conditions=None,
+                                                     Fields={"Content-Type": content_type,
+                                                             "acl": "public-read"},
+                                                     Conditions=[
+                                                         {"Content-Type": content_type},
+                                                         {"acl": "public-read"},
+                                                     ],
                                                      ExpiresIn=expiration)
     except ClientError as e:
         logging.error(e)
         return None
 
     # The response contains the presigned URL and required fields
+    response['content_type'] = content_type
     return response
 
 
