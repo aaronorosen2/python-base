@@ -178,6 +178,10 @@ REST_FRAMEWORK = {
         'knox.auth.TokenAuthentication',
     ]
 }
+# KNOX
+REST_KNOX = {
+  'USER_SERIALIZER': 's3_uploader.serializers.UserSerializer',
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

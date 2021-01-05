@@ -56,7 +56,15 @@ class UserLogin(KnoxLoginView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
-        serializer = AuthTokenSerializer(data=request.data)
+        data = request.data
+
+        # Allow login using username/email both
+        try:
+            data['username'] = data['email']
+        except:
+            pass
+
+        serializer = AuthTokenSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         login(request, user)
