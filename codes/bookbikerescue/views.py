@@ -12,6 +12,7 @@ from django.views import View
 
 from .models import Event
 from .utils import Calendar
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 
 class XFrameOptionsExemptMixin:
@@ -54,6 +55,7 @@ class MonthCalendar(XFrameOptionsExemptMixin, View):
         context['prev'] = prev_month(date)
         context['next'] = next_month(date)
         return render(request, "calendar.html", context)
+
 
 class CreateEvent(XFrameOptionsExemptMixin, View):
     def post(self, request, *args, **kwargs):
