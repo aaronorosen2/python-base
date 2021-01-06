@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'parking',
     'signature',
     'dreamreader',
+    'neighbormade',
 ]
 
 MIDDLEWARE = [
