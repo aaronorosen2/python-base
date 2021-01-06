@@ -61,7 +61,8 @@ INSTALLED_APPS = [
     'manifest_app',
     's3_uploader',
     'parking',
-    'signature'
+    'signature',
+    'dreamreader',
 ]
 
 MIDDLEWARE = [
