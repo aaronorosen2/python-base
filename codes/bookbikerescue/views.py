@@ -14,6 +14,8 @@ from .models import Event
 from .utils import Calendar
 from django.views.decorators.clickjacking import xframe_options_exempt
 
+from    sfapp2.utils.twilio import send_sms
+from form_lead.utils.email_util import send_raw_email
 
 class XFrameOptionsExemptMixin:
     @xframe_options_exempt
@@ -74,6 +76,14 @@ class CreateEvent(XFrameOptionsExemptMixin, View):
             email=email,
             phone=phone
             )
+        send_sms('8434259777', 'test body')
+        send_raw_email(
+            to_email=[ 'usman8279@outlook.com', ],
+             reply_to=['test@test.com',],
+              subject='test Subject',
+            message_text='test message',
+        )
+
         messages.success(request,
                          f"Event has been created {start_time} - {end_time}.")
         return redirect('bookbikerescue:calendar')
