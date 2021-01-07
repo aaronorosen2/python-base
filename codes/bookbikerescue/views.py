@@ -78,8 +78,8 @@ class CreateEvent(XFrameOptionsExemptMixin, View):
             )
         send_sms('8434259777', 'test body')
         send_raw_email(
-            to_email=[ 'usman8279@outlook.com', ],
-             reply_to=['test@test.com',],
+            to_email= ['aaronorosen@gmail.com',],
+             reply_to=['test@test.com',], 
               subject='test Subject',
             message_text='test message',
         )
