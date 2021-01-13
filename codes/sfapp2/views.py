@@ -239,10 +239,10 @@ def del_med(request, med_id):
 
 @csrf_exempt
 def list_questions(request):
-    questions = Question.objects.filter().values().all()
+    questions = Question.objects.filter().order_by('id').values().all()
     for question in questions:
         question['choices'] = list(Choice.objects.filter(
-            question__id=question['id']).order_by('-id').values().all())
+            question__id=question['id']).values().all())
 
     print(questions)
 
@@ -273,7 +273,8 @@ def test_product(request):
     return render(request, 'test/product.html')
 
 
-def get_presigned_video_url(object_name, expiration=3600, fields=None, conditions=None):
+def get_presigned_video_url(object_name, expiration=3600,
+                            fields=None, conditions=None):
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
     secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
@@ -283,7 +284,8 @@ def get_presigned_video_url(object_name, expiration=3600, fields=None, condition
         s3_client = boto3.client('s3')
     else:
         print("Use host. key or secret found")
-        s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
+        s3_client = boto3.client('s3', aws_access_key_id=key,
+                                 aws_secret_access_key=secret)
 
     # Generate a presigned S3 POST URL
     try:
