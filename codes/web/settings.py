@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'signature',
     'dreamreader',
     'neighbormade',
+    'classroom',
 ]
 
 MIDDLEWARE = [
