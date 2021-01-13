@@ -1,3 +1,4 @@
+import math
 import time
 import json
 import uuid
@@ -33,7 +34,8 @@ def get_services(request):
         population_types += to_list(service.population_list)
 
         # print(to_list(service.services_list))
-        if not float(service.latitude) or not float(service.longitude):
+        if (math.isnan(float(service.latitude)) or
+            math.isnan(float(service.longitude))):
             continue
         datas.append({
             'title': service.title,
