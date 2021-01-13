@@ -35,7 +35,7 @@ def get_services(request):
 
         # print(to_list(service.services_list))
         if (math.isnan(float(service.latitude)) or
-            math.isnan(float(service.longitude))):
+                math.isnan(float(service.longitude))):
             continue
         datas.append({
             'title': service.title,
@@ -242,7 +242,7 @@ def list_questions(request):
     questions = Question.objects.filter().values().all()
     for question in questions:
         question['choices'] = list(Choice.objects.filter(
-            question__id=question['id']).values().all())
+            question__id=question['id']).order_by('-id').values().all())
 
     print(questions)
 
