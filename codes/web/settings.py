@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'dreamreader',
     'neighbormade',
     'classroom',
+    'vconf',
 ]
 
 MIDDLEWARE = [
