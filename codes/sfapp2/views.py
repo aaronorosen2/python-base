@@ -33,7 +33,7 @@ def get_services(request):
         population_types += to_list(service.population_list)
 
         # print(to_list(service.services_list))
-        if not service.latitude or not service.longitude:
+        if not float(service.latitude) or not float(service.longitude):
             continue
         datas.append({
             'title': service.title,
