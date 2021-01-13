@@ -32,7 +32,9 @@ def get_services(request):
         service_types += to_list(service.services_list)
         population_types += to_list(service.population_list)
 
-        print(to_list(service.services_list))
+        # print(to_list(service.services_list))
+        if not service.latitude or not service.longitude:
+            continue
         datas.append({
             'title': service.title,
             'description': service.description,
@@ -55,7 +57,12 @@ def get_services(request):
         'service_types': service_types,
         'population_types': population_types,
     }
-    return JsonResponse(results, safe=False)
+
+    from django.http import HttpResponse
+    print(results)
+    return HttpResponse(json.dumps(results),
+                        content_type="application/json")
+    # return JsonResponse(results, safe=False)
 
 
 @csrf_exempt
