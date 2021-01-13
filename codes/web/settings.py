@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'knox',
+    'django_rest_passwordreset',
     'sfapp',
     'sfapp2',
     'storages',
@@ -57,6 +59,13 @@ INSTALLED_APPS = [
     # added by dextersol
     'calendar_app',
     'manifest_app',
+    's3_uploader',
+    'parking',
+    'signature',
+    'dreamreader',
+    'neighbormade',
+    'classroom',
+    'vconf',
 ]
 
 MIDDLEWARE = [
@@ -93,16 +102,17 @@ TWILIO = {
 }
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_ACCESS_KEY_ID = 'AKIAU7EQAGZOM3PXN4YN'
-AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'sfapp-v2'
+AWS_ACCESS_KEY_ID = 'AKIAYMPAXPYXGBUSLCO6'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'sfappv2'
+
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR + '/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -164,6 +174,19 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Make knox’s Token Authentication default
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'knox.auth.TokenAuthentication',
+    ]
+}
+# KNOX
+REST_KNOX = {
+  'USER_SERIALIZER': 's3_uploader.serializers.UserSerializer',
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -182,7 +205,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -214,5 +236,15 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': timedelta(seconds=1)  # execute every seconds
     }
 }
+
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
+
+# Email
+EMAIL_BACKEND = 'django_ses.SESBackend'
+AWS_ACCESS_KEY_ID = 'AKIAIHFAW4CMLKGZJWQQ'
+AWS_SECRET_ACCESS_KEY = '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'
+DEFAULT_FROM_EMAIL = 'mail-api@dreampotential.org'
+
+# Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
+# output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS

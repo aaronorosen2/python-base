@@ -24,6 +24,12 @@ class Member(models.Model):
     question_answers = models.TextField(blank=True, null=True)
 
 
+class MemberMonitor(models.Model):
+    member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
+                               default="")
+    notify_email = models.EmailField(max_length=512, blank=True, null=True)
+
+
 class GpsCheckin(models.Model):
     member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
                                default="")
@@ -31,6 +37,7 @@ class GpsCheckin(models.Model):
     lat = models.CharField(max_length=500, default='')
     lng = models.CharField(max_length=500, default='')
     created_at = models.DateTimeField(auto_now_add=True)
+
 
 class VideoUpload(models.Model):
     videoUrl = models.CharField(max_length=500)

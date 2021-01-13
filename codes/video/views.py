@@ -207,12 +207,17 @@ def get_presigned_s3_url(object_name, expiration=3600, fields=None, conditions=N
         print("Use host. key or secret found")
         s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
 
+    # Get content type
+    content_type, _ = mimetypes.guess_type(object_name)
+
     # Generate a presigned S3 POST URL
     try:
         response = s3_client.generate_presigned_post(bucket_name,
                                                      object_name,
-                                                     Fields=fields,
-                                                     Conditions=conditions,
+                                                     Fields={"Content-Type": content_type},
+                                                     Conditions=[
+                                                         {"Content-Type": content_type}
+                                                     ],
                                                      ExpiresIn=expiration)
     except ClientError as e:
         logging.error(e)

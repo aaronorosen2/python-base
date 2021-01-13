@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from sfapp2.utils.twilio import send_sms, list_sms
+from sfapp2.utils.twilio import send_sms, list_sms, send_sms_file
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -33,6 +33,14 @@ def get_client():
 def send_sms_api(request):
     send_sms(request.POST.get("to_number"),
              request.POST.get("msg"))
+    return JsonResponse({'message': 'success'})
+
+@csrf_exempt
+def send_sms_file_api(request):
+    send_sms_file(request.POST.get("to_number"),
+             request.POST.get("image"))
+    # print(request.POST.get("to_number"))
+    # print(request.POST.get("image"))
     return JsonResponse({'message': 'success'})
 
 @csrf_exempt

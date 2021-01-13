@@ -25,10 +25,9 @@ class Calendar(HTMLCalendar ):
 		if day != 0:
 		
 			return f"""<td><span class='date'>
-		  <a href="#eventmodel" data-toggle="modal"  > {day}</a>
+		  <a href="#eventmodel" data-toggle="modal" onclick="setDate({day},{self.year},{self.month})"> {day}</a>
 			</span>
 			<ul class="list-group custom"> {d} </ul>  
-			
 			</td>"""
 		return '<td></td>'
 

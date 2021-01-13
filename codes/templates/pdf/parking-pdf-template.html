@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
+    <link href="file:///D:\upwork\python-sfapp\codes\static\rest_framework\css\bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        body{
+            font-weight: 400;
+            font-size:13px !important;
+        }
+        li,p{
+            font-size: 16px !important;
+        }
+        .w-100{
+            width: 100% !important;
+        }
+        .text-nowrap {
+            white-space: nowrap!important;
+        }
+        .pt-3, .py-3 {
+            padding-top: 1rem!important;
+        }
+        .w-100 {
+            width: 100%!important;
+        }
+        .align-items-center {
+            -ms-flex-align: center!important;
+            align-items: center!important;
+        }
+        .justify-content-between {
+            -ms-flex-pack: justify!important;
+            justify-content: space-between!important;
+        }
+        .d-flex {
+            display: -ms-flexbox!important;
+            display: flex!important;
+        }
+        *, ::after, ::before {
+            box-sizing: border-box;
+        }       
+        .d-inline-block {
+            display: inline-block!important;
+        }
+        .align-items-center {
+            -ms-flex-align: center!important;
+            align-items: center!important;
+        }
+        
+        @media print {
+            body{
+                width: 21cm;
+                height: 29.7cm;
+                margin: 30mm 45mm 30mm 45mm; 
+            } 
+        }
+        
+        div.index-list-item{overflow:hidden;}
+        div.index-list-item strong:after { content: " ....................................................................................................................................................................................................................................";}
+        div.index-list-item strong{display: inline-block; max-width: 98%; overflow: hidden !important;}
+        div.index-list-item span{display: inline-block; max-width: 20px; text-align: end; overflow: hidden !important;}
+        @media screen {
+            div.divFooter {
+                /* display: none; */
+                position: fixed;
+                bottom: 0;
+            }
+        }
+        @media print {
+            div.divFooter {
+                position: fixed;
+                bottom: 0;
+            }
+        }
+        div.sfapp-header{
+            width: 80%!important;
+            margin: auto;
+            height: 145px !important;
+        }
+        .sfapp-w-100{
+            max-width: 120px !important;
+        }
+        .sfapp-w-150{
+            max-width: 150px !important;
+        }
+        strong{
+            font-weight: 600 !important;
+        }
+        .form-group {
+            margin-bottom: 0 !important;
+            max-height: 46px !important;
+        }
+        td{
+            color: #212121 !important;
+            padding: 4px !important;
+            text-align: left;
+            font-size: 14px !important;
+        }
+        table.table-bordered{
+            border:1px solid #212121;
+            margin-top:20px !important;
+        }
+        table.table-bordered > thead > tr > th{
+            border:1px solid #212121;
+        }
+        table.table-bordered > tbody > tr > td{
+            border:1px solid #212121;            
+        }
+        
+        .row {
+            display: -webkit-box; /* wkhtmltopdf uses this one */
+            display: flex;
+            -webkit-box-pack: justify; /* wkhtmltopdf uses this one */
+            justify-content: space-between;
+        }
+        
+        .row > div {
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            flex: 1;
+        }
+        
+        .row > div:last-child {
+            margin-right: 0;
+        }        
+    </style>
+</head>
+<body>
+    <script>
+        
+    </script>
+    <div class="container mt-5 mb-5" id="xyz">
+        <form id="parking-form" method="POST">
+            <div class="d-flex justify-content-between align-items-center w-80 sfapp-header p-3 border border-dark row" style="align-items: center;
+            width: 33%;">
+            <div class="text-center border-right border-dark p-1" style="width: 33%; height: 100% !important;">
+                <img src="{{data.src}}" alt="" srcset="" class="mt-0" height="130px" width="95%" >
+            </div>
+            <div class="text-center d-flex pt-3 pb-3 align-items-center" style="width: 67%; height: 100% !important; align-items: center;">
+                <div class="w-100">
+                    <h3 style="font-size: 23px; color: #009CCE;">
+                        Alameda County Homelessness Council
+                    </h3>
+                    <p style="color: #009CCE;">Alameda County Safe Parking Program – Fairmont Campus</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-5">
+            <h2 class="pl-3 pr-3" style="font-size: 28px; color: #009CCE;font-weight: 800;">
+                Alameda County Safe Parking Pilot
+                Participant Application, Screening, & Intake Paperwork
+            </h2>
+        </div>
+        <hr>
+        <div class="mt-5 mb-5">            
+            <h4 style="color: #009CCE;">Table of Contents</h4>
+            <div class="index-list"  style="">
+                <div class="d-flex justify-content-between align-items-center w-100 text-nowrap index-list-item pt-3">
+                    <strong>ELIGIBILITY SCREENING FORM </strong>
+                    <span class="d-inline-block">1</span>
+                </div>                
+            </div>
+            <div class="index-list">
+                <div class="d-flex justify-content-between align-items-center w-100 text-nowrap index-list-item pt-3">
+                    <strong>SAFE PARKING APPLICATION </strong>
+                    <span class="d-inline-block">2</span>
+                </div>                
+            </div>
+            <div class="index-list">
+                <div class="d-flex justify-content-between align-items-center w-100 text-nowrap index-list-item pt-3">
+                    <strong>PROGRAM RULES & GUIDELINES </strong>
+                    <span class="d-inline-block">6</span>
+                </div>                
+            </div>
+            <div class="index-list">
+                <div class="d-flex justify-content-between align-items-center w-100 text-nowrap index-list-item pt-3">
+                    <strong style="max-width: 77%;">PARKING AUTHORIZATION PERMIT </strong>
+                    <span style="max-width: 23%;" class="d-inline-block">Error! Bookmark not defined.</span>
+                </div>                
+            </div>
+            <div class="index-list">
+                <div class="d-flex justify-content-between align-items-center w-100 text-nowrap index-list-item pt-3">
+                    <strong style="max-width: 77%;">HOUSING STABILIZATION PLAN TEMPLATE </strong>
+                    <span class="d-inline-block" style="max-width: 23%;">Error! Bookmark not defined.</span>
+                </div>                
+            </div>
+            <div class="index-list">
+                <div class="d-flex justify-content-between align-items-center w-100 text-nowrap index-list-item pt-3">
+                    <strong style="max-width: 77%;">Also: RECERTIFICATION PLAN TEMPLATE </strong>
+                    <span style="max-width: 23%;" class="d-inline-block">Error! Bookmark not defined.</span>
+                </div>                
+            </div>
+            <div class="index-list">
+                <div class="d-flex justify-content-between align-items-center w-100 text-nowrap index-list-item pt-3">
+                    <strong>SUGGESTED OR REQUIRED FORMS </strong>
+                    <span class="d-inline-block">7</span>
+                </div>                
+            </div>
+        </div>
+        
+        <div class="row mt-5 text-center" style="page-break-before: always;">            
+            <h4 class="w-100" style="color: #009CCE;font-weight: 800;">ELIGIBILITY SCREENING FORM</h4>
+        </div>
+        <div class="border border-dark">
+            <strong class="d-block p-3">Instructions:</strong>
+            <p class="pl-3 pr-3">Please complete the form below. Please let us know if you have any questions or need assistance to complete this form by contacting the Safe Parking Program. </p>
+            <div class="form-group row pl-3 pr-3">
+                <label for="inputEmail3MD" class="col-sm-2 col-form-label mt-1 sfapp-w-100"> Your Email:</label>
+                <div class="col-sm-10">
+                    <div class="md-form mt-0">
+                        <input type="email" id="abc" class="form-control" value="{{data.eligibility_user_email}}" name="eligibility_user_email" placeholder="">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row pl-3 pr-3">
+                <label for="inputEmail3MD" class="col-sm-2 col-form-label mt-1 sfapp-w-100">Your Phone:</label>
+                <div class="col-sm-10">
+                    <div class="md-form mt-0">
+                        <input type="email" class="form-control" value="{{data.eligibility_user_phone}}" name="eligibility_user_phone" placeholder="">
+                    </div>
+                </div>
+            </div>
+            
+            <table class="w-100 text-dark mt-2 table-bordered border-dark">
+                <tr>
+                    <td>Name:</td>
+                    <td><input type="text" value="{{data.eligibility_name}}" name="eligibility_name" class="w-100" style="border: 0;"></td>
+                    <td>Today's date: </td>
+                    <td><input type="text" value="{{data.eligibility_date}}" class="w-100" name="eligibility_date" style="border: 0;"></td>
+                </tr>                
+                <tr>
+                    <td>Phone #:</td>
+                    <td><input type="text" value="{{data.eligibility_phone}}" name="eligibility_phone" class="w-100" style="border: 0;"></td>
+                    <td>Email:</td>
+                    <td><input type="text" value="{{data.eligibility_email}}" class="w-100" name="eligibility_email" style="border: 0;"></td>
+                </tr>
+                <tr>
+                    <td>Date of Birth:</td>
+                    <td><input type="text" value="{{data.eligibility_dob}}" name="eligibility_dob" class="w-100" style="border: 0;"></td>
+                    <td>Age:</td>
+                    <td><input type="text" value="{{data.eligibility_age}}" name="eligibility_age" class="w-100" style="border: 0;"></td>
+                </tr>
+                <tr>
+                    <td>Gender:</td>
+                    <td><input type="text" value="{{data.eligibility_gender}}" name="eligibility_gender" class="w-100" style="border: 0;"></td>
+                    <td>Race: </td>
+                    <td><input type="text" value="{{data.eligibility_race}}" class="w-100" name="eligibility_race" style="border: 0;"></td>
+                </tr>
+                <tr>
+                    <td>City of Residence:</td>
+                    <td><input type="text" value="{{data.eligibility_city}}" name="eligibility_city" class="w-100" style="border: 0;"></td>
+                    <td>Disability? </td>
+                    <td>
+                        <div class="form-check form-check-inline">
+                            <input type="radio"  class="form-check-input" 
+                            {% if data.eligibility_disability == 'no' %}checked{% endif %}
+                            name="eligibility_disability" value="no">
+                            <label class="form-check-label" for="materialInline1">No</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" {% if data.eligibility_disability == 'yes' %}checked{% endif %} class="form-check-input" name="eligibility_disability" value="yes">
+                            <label class="form-check-label" for="materialInline2">Yes</label>
+                        </div>
+                    </td>
+                </tr>
+            </table>    
+        </div>
+        <table class="w-100 text-dark mt-4 mb-4 table-bordered border-dark">
+            <tr>
+                <td>Are you living in your personal vehicle?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.eligibility_personal_vehicle == 'no' %}checked{% endif %} value="no" name="eligibility_personal_vehicle">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.eligibility_personal_vehicle == 'yes' %}checked{% endif %} value="yes" name="eligibility_personal_vehicle">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>
+                </td>
+                <td>For how long? (e.g. # of months) </td>
+                <td><input type="text" value="{{data.eligibility_how_long}}" name="eligibility_how_long" class="w-100" style="border: 0;"></td>
+            </tr>                
+            <tr>
+                <td>Do you have a current driver’s license?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" {% if data.eligibility_dl == 'no' %}checked{% endif %} class="form-check-input" name="eligibility_dl" value="no">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" {% if data.eligibility_dl == 'yes' %}checked{% endif %}  class="form-check-input" name="eligibility_dl" value="yes">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>    
+                </td>
+                <td>Is your vehicle registration up to date?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" {% if data.eligibility_reg_ok == 'no' %}checked{% endif %} class="form-check-input" value="no" name="eligibility_reg_ok">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" {% if data.eligibility_reg_ok == 'yes' %}checked{% endif %} class="form-check-input" value="yes" name="eligibility_reg_ok">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>How many people are living with you in your vehicle?</td>
+                <td><input type="text" name="eligibility_people" value="{{data.eligibility_people}}" class="w-100" style="border: 0;"></td>
+                <td>Is there anyone 18 years old and younger living with you in your vehicle?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" {% if data.eligibility_18 == 'no' %}checked{% endif %} class="form-check-input" value="no" name="eligibility_18">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" value="yes" {% if data.eligibility_18 == 'yes' %}checked{% endif %} name="eligibility_18">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>    
+                </td>
+            </tr>
+            <tr>
+                <td>Is your vehicle an RV, bus, or converted van?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.eligibility_rv_or_van == 'no' %}checked{% endif %} value="no" name="eligibility_rv_or_van">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.eligibility_rv_or_van == 'yes' %}checked{% endif %} value="yes" name="eligibility_rv_or_van">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>   
+                </td>
+                <td class="table-dark"> </td>
+                <td class="table-dark"></td>
+            </tr>
+        </table>
+        
+        <table class="w-100 text-dark mt-4 table-bordered border-dark">
+            <caption style="caption-side: top;" class="bg-dark text-white text-center">For Use By Program Staff Only</caption>
+            <tr>
+                <td style="width: 322px;">Eligible for Safe Parking Program?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.eligibility_is_eligible == 'no' %}checked{% endif %} value="no" name="eligibility_is_eligible">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" value="yes" {% if data.eligibility_is_eligible == 'yes' %}checked{% endif %} name="eligibility_is_eligible">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>
+                </td>
+                <td style="width: 300px;">Added to Waitlist? </td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.eligibility_waitlisted == 'no' %}checked{% endif %} value="no" name="eligibility_waitlisted">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.eligibility_waitlisted == 'yes' %}checked{% endif %} value="yes" name="eligibility_waitlisted">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>    
+                </td>
+            </tr>                
+            <tr>
+                <td>If not eligible, what referral was made for the applicant?
+                    <ul class="list-group pl-5">
+                        <li class="p-1" aria-current="true">Date referral was sent</li>
+                        <li class="p-1">Name of referral provider</li>
+                        <li class="p-1">Email / phone used</li>
+                    </ul>
+                </td>
+                <td colspan="3">
+                    <input type="text" class="w-100" style="border: 0;">
+                    <ul class="list-group" style="list-style: none;">
+                        <li class="p-1" aria-current="true"><input type="text" value="{{data.eligibility_date_ref_sent}}" name="eligibility_date_ref_sent" class="w-100" style="border: 0;"></li>
+                        <li class="p-1"><input type="text" class="w-100" value="{{data.eligibility_name_ref_provider}}" name="eligibility_name_ref_provider" style="border: 0;"></li>
+                        <li class="p-1"><input type="text" class="w-100" value="{{data.eligibility_email_phn_used_for_ref}}" name="eligibility_email_phn_used_for_ref" style="border: 0;"></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>Staff Name</td>
+                <td colspan="3"><input type="text" class="w-100" value="{{data.eligibility_staff_name}}" name="eligibility_staff_name" style="border: 0;"></td>
+            </tr>
+            <tr>
+                <td>Staff Signature</td>
+                <td colspan="3">
+                    <input type="text" hidden name="eligibility_staff_sign" id="eligibility-staff-sign">
+                    {% if data.eligibility_staff_sign %}
+                    <img src="{{data.eligibility_staff_sign}}" id="eligible-sign" alt="" height="68px" srcset="">
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Date Complete</td>
+                <td colspan="3">
+                    <input type="text" value="{{data.eligibility_completed_date}}" name="eligibility_completed_date" class="w-100" style="border: 0;">
+                </td>
+            </tr>
+        </table>
+        
+        <!-- REFERRAL FORM SECTION -->
+        
+        <div class="mt-5 text-center" style="page-break-before: always; color: #009CCE;">            
+            <h3 class="w-100" style="font-weight: 800;">Alameda County Safe Parking Pilot Program</h3>
+            <h4 class="w-100" style="font-weight: 800;">REFERRAL FORM</h4>
+        </div>
+        <div class="border border-dark">
+            <strong class="d-block pl-2 pr-2 pt-3">REFERRAL TO SAFE PARKING PILOT PROGRAM</strong>
+            <p class="pl-2 pr-2 m-0">Please complete the form below with your client. Contact us if you have any questions about completing this form.</p>
+            <div class="form-group row pl-2 pr-2">
+                <label for="inputEmail3MD" class="col-sm-2 col-form-label mt-1 sfapp-w-150"> Program Email: </label>
+                <div class="col-sm-10">
+                    <div class="md-form mt-0">
+                        <input type="email" class="form-control" value="{{data.ref_program_email}}" name="ref_program_email" placeholder="">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row pl-2 pr-2">
+                <label for="inputEmail3MD" class="col-sm-2 col-form-label mt-1 sfapp-w-150">Program Phone: </label>
+                <div class="col-sm-10">
+                    <div class="md-form mt-0">
+                        <input type="email" value="{{data.ref_program_phone}}" class="form-control" name="ref_program_phone" placeholder="">
+                    </div>
+                </div>
+            </div>
+            
+            <table class="w-100 text-dark mt-2 table-bordered border-dark">
+                <tr>
+                    <td>Client's Name:</td>
+                    <td><input type="text" value="{{data.ref_client_name}}" name="ref_client_name" class="w-100" style="border: 0;"></td>
+                    <td>Today's date: </td>
+                    <td><input type="text" value="{{data.ref_date}}" class="w-100" name="ref_date" style="border: 0;"></td>
+                </tr>                
+                <tr>
+                    <td>Phone #:</td>
+                    <td><input type="text" value="{{data.ref_client_phone}}" name="ref_client_phone" class="w-100" style="border: 0;"></td>
+                    <td>Email:</td>
+                    <td><input type="text" value="{{data.ref_client_email}}" name="ref_client_email" class="w-100" style="border: 0;"></td>
+                </tr>
+                <tr>
+                    <td>Date of Birth:</td>
+                    <td><input type="text" value="{{data.ref_client_dob}}" name="ref_client_dob" class="w-100" style="border: 0;"></td>
+                    <td>Age:</td>
+                    <td><input type="text" value="{{data.ref_client_age}}" name="ref_client_age" class="w-100" style="border: 0;"></td>
+                </tr>
+                <tr>
+                    <td>Gender:</td>
+                    <td><input type="text" value="{{data.ref_client_gender}}" name="ref_client_gender" class="w-100" style="border: 0;"></td>
+                    <td>Race: </td>
+                    <td><input type="text" value="{{data.ref_client_race}}" name="ref_client_race" class="w-100" style="border: 0;"></td>
+                </tr>
+                <tr>
+                    <td>City of Residence:</td>
+                    <td><input type="text" value="{{data.ref_client_city}}" class="w-100" name="ref_client_city" style="border: 0;"></td>
+                    <td>Disability? </td>
+                    <td>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" {% if data.ref_client_disability == 'no' %}checked{% endif %} value="no" name="ref_client_disability">
+                            <label class="form-check-label" for="materialInline1">No</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" value="yes" {% if data.ref_client_disability == 'yes' %}checked{% endif %} name="ref_client_disability">
+                            <label class="form-check-label" for="materialInline2">Yes</label>
+                        </div>
+                    </td>
+                </tr>
+            </table>    
+        </div>
+        <table class="w-100 text-dark mt-4 mb-4 table-bordered border-dark">
+            <tr>
+                <td>Are you living in your personal vehicle?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" {% if data.ref_peronal_vehicle == 'no' %}checked{% endif %} class="form-check-input" value="no" name="ref_peronal_vehicle">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.ref_peronal_vehicle == 'yes' %}checked{% endif %} value="yes" name="ref_peronal_vehicle">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>
+                </td>
+                <td>For how long? (e.g. # of months) </td>
+                <td><input type="text" value="{{data.ref_how_long}}" class="w-100" name="ref_how_long" style="border: 0;"></td>
+            </tr>                
+            <tr>
+                <td>Do you have a current driver’s license?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.ref_client_dl == 'no' %}checked{% endif %} value="no" name="ref_client_dl">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.ref_client_dl == 'yes' %}checked{% endif %} value="yes" name="ref_client_dl">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>    
+                </td>
+                <td>Is your vehicle registration up to date?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.ref_vehicle_reg_ok == 'no' %}checked{% endif %} value="no" name="ref_vehicle_reg_ok">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" value="yes" {% if data.ref_vehicle_reg_ok == 'yes' %}checked{% endif %} name="ref_vehicle_reg_ok">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>How many people are living with you in your vehicle?</td>
+                <td><input type="text" value="{{data.ref_no_of_people}}" name="ref_no_of_people" class="w-100" style="border: 0;"></td>
+                <td>Is there anyone 18 years old and younger living with you in your vehicle?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" {% if data.ref_18_yr == 'no' %}checked{% endif %} class="form-check-input" value="no" name="ref_18_yr">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" {% if data.ref_18_yr == 'yes' %}checked{% endif %} class="form-check-input" value="yes" name="ref_18_yr">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>    
+                </td>
+            </tr>
+            <tr>
+                <td>Is your vehicle an RV, bus, or converted van?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" value="no" {% if data.ref_rv_bus == 'no' %}checked{% endif %} name="ref_rv_bus">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" value="yes" {% if data.ref_rv_bus == 'yes' %}checked{% endif %} name="ref_rv_bus">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>   
+                </td>
+                <td class="table-dark"> </td>
+                <td class="table-dark"></td>
+            </tr>
+        </table>
+        
+        <table class="w-100 text-dark mt-4 table-bordered border-dark">
+            <caption style="caption-side: top;" class="bg-dark text-white text-center">For Use By Program Staff Only</caption>
+            <tr>
+                <td style="width: 322px;">Eligible for Safe Parking Program?</td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.ref_eligible == 'no' %}checked{% endif %} value="no" name="ref_eligible">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.ref_eligible == 'yes' %}checked{% endif %} value="yes" name="ref_eligible">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>
+                </td>
+                <td style="width: 300px;">Added to Waitlist? </td>
+                <td>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.ref_waitlisted == 'no' %}checked{% endif %} value="no" name="ref_waitlisted">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.ref_waitlisted == 'yes' %}checked{% endif %} value="yes" name="ref_waitlisted">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>    
+                </td>
+            </tr>                
+            <tr>
+                <td>If not eligible, what referral was made for the applicant?
+                    <ul class="list-group pl-5">
+                        <li class="p-1" aria-current="true">Date referral was sent</li>
+                        <li class="p-1">Name of referral provider</li>
+                        <li class="p-1">Email / phone used</li>
+                    </ul>
+                </td>
+                <td colspan="3">
+                    <input type="text" class="w-100" style="border: 0;">
+                    <ul class="list-group" style="list-style: none;">
+                        <li class="p-1" aria-current="true"><input type="text" value="{{data.ref_date_referrral}}" name="ref_date_referrral" class="w-100" style="border: 0;"></li>
+                        <li class="p-1"><input type="text" class="w-100" value="{{data.ref_name_referrer}}" name="ref_name_referrer" style="border: 0;"></li>
+                        <li class="p-1"><input type="text" class="w-100" value="{{data.ref_email_phn_used_for_ref}}" name="ref_email_phn_used_for_ref" style="border: 0;"></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td>Program Staff Name</td>
+                <td colspan="3"><input type="text" value="{{data.ref_staff_name}}" name="ref_staff_name" class="w-100" style="border: 0;"></td>
+            </tr>
+            <tr>
+                <td>Staff Signature</td>
+                <td colspan="3">
+                    <input type="text" hidden name="ref_staff_sign">
+                    {% if data.ref_staff_sign %}
+                    <img src="{{data.ref_staff_sign}}" id="refferal-sign" alt="" height="68px" srcset="">
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Date Complete</td>
+                <td colspan="3">
+                    <input type="text" value="{{data.ref_date_completed}}" name="ref_date_completed" class="w-100" style="border: 0;">
+                </td>
+            </tr>
+        </table>
+        
+        
+        <!-- Application & Intake section -->
+        
+        
+        <div class="mt-5 text-center" style="page-break-before: always; color: #009CCE;">            
+            <h3 class="w-100" style="font-weight: 800;">Alameda County Safe Parking Pilot Program</h3>
+            <h4 class="w-100" style="font-weight: 800;">APPLICATION & INTAKE FORM</h4>
+        </div>
+        <div class="border border-dark"> 
+            <p class="p-3">
+                <strong class="">Instructions: </strong>
+                Instructions: Please complete the application below by writing in your answers or circling them where indicated.
+                Please let us know if you have any questions or need assistance to complete this form. If you have further questions,
+                you can contact the Safe Parking Program by emailing/calling 
+                <input style="width: auto;
+                display: inline;
+                border: navajowhite;
+                border-bottom: 1px solid black;
+                border-radius: 0; box-shadow: none;
+                outline: none;" type="email" class="form-control" value="{{data.intake_contact_email}}" name="intake_contact_email" placeholder="">
+            </p>        
+            
+            <table class="w-100 text-dark mt-2 table-bordered border-dark">
+                <tr>
+                    <td>Name:</td>
+                    <td><input type="text" value="{{data.intake_name}}" name="intake_name" class="w-100" style="border: 0;"></td>
+                    <td>Today's date: </td>
+                    <td><input type="text" name="intake_date" value="{{data.intake_date}}" class="w-100" style="border: 0;"></td>
+                </tr>                
+                <tr>
+                    <td>Phone #:</td>
+                    <td><input type="text" value="{{data.intake_phone}}" name="intake_phone" class="w-100" style="border: 0;"></td>
+                    <td>Alt. Phone #:</td>
+                    <td><input type="text" value="{{data.intake_alt_phone}}" name="intake_alt_phone" class="w-100" style="border: 0;"></td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td><input type="text" value="{{data.intake_email}}" name="intake_email" class="w-100" style="border: 0;"></td>
+                    <td>City of Residence:</td>
+                    <td><input type="text" value="{{data.intake_city}}" name="intake_city" class="w-100" style="border: 0;"></td>
+                </tr>
+                <tr>
+                    <td>Mailing Address: <br>
+                        <small>(if applicable)</small>  
+                    </td>
+                    <td colspan="3"><input name="intake_address" value="{{data.intake_address}}" type="text" class="w-100" style="border: 0;"></td>
+                </tr>
+                <tr>
+                    <td>Emergency Contact: <br>
+                        <small>(Name, Phone Number)</small> 
+                    </td>
+                    <td colspan="3"><input type="text" value="{{data.intake_contact}}" name="intake_contact" class="w-100" style="border: 0;"></td>
+                </tr>
+            </table>    
+        </div>
+        
+        <table class="w-100 text-dark mt-4 mb-4 table-bordered border-dark">
+            <caption style="caption-side: top;" class="bg-dark text-white text-center">Questionnaire</caption>
+            <tr>
+                <td colspan="2"> <span>What is your gender?</span>
+                    <input type="text" name="intake_gender" value="{{data.intake_gender}}" class="w-50 d-inline" style="border: 0;">
+                </td>
+                <td colspan="2"> <span>What is your age? </span> 
+                    <input type="text" name="intake_age" value="{{data.intake_age}}" class="w-50 d-inline" style="border: 0;">
+                </td>
+            </tr>    
+            <tr>
+                <td colspan="2"> <span>What pronouns do you prefer?</span>
+                    <input type="text" name="intake_prefer" value="{{data.intake_prefer}}" class="w-50 d-inline" style="border: 0;">
+                </td>
+                <td colspan="2"> <span>What is your date of birth? </span> 
+                    <input type="text" name="intake_dob" value="{{data.intake_dob}}" class="w-50 d-inline" style="border: 0;">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2"> <span>What race/ethnicity are you?</span>
+                    <input type="text" name="intake_race" value="{{data.intake_race}}" class="w-50 d-inline" style="border: 0;">
+                </td>
+                <td style="border-right: none;">
+                    <span class="d-block">What type of work do you do? <br>
+                        <small> (if applicable)</small> 
+                    </span> 
+                </td>
+                <td style="border-left: none;">
+                    <input type="text" name="intake_work" value="{{data.intake_work}}" class="w-100 d-inline" style="border: 0;">
+                </td>
+            </tr>            
+            <tr>
+                <td colspan="4" style="border: none;">Please circle all the places you have lived in the last 12 months:</td>
+            </tr>
+            <tr>
+                <td  style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" {% if 'Oakland' in data.intake_city_lived %}checked{% endif %} class="form-check-input" value="Oakland" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline1">Oakland</label>
+                    </div>
+                </td>
+                <td  style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" {% if 'San Leandro' in data.intake_city_lived %}checked{% endif %} class="form-check-input" value="San Leandro" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">San Leandro</label>
+                    </div>    
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" {% if 'Union City' in data.intake_city_lived %}checked{% endif %} class="form-check-input" value="Union City" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Union City</label>
+                    </div>  
+                </td>
+                <td style="border: none;" rowspan="2">
+                    Other place in Alameda<br>
+                    <span>County: <input style="width: 100px;
+                        display: inline;
+                        border: navajowhite;
+                        border-bottom: 1px solid black;
+                        border-radius: 0; box-shadow: none;
+                        outline: none;" type="text" value="{{data.intake_other_in_almeda}}" class="form-control" name="intake_other_in_almeda" placeholder="">
+                    </span> 
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" {% if 'Alameda' in data.intake_city_lived %}checked{% endif %} class="form-check-input" value="Alameda" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Alameda</label>
+                    </div>
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Pleasanton' in data.intake_city_lived %}checked{% endif %} value="Pleasanton" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Pleasanton</label>
+                    </div>
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Newark' in data.intake_city_lived %}checked{% endif %} value="Newark" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Newark</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" {% if 'Berkeley' in data.intake_city_lived %}checked{% endif %} class="form-check-input" value="Berkeley" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Berkeley</label>
+                    </div>
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Dublin' in data.intake_city_lived %}checked{% endif %} value="Dublin" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Dublin</label>
+                    </div>
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Emeryville' in data.intake_city_lived %}checked{% endif %} value="Emeryville" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Emeryville</label>
+                    </div>
+                </td>
+                <td style="border: none;"></td>
+            </tr>
+            <tr>
+                <td  style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Hayward' in data.intake_city_lived %}checked{% endif %} value="Hayward" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline1">Hayward</label>
+                    </div>
+                </td>
+                <td  style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Livermore' in data.intake_city_lived %}checked{% endif %} value="Livermore" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Livermore</label>
+                    </div>    
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Albany' in data.intake_city_lived %}checked{% endif %} value="Albany" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Albany</label>
+                    </div>  
+                </td>
+                <td style="border: none;" rowspan="3">
+                    Other place not in Alameda County<br>
+                    <span>County: <input style="width: auto;
+                        display: inline;
+                        border: navajowhite;
+                        border-bottom: 1px solid black;
+                        border-radius: 0; box-shadow: none;
+                        outline: none;" type="text" value="{{data.intake_other_than_almeda}}" class="form-control" name="intake_other_than_almeda" placeholder="">
+                    </span> 
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" {% if 'Fremont' in data.intake_city_lived %}checked{% endif %} class="form-check-input" value="Fremont" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Fremont</label>
+                    </div>
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Castro Valley' in data.intake_city_lived %}checked{% endif %} value="Castro Valley" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Castro Valley	</label>
+                    </div>
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'San Lorenzo' in data.intake_city_lived %}checked{% endif %} value="San Lorenzo" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">San Lorenzo</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Piedmont' in data.intake_city_lived %}checked{% endif %} value="Piedmont" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Piedmont</label>
+                    </div>
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Cherryland' in data.intake_city_lived %}checked{% endif %} value="Cherryland" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Cherryland</label>
+                    </div>
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Fairview' in data.intake_city_lived %}checked{% endif %} value="Fairview" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Fairview</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Sunol' in data.intake_city_lived %}checked{% endif %} value="Sunol" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Sunol</label>
+                    </div>
+                </td>
+                <td style="border: none;">
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" class="form-check-input" {% if 'Ashland' in data.intake_city_lived %}checked{% endif %} value="Ashland" name="intake_city_lived">
+                        <label class="form-check-label" for="materialInline2">Ashland</label>
+                    </div>
+                </td>
+                <td style="border: none;" colspan="2"></td>
+            </tr>
+            <tr>
+                <td colspan="2">Is this your first time becoming homeless?</td>
+                <td colspan="2">
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" {% if data.intake_first_time == 'no' %}checked{% endif %} value="no" name="intake_first_time">
+                        <label class="form-check-label" for="materialInline1">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" class="form-check-input" value="yes" {% if data.intake_first_time == 'yes' %}checked{% endif %} name="intake_first_time">
+                        <label class="form-check-label" for="materialInline2">Yes</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">What is the main reason you are experiencing homelessness right now?
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_reason_homeless">{{data.intake_reason_homeless}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">Do you have a regular source of income? If yes, about how much do you earn every month?
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_income">{{data.intake_income}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">Where do you park overnight right now?
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_park_now">{{data.intake_park_now}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">Do you have any physical or mental health concerns? If yes, please explain.
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_health">{{data.intake_health}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">What medicines do you take regularly?
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_medicine">{{data.intake_medicine}}</textarea> 
+                </td>
+                <td colspan="2">Are you allergic to any medicines? If yes, please list.
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_alleregy">{{data.intake_alleregy}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">Do you have any other medical needs or other emergencies we should know about?
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_medical_needs">{{data.intake_medical_needs}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">Are you a client of any County agencies or County service providers right now? If yes, please explain. 
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_client_of_agency">{{data.intake_client_of_agency}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">Do you have a caseworker right now? If yes, what is their name and agency (if you know it)?
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_caseworker">{{data.intake_caseworker}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">Do you have any important legal needs or issues? If yes, please explain briefly.
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_legal_issues">{{data.intake_legal_issues}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">How many people are living with you in your vehicle? What are their names and ages?
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_people_in_vehicle">{{data.intake_people_in_vehicle}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">Do you have any pets? If yes, what kind of animal(s)?
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="intake_pets">{{data.intake_pets}}</textarea> 
+                </td>
+            </tr>
+        </table>
+        
+        <table class="w-100 text-dark mt-4 table-bordered border-dark">
+            <caption style="caption-side: top;" class="bg-dark text-white text-center">Vehicle Information</caption>
+            <tr>
+                <td colspan="4">Is your vehicle registration current? If not, what is getting in the way of registering your vehicle?
+                    <textarea cols="30" rows="3" style="width: 100%; border: none;" name="vehicle_registration">{{data.vehicle_registration}}</textarea> 
+                </td>
+            </tr>                
+            <tr>
+                <td colspan="4">Do you have vehicle insurance? If not, what is getting in the way of obtaining insurance?
+                    <textarea cols="30" name="vehicle_insurance" rows="3" style="width: 100%; border: none;">{{data.vehicle_insurance}}</textarea> 
+                </td>
+            </tr> 
+            <tr>
+                <td colspan="4">Is your vehicle currently in operating order?
+                    <textarea cols="30" rows="3" name="vehicle_operating" style="width: 100%; border: none;">{{data.vehicle_operating}}</textarea> 
+                </td>
+            </tr> 
+            <tr>
+                <td colspan="4">Do you consider your vehicle safe and sanitary?
+                    <textarea cols="30" rows="3" name="vehicle_safe" style="width: 100%; border: none;">{{data.vehicle_safe}}</textarea> 
+                </td>
+            </tr> 
+            <tr>
+                <td colspan="4">Does your vehicle need to be repaired to drive it?
+                    <textarea cols="30" rows="3" name="vehicle_need_repair" style="width: 100%; border: none;">{{data.vehicle_need_repair}}</textarea> 
+                </td>
+            </tr> 
+            <tr>
+                <td colspan="4">About how long do you expect to need a safe place to park and sleep?
+                    <textarea cols="30" rows="3" name="vehicle_park_and_sleep" style="width: 100%; border: none;">{{data.vehicle_park_and_sleep}}</textarea> 
+                </td>
+            </tr> 
+            <tr>
+                <td colspan="4">Do you have any outstanding tickets or warrants?
+                    <textarea cols="30" name="vehicle_warrants" rows="3" style="width: 100%; border: none;">{{data.vehicle_warrants}}</textarea> 
+                </td>
+            </tr> 
+            <tr>
+                <td>License Plate # and State
+                    <textarea cols="30" name="vehicle_license_plate" rows="3" style="width: 100%; border: none;">{{data.vehicle_license_plate}}</textarea> 
+                </td>
+                <td>VIN Number
+                    <textarea cols="30" rows="3" name="vehicle_vin" style="width: 100%; border: none;">{{data.vehicle_vin}}</textarea> 
+                </td>
+                <td colspan="2">Make, Model, Year, Color
+                    <textarea cols="30" rows="3" name="vehicle_make_model_color" style="width: 100%; border: none;">{{data.vehicle_make_model_color}}</textarea> 
+                </td>
+            </tr> 
+        </table>
+        
+        <table class="w-100 text-dark mt-4 table-bordered border-dark">
+            <caption style="caption-side: top;" class="bg-dark text-white text-center">Housing & Employment</caption>
+            <tr>
+                <td colspan="4">What is your plan in the immediate future to get stable housing?
+                    <textarea cols="30" name="emp_stable_plan" rows="3" style="width: 100%; border: none;">{{data.emp_stable_plan}}</textarea> 
+                </td>
+            </tr>                
+            <tr>
+                <td colspan="4">What are your longer-term plans to stay in housing?
+                    <textarea cols="30" rows="3" name="emp_stay_housing_plan" style="width: 100%; border: none;">{{data.emp_stay_housing_plan}}</textarea> 
+                </td>
+            </tr> 
+            <tr>
+                <td colspan="4">Have you applied for housing or housing assistance within the past 3 months? If so, where? If not, why not?
+                    <textarea cols="30" rows="3" name="emp_housing_assistance" style="width: 100%; border: none;">{{data.emp_housing_assistance}}</textarea> 
+                </td>
+            </tr> 
+            <tr>
+                <td colspan="4">What would you need to be able to move into stable housing?
+                    <textarea cols="30" name="emp_move_stable_plan" rows="3" style="width: 100%; border: none;">{{data.emp_move_stable_plan}}</textarea> 
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">Are you interested in job training services?  Yes  /  No
+                    <textarea cols="30" name="emp_train_interested" rows="3" style="width: 100%; border: none;">{{data.emp_train_interested}}</textarea> 
+                </td>
+                <td colspan="2">Are there other services we can provide or help you get?
+                    <textarea cols="30" rows="3" name="emp_other_services" style="width: 100%; border: none;">{{data.emp_other_services}}</textarea> 
+                </td>
+            </tr> 
+        </table>
+        
+        <div class="mt-5">
+            <div class="row text-center">
+                <h4 class="w-100">Agreement & Signature</h4>
+            </div>
+            <div>
+                <p>By submitting this application, I affirm that the facts set forth in it are true and complete.
+                    I will be given a copy of the following documents as part of the application process:
+                </p>                
+                <ul>
+                    <li>Signed and dated Site Rules & Guidelines</li>
+                    <li>Signed and dated Waiver of Liability</li>
+                    <li>Signed and dated Consent to Participate in Support Services</li>
+                    <li>Signed and dated Consent to Exchange Information</li>
+                </ul>
+                <p>
+                    It is my responsibility to review and sign each of these forms. 
+                    My signature on this form means that I am willing to follow the policies and rules of the program.
+                </p>
+                <div class="row">
+                    <div class="col">
+                        <div style="border-bottom: 1px solid black; height: 85px;" class="text-center">
+                            <input hidden type="text" name="participant_sign">
+                            {% if data.participant_sign %}
+                            <img src="{{data.participant_sign}}" id="aggree-sign" alt="" height="80px" srcset="">
+                            {% endif %}
+                        </div>
+                        Signature of Participant
+                    </div>
+                    <div class="col mt-auto">
+                        <div style="border-bottom: 1px solid black; height: 85px;">
+                            <input type="text" value="{{data.agreement_date}}" name="agreement_date" class="w-100" style="border: 0;margin-top: 60px !important;">
+                        </div>
+                        Today's date
+                    </div>
+                </div>
+                <div class="row mt-5">
+                    <div class="col">
+                        <div style="border-bottom: 1px solid black; height: 85px;">
+                            <input type="text" value="{{data.agreement_participant_name}}" name="agreement_participant_name" class="w-100" style="border: 0;margin-top: 60px !important;">
+                        </div>
+                        Printed Name of Participant
+                    </div>
+                    <div class="col">
+                        <div style="border-bottom: 1px solid black; height: 85px;">
+                            <input type="text" value="{{data.agreement_participant_dob}}" name="agreement_participant_dob" class="w-100" style="border: 0;margin-top: 60px !important;">
+                        </div>
+                        Participant DOB
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-5" style="page-break-before: always;">
+            <div class="">
+                <h3 class="w-100 text-center" style="font-weight: 800;color: #009CCE;">Alameda County Safe Parking Pilot Program</h3>
+                <h3 class="w-100 text-center" style="font-weight: 800;color: #009CCE;">
+                    PROGRAM RULES & GUIDELINES
+                </h3>
+            </div>
+            <div>
+                <ol>
+                    <li class="pt-3">
+                        During the Safe Parking Pilot program, <u> <i> <b> we are able to offer stays of up to 90 days or until the end of the pilot, whichever comes first.</b> </i> </u>
+                        Extensions will be considered in coordination with program staff and other service providers on a case-by-case basis.
+                    </li>
+                    <li class="pt-3">
+                        You are expected to ensure that your vehicle stays operational the entire time you are staying in the program. This is your responsibility.
+                        If you need help finding or paying for a mechanic, you must notify the program staff immediately. 
+                    </li>
+                    <li class="pt-3">
+                        Your vehicle must stay inside your designated space. You are only allowed to have one vehicle in this program. All belongings must be kept inside your vehicle.
+                        Camping tarps or camping equipment beyond the top of the vehicle is prohibited.
+                    </li>
+                    <li class="pt-3">No fires or campstoves are allowed, inside or outside vehicles.</li>
+                    <li class="pt-3">Electrical hookup is not available. No extension cords may be run to/from your vehicle</li>
+                    <li class="pt-3">
+                        Quiet hours are from 10pm to 6am. At all other times, please keep the volume of conversations and any radio, music, or video devices at a low level so as to not disturb any of your neighbors in this program, in nearby programs, or in the residential area.
+                        Amplified sound heard 50 feet away from your vehicle is too loud.
+                    </li>
+                    <li class="pt-3">Littering in, around, or near the lot will not be tolerated. Dispose of all waste in designated areas for garbage, recycling, and compost. </li>
+                    <li class="pt-3">Park only in designated parking spots. Do not park in specially marked spaces ( <i> e.g. disabled </i>).</li>
+                    <li class="pt-3">
+                        Guests are not permitted to stay with you or visit you at the site. You may not invite other people or visitors to the lot.
+                        Only accepted participants are allowed within the lot, and guests are not permitted for any length of time.
+                    </li>
+                    <li class="pt-3">
+                        It is your responsibility to comply with all applicable California state laws with regard to driving your vehicle.
+                        Alameda County and contracted service providers will not be liable for any damages to your vehicle or personal belongings
+                    </li>
+                    <li class="pt-3">
+                        If your vehicle is left unattended for more than 24 hours, we will attempt to contact you. If we are unable to contact you, and your vehicle remains continuously unattended for 72 hours, your vehicle may be towed away at your expense.
+                        If you anticipate being away from your vehicle for longer than one night, you must obtain advance permission.
+                    </li>
+                    <li class="pt-3">
+                        There are children, neighbors, and visitors in the immediate vicinity. Urinating or defecating outside of designated bathrooms or port-a-potties is strictly prohibited. 
+                        Failure to abide by this rule will result in immediate termination from the program.
+                    </li>
+                    <li class="pt-3">
+                        The use, possession, or selling of illegal substances is strictly prohibited on site.
+                        Problematic behavior related to alcohol or drug use may result in you being exited from the property and/or terminated from the program.
+                    </li>
+                    <li class="pt-3">Firearms or weapons of any kind are strictly prohibited. Brandishing a gun or weapon will result in immediate termination.</li>
+                    <li class="pt-3">
+                        No violence, intimidation, verbal or physical abuse will be tolerated.  No degrading, ethnic, racist, sexist, homophobic, transphobic, or other demeaning comments will be tolerated.
+                        Failure to abide by this rule may result in suspension or termination from the program.
+                    </li>
+                    <li class="pt-3">You are expected to obey all local, state and federal laws. Criminal conduct is strictly prohibited.</li>
+                    <li class="pt-3">
+                        Please notify us if you are will be leaving for more than 72 hours. If your spot remains vacant for 72 hours and we have not been notified of your return,
+                        you may be exited from the program so someone else can take the spot.
+                    </li>
+                    <li class="pt-3"> <b> Pets:</b> You are expected to clean up pet waste <u><b><i> immediately</i></b></u> and dispose of it in the appropriate receptacle.</li>
+                    <li class="pt-3"> <b> Pets:</b> Your pet must have a certificate of proof of the rabies vaccine </li>
+                    <li class="pt-3"><b> Pets:</b> Your pet must not be left unattended in your vehicle</li>
+                    <li class="pt-3"><b> Pets:</b> Your pet must not be tethered to any stationary object for more that 3 hours </li>
+                    <li class="pt-3"><b> Pets:</b> You pet must be on a leash at all times while outside of your vehicle </li>
+                </ol>
+            </div>
+            <p>Failure to comply with these rules and regulations may result in termination from the Safe Parking Program.
+                We reserve the right to terminate your participation in the program at any time, for any reason, without warning.
+                Please review the Shelter Grievance Policy in this packet to understand your rights and the process for making a grievance. 
+                All complaints and program feedback will be taken seriously, and program staff will make every reasonable attempt to interview all parties involved.
+            </p>
+            <p>Breaking some of these rules will result in immediate termination, as listed above.
+                For all other rules, non-compliance will result in a verbal and/or written warning the first and second times.
+                There will not be a third warning for non-compliance with the rules. At that point, your permit will be revoked.                 
+            </p>
+            <p><i>I / We, accept and agree to respect, acknowledge and adhere to the rules and guidelines that are stated above and will accept full responsibility for the consequences that result of a violation of this contract.</i></p>
+            <div class="row">
+                <div class="col">
+                    <div style="border-bottom: 1px solid black; height: 85px;">
+                        <input hidden type="text" name="final_participant_sign">
+                        {% if data.final_participant_sign %}
+                        <img src="{{data.final_participant_sign}}" id="final_sign" alt="" height="80px" srcset="">
+                        {% endif %}
+                    </div>
+                    Signature of Participant
+                </div>
+                <div class="col mt-auto">
+                    <div style="border-bottom: 1px solid black; height: 85px;">
+                        <input type="text" value="{{data.final_participant_date}}" name="final_participant_date" class="w-100" style="border: 0;margin-top: 60px !important;">
+                    </div>
+                    Today's date
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col">
+                    <div style="border-bottom: 1px solid black;height: 85px;">
+                        <input type="text" value="{{data.final_participant_name}}" name="final_participant_name" class="w-100" style="border: 0;margin-top: 60px !important;">
+                    </div>
+                    Printed Name of Participant
+                </div>
+                <div class="col">
+                    <div style="border-bottom: 1px solid black; height: 85px;">
+                        <input type="text" value="{{data.final_participant_dob}}" name="final_participant_dob pt-4" class="w-100" style="border: 0; margin-top: 60px !important;">
+                    </div>
+                    Participant DOB
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

@@ -21,3 +21,8 @@ django-cors-headers
 pandas
 celery==4.2.1
 redis==3.2.0
+django-rest-passwordreset
+django-rest-knox
+django_pdfkit
+xhtml2pdf
+django-ses

@@ -62,12 +62,10 @@ class ManifestMonthCalendar(XFrameOptionsExemptMixin, View):
 
 class ManifestCreateEvent(XFrameOptionsExemptMixin, View):
     def post(self, request, *args, **kwargs):
-        start_time = request.POST.get('start_time')
-        end_time = request.POST.get('end_time')
-        title = request.POST.get('title')
-        description = request.POST.get('description')
+        name=request.POST.get('name')
+        email=request.POST.get('email')
+        phone=request.POST.get('phone')
         date = request.POST.get('date')
-        
         result = transact({
             'amount': 100,
             'payment_method_nonce': request.POST.get('payment_method_nonce'),
@@ -77,26 +75,24 @@ class ManifestCreateEvent(XFrameOptionsExemptMixin, View):
         })
 
         if result.is_success or result.transaction:
-            Event.objects.create(date=date, title=title,
-                                start_time=start_time,
-                                end_time=end_time,
-                                description=description,
+            Event.objects.create(date=date,
+                                name=name,
+                                email=email,
+                                phone=phone,
                                 is_payment=True,
                                 braintreeID=result.transaction.id)
             messages.success(request, "Event has been createds .")
             return redirect('manifest')
         else:
-            Event.objects.create(date=date, title=title,
-                                start_time=start_time,
-                                end_time=end_time,
-                                description=description,
+            Event.objects.create(date=date,
+                                name=name,
+                                email=email,
+                                phone=phone,
                                 is_payment=False,
                                 braintreeID="")
             messages.error(request, "Event is Not created because Transaction is not successful.")
             return redirect('manifest')
         
-
-
 class ManifestEventDetailView(XFrameOptionsExemptMixin, View):
 
     def get(self, request, *args, **kwargs):

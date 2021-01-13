@@ -22,10 +22,13 @@ class Leadcreate(APIView):
     def post(self, request, format=None):
         if request.method == "POST":
             serializer = LeadSerializer(data=request.data)
-            
             if serializer.is_valid():
-                send_raw_email(to_email=['aaronorosen@gmail.com','sage@analogyplus.com'],  # change to email after you moving ses out of sandbox
-                reply_to=['aaronorosen@gmail.com','sage@analogyplus.com'],  # change to email after you moving ses out of sandbox
+                send_raw_email(to_email=['mikhailsholst@gmail.com',
+                                         'aaronorosen@gmail.com',
+                                         'sage@analogyplus.com'],
+                reply_to=['mikhailsholst@gmail.com',
+                          'aaronorosen@gmail.com',
+                          'sage@analogyplus.com'],
                 subject='New Lead',
                 message_text= json.dumps(serializer.validated_data, indent=4)
                 )
@@ -35,7 +38,7 @@ class Leadcreate(APIView):
         else:
             serializer = LeadSerializer()
             return Response(serializer.Meta)
-    
+
 
 @api_view(['GET'])
 def get_leads_csv(request):
