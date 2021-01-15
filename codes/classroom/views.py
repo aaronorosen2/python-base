@@ -61,5 +61,5 @@ def studentlist(request):
 
             except Student.DoesNotExist:
                 return JsonResponse(data={"result":False,"error":"Student does not exist on your class"},status=404)
-        return JsonResponse(data={"result":False,"error":"Please include student id"},status=400)
+        return JsonResponse(data={"result":False,"error":"Please include student id like ?id=1"},status=400)
         
