@@ -13,3 +13,17 @@ $(document).ready(function () {
     $("#studentModal").removeClass("is-visible");
   });
 });
+
+function deleteId(id){
+  $.ajax({
+    url:'/students_list/delete/',
+    data: {
+      'id': id 
+    },
+    datatype:'json',
+    success: function(){
+      location.reload();
+      // window.location.assign('/students_list/')
+    }
+  })
+}

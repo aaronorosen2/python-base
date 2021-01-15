@@ -62,6 +62,7 @@
                                 name="name"
                                 id="name"
                                 placeholder="Name"
+                                required
                               />
                             </div>
                             <!-- <label class="control-label col-sm-2" for="pwd">Password:</label> -->
@@ -72,6 +73,7 @@
                                 name="phone"
                                 id="phone"
                                 placeholder="Phone"
+                                required
                               />
                             </div>
                             <div class="col-sm-10 singup-input">
@@ -81,6 +83,7 @@
                                 name="email"
                                 id="email"
                                 placeholder="Email"
+                                required
                               />
                             </div>
                             <div
@@ -112,7 +115,7 @@
                             <td>{{ student.name }}</td>
                             <td>{{ student.phone }}</td>
                             <td>{{ student.email }}</td>
-                            <td> <button><i class="fa fa-trash"></i></button> </td>
+                            <td> <button onclick="deleteId({{ student.pk }})"><i class="fa fa-trash"></i></button> </td>
                         </tr>
                     {% endfor %}
                   </table>

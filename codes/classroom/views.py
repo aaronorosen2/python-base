@@ -21,14 +21,16 @@ class StudentList(APIView):
 
     def post(self, request, *args, **kwargs):
          
-        student_data= Student(name=request.POST['name'],email=request.POST['email'],phone=request.POST['phone']) 
+        student_data = Student(name=request.POST['name'],email=request.POST['email'],phone=request.POST['phone']) 
         student_data.save()
         student_list = Student.objects.all()
         return Response({'student_list':student_list},template_name = 'classroom/students_list.html')
 
-# @api_view(http_method_names=['GET','POST','DELETE'])
-# def get_students_list(request):
-#     if request.method == 'GET':
-        
-#         return render(request,'classroom/students_list.html',{'student_list':student_list})
+def delete(request):
+    pk = request.GET.get('id',None)
+    if pk:
+        get_student = Student.objects.get(pk=pk)
+        get_student.delete()
+        return JsonResponse({'deleted':True})
+    return JsonResponse({'deleted':False})
 
