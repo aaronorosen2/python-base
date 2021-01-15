@@ -34,3 +34,32 @@ def delete(request):
         return JsonResponse({'deleted':True})
     return JsonResponse({'deleted':False})
 
+#API for create/delete student to class
+@api_view(['GET','POST','DELETE'])
+def studentlist(request):
+    if request.method == 'GET':
+        students = Student.objects.all()
+        serializer = StudentSerializer(students,many=True)
+
+        return JsonResponse(serializer.data,safe=False)
+
+    elif request.method == 'POST':
+        data = JSONParser().parse(request)
+        serializer = StudentSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data,status=201)
+        return JsonResponse(serializer.errors,status=400)
+    
+    elif request.method == 'DELETE':
+        pk = request.GET.get('id')
+        if pk:
+            try:
+                student = Student.objects.get(pk=pk)
+                student.delete()
+                return JsonResponse(data={"result":True,"success":"Successfully removed student from your class"},status=204)
+
+            except Student.DoesNotExist:
+                return JsonResponse(data={"result":False,"error":"Student does not exist on your class"},status=404)
+        return JsonResponse(data={"result":False,"error":"Please include student id"},status=400)
+        
