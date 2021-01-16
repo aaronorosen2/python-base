@@ -242,9 +242,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # Email
 EMAIL_BACKEND = 'django_ses.SESBackend'
-AWS_ACCESS_KEY_ID = 'AKIAIHFAW4CMLKGZJWQQ'
-AWS_SECRET_ACCESS_KEY = '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'
-
+# AWS_ACCESS_KEY_ID = 'AKIAIHFAW4CMLKGZJWQQ'
+# AWS_SECRET_ACCESS_KEY = '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'
 DEFAULT_FROM_EMAIL = 'mail-api@dreampotential.org'
 
 # Instead of sending out real emails the console backend just writes the emails that would be sent to the standard

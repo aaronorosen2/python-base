@@ -35,7 +35,7 @@ function init() {
   
   socket.onmessage = function (event) {
     web_socket_data = JSON.parse(event.data);
-    // console.log(web_socket_data);
+    console.log(web_socket_data);
     if(web_socket_data.action === 'queue_status'){
       showNotification(web_socket_data.message)
     }else if(web_socket_data.action === 'users_list'){

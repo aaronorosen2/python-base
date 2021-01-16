@@ -25,13 +25,30 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import ChangePasswordSerializer
-from .serializers import UserSerializer, RegisterSerializer
+from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class Home(View):
     def get(self, request, *args, **kwargs):
         return render(request, "s3_uploader/upload.html")
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadRoomLogo(generics.GenericAPIView):
+    serializer_class = RoomInfoSerializer
+
+    def get(self, request, *args, **kwargs):
+        return render(request, "s3_uploader/upload_room_logo.html")
+    
+    def post(self, request, *args, **kwargs):
+        # print(request.data)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        room = serializer.save()
+        # print(room)
+        return Response({
+            "room": RoomInfoSerializer(room, context=self.get_serializer_context()).data
+        })
 
 
 # Register User
@@ -181,7 +198,7 @@ class MakeS3FilePublic(generics.GenericAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class S3Upload(generics.GenericAPIView):
-
+    # permission_classes = (permissions.AllowAny,)
     def post(self, request, *args, **kwargs):
         print("Uploading", request.FILES, request.POST)
 
