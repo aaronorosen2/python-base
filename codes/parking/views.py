@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import uuid
-from parking.models import Parking
+from .models import Parking
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import pdfkit
