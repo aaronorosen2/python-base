@@ -19,7 +19,7 @@ class Event(models.Model):
         url = reverse('event-detail', args=(self.id,))
         return f' <a href="{url}"> {self.title} </a>'
 
-    def create_event(slef):
+    def create_event(self):
         return f"http://localhost:800/event/create/"
 
     @property
