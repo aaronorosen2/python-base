@@ -3,7 +3,29 @@ from django.core.mail import send_mail
 from django.dispatch import receiver
 from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
+import uuid
+import os
+from django.db import models
 
+# Author= Muhammad Hammad
+# Models for room infor and room visitors
+class ParentModel(models.Model):
+    id = models.CharField(primary_key=True, default=uuid.uuid4, editable=False, max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+class RoomInfo(ParentModel):
+    room_name = models.CharField(max_length=50)
+    logo_url = models.TextField()
+
+class RoomVisitors(ParentModel):
+    name = models.CharField(max_length=50)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=20)
+    room_id = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
