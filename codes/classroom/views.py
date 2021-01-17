@@ -15,16 +15,14 @@ class StudentList(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'classroom/students_list.html'
 
-    def get(self, request,*args, **kwargs):
-        student_list = Student.objects.all()
-        return Response({'student_list':student_list},template_name = 'classroom/students_list.html')
+    def get(self, request,*args, **kwargs): 
+        return Response({'student_list':Student.objects.all()},template_name = 'classroom/students_list.html')
 
     def post(self, request, *args, **kwargs):
          
         student_data = Student(name=request.POST['name'],email=request.POST['email'],phone=request.POST['phone']) 
         student_data.save()
-        student_list = Student.objects.all()
-        return Response({'student_list':student_list},template_name = 'classroom/students_list.html')
+        return Response({'student_list':Student.objects.all()},template_name = 'classroom/students_list.html')
 
 def delete(request):
     pk = request.GET.get('id',None)
@@ -38,14 +36,12 @@ def delete(request):
 @api_view(['GET','POST','DELETE'])
 def studentlist(request):
     if request.method == 'GET':
-        students = Student.objects.all()
-        serializer = StudentSerializer(students,many=True)
+        serializer = StudentSerializer(Student.objects.all(),many=True)
 
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = StudentSerializer(data=data)
+        serializer = StudentSerializer(data=JSONParser().parse(request))
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(serializer.data,status=201)

@@ -1,8 +1,3 @@
-// var SERVER = "https://sfapp-api.dreamstate-4-all.org/";
-// var SERVER = 'http://localhost:8000/'
-// /var passwordResetToken = getParam("token");
-// var userToken = localStorage.getItem("user-token");
-
 $(document).ready(function () {
 
   $(".login-button").on("click",  () => {
@@ -12,6 +7,7 @@ $(document).ready(function () {
   $(".student-close").on("click", () => {
     $("#studentModal").removeClass("is-visible");
   });
+  // getStudentData() //get all student list from javascript using ajax call
 });
 
 function deleteId(id){
@@ -23,7 +19,26 @@ function deleteId(id){
     datatype:'json',
     success: function(){
       location.reload();
-      // window.location.assign('/students_list/')
     }
   })
 }
+
+// function getStudentData(){
+//   console.log("Ajax called")
+//   $.ajax({
+//     method: 'GET',
+//     url:'/students_list/get/students',
+//     async: false,
+//     datatype:'json',
+//     success:  (response,textStatus,jqXHR ) =>{
+//       console.log(response)
+//     },
+//     error:  (jqXHR,textStatus,errorThrown) => {
+//       console.log(jqXHR)
+//       console.log(textStatus)
+//       console.log(errorThrown)
+//     }
+
+//   })
+// }
+
