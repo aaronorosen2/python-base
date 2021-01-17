@@ -162,17 +162,29 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.channel_name
         )
         room_info = await self.get_room_info(self.room_name)
-        room_info_dict = {'logo_url': room_info.logo_url,
-                          'room_name': room_info.room_name,
-                          'action': 'room_logo'}
-        # print(room_info_dict)
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'notification_broadcast',
-                'message': json.dumps(room_info_dict),
-            },
-        )
+        if(room_info != False):
+            room_info_dict = {'logo_url': room_info.logo_url,
+                            'room_name': room_info.room_name,
+                            'action': 'room_logo'}
+            # print(room_info_dict)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'notification_broadcast',
+                    'message': json.dumps(room_info_dict),
+                },
+            )
+        else:
+            room_info_dict = {'logo_url': "",
+                            'room_name': "Please Upload Room Info!",
+                            'action': 'room_logo'}
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'notification_broadcast',
+                    'message': json.dumps(room_info_dict),
+                },
+            )
         # enter in back queue
         # redisconn.set('room_name',self.room_group_name)
         # redisconn.lpush('roomlist', self.room_group_name)
@@ -292,17 +304,25 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
 
     @sync_to_async
     def get_room_info(self, room_name):
-        print(RoomInfo.objects.get(room_name=room_name))
-        return RoomInfo.objects.get(room_name=room_name)
+        # print(RoomInfo.objects.get(room_name=room_name))
+        try:
+            room_info = RoomInfo.objects.get(room_name=room_name)
+            return room_info
+        except RoomInfo.DoesNotExist:
+            return False
+        # if(room_info):
+        #     return room_info
+        # return False
     
     @sync_to_async
     def insert_room_visitor(self, user_details):
         room_info = RoomInfo.objects.get(room_name=self.room_name)
-        user_details['room_id'] = room_info.id
+        user_details['room'] = room_info.id
+        # print(user_details)
         room_visitor_serializer = RoomVisitorsSerializer(data=user_details)
         room_visitor_serializer.is_valid(raise_exception=True)
         room_visitor = room_visitor_serializer.save()
-        print(room_visitor)
+        # print(room_visitor)
         return RoomVisitorsSerializer(room_visitor).data
 
     # async def get_room_info(self, room_name):

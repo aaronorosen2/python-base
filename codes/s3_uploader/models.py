@@ -22,10 +22,10 @@ class RoomInfo(ParentModel):
     logo_url = models.TextField()
 
 class RoomVisitors(ParentModel):
-    name = models.CharField(max_length=50)
+    user_name = models.CharField(max_length=50)
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
-    room_id = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
+    room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
