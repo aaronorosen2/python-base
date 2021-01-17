@@ -43,3 +43,8 @@ class RoomInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomInfo
         fields = '__all__'
+
+class RoomVisitorsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoomVisitors
+        fields = '__all__'

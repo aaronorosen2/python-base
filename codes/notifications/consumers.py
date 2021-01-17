@@ -6,8 +6,8 @@
 
 from asgiref.sync import async_to_sync, sync_to_async
 from queue import Queue
-from s3_uploader.models import RoomInfo
-from s3_uploader.serializers import RoomInfoSerializer
+from s3_uploader.models import RoomInfo, RoomVisitors
+from s3_uploader.serializers import RoomInfoSerializer, RoomVisitorsSerializer
 import time
 import redis
 import json
@@ -165,7 +165,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         room_info_dict = {'logo_url': room_info.logo_url,
                           'room_name': room_info.room_name,
                           'action': 'room_logo'}
-        print(room_info_dict)
+        # print(room_info_dict)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -214,14 +214,14 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.user_dictionary[self.channel_name] = send_data['user_name']
             self.user_list.clear()
             self.user_list.extend(self.user_dictionary.values())
-            self.user_channels_details[send_data['user_name']
-                                       ] = self.channel_name
+            self.user_channels_details[send_data['user_name']] = self.channel_name
             # await self.print_details(send_data)
             redisconn.hset(self.room_group_name+'@back',
                            self.channel_name,
                            send_data['user_name'])
             listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
             listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
+            await self.insert_room_visitor(send_data)
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -294,6 +294,16 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     def get_room_info(self, room_name):
         print(RoomInfo.objects.get(room_name=room_name))
         return RoomInfo.objects.get(room_name=room_name)
+    
+    @sync_to_async
+    def insert_room_visitor(self, user_details):
+        room_info = RoomInfo.objects.get(room_name=self.room_name)
+        user_details['room_id'] = room_info.id
+        room_visitor_serializer = RoomVisitorsSerializer(data=user_details)
+        room_visitor_serializer.is_valid(raise_exception=True)
+        room_visitor = room_visitor_serializer.save()
+        print(room_visitor)
+        return RoomVisitorsSerializer(room_visitor).data
 
     # async def get_room_info(self, room_name):
     #     room_info = sync_to_async(RoomInfo.objects.get(room_name=room_name))()
