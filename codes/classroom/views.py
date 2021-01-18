@@ -1,6 +1,6 @@
-from django.shortcuts import render
-from .models import Student
-from django.http.response import JsonResponse
+from django.shortcuts import render, redirect
+from .models import Student, Class, ClassEnrolled
+from django.http.response import JsonResponse,HttpResponseRedirect
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 from .serializers import StudentSerializer
@@ -22,7 +22,11 @@ class StudentList(APIView):
          
         student_data = Student(name=request.POST['name'],email=request.POST['email'],phone=request.POST['phone']) 
         student_data.save()
-        return Response({'student_list':Student.objects.all()},template_name = 'classroom/students_list.html')
+        class_ = Class(name=request.POST['class'])
+        class_.save()
+        class_enrolled = ClassEnrolled(id=None,student=student_data,class_enrolled=class_)
+        class_enrolled.save()
+        return redirect(request.path)
 
 def delete(request):
     pk = request.GET.get('id',None)
