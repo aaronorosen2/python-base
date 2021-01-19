@@ -3,7 +3,7 @@ from .models import Student, Class, ClassEnrolled
 from django.http.response import JsonResponse,HttpResponseRedirect
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
-from .serializers import StudentSerializer
+from .serializers import StudentSerializer, ClassSerializer, ClassEnrolledSerializer
 from rest_framework.decorators import api_view
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
@@ -37,20 +37,30 @@ def delete(request):
     return JsonResponse({'deleted':False})
 
 #API for create/delete student to class
-@api_view(['GET','POST','DELETE'])
-def studentlist(request):
+@api_view(['GET','POST','DELETE','PUT'])
+def studentapi(request):
     if request.method == 'GET':
         serializer = StudentSerializer(Student.objects.all(),many=True)
 
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'POST':
-        serializer = StudentSerializer(data=JSONParser().parse(request))
+        serializer = StudentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(serializer.data,status=201)
         return JsonResponse(serializer.errors,status=400)
     
+    elif request.method == 'PUT':
+        pk = request.GET.get('id')
+        if pk:
+            student = Student.objects.get(pk=pk)
+            serializer = StudentSerializer(student,data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data,status=201)
+        return JsonResponse(serializer.errors,status=400)
+        
     elif request.method == 'DELETE':
         pk = request.GET.get('id')
         if pk:
@@ -62,4 +72,47 @@ def studentlist(request):
             except Student.DoesNotExist:
                 return JsonResponse(data={"result":False,"error":"Student does not exist on your class"},status=404)
         return JsonResponse(data={"result":False,"error":"Please include student id like ?id=1"},status=400)
-        
+
+@api_view(['GET','POST','DELETE','PUT'])
+def classapi(request):
+    if request.method == 'GET':
+        serializer = ClassSerializer(Class.objects.all(),many=True)
+
+        return JsonResponse(serializer.data,safe=False)
+
+    elif request.method == 'POST':
+        serializer = ClassSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data,status=201)
+        return JsonResponse(serializer.errors,status=400)
+
+    elif request.method == 'PUT':
+        pk = request.GET.get('id')
+        if pk:
+            class_ = Class.objects.get(pk=pk)
+            serializer = ClassSerializer(class_,data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data,status=201)
+        return JsonResponse(serializer.errors,status=400)
+
+    elif request.method == 'DELETE':
+        pk = request.GET.get('id')
+        if pk:
+            try:
+                class_ = Class.objects.get(pk=pk)
+                class_.delete()
+                return JsonResponse(data={"result":True,"success":"Successfully removed class from your list"},status=204)
+
+            except Class.DoesNotExist:
+                return JsonResponse(data={"result":False,"error":"Class does not exist"},status=404)
+        return JsonResponse(data={"result":False,"error":"Please include class id like ?id=1"},status=400)
+
+@api_view(['GET','POST','DELETE','PUT'])
+def classenrolledapi(request):
+
+    if request.method == 'GET':
+        serializer = ClassEnrolledSerializer(ClassEnrolled.objects.all(),many=True)
+
+        return JsonResponse(serializer.data,safe=False)

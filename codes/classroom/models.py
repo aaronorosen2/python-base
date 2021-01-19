@@ -21,8 +21,8 @@ class Student(models.Model):
 
 
 class Class(models.Model):
-    name = models.CharField(max_length=128,blank=True,null=True)
-
+    class_name = models.CharField(max_length=128,blank=True,null=True)
+    class_id = models.CharField(max_length=128,blank=True,null=True)
     def __str__(self):
         return self.name
 
