@@ -10,7 +10,7 @@ from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
-from courses_api.models import UserSession
+from .models import UserSession
 import json
 import uuid
 import datetime

@@ -61,7 +61,11 @@ INSTALLED_APPS = [
     'manifest_app',
     's3_uploader',
     'parking',
-    'signature'
+    'signature',
+    'dreamreader',
+    'neighbormade',
+    'classroom',
+    'vconf',
 ]
 
 MIDDLEWARE = [
@@ -108,7 +112,7 @@ AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR + '/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -178,6 +182,10 @@ REST_FRAMEWORK = {
         'knox.auth.TokenAuthentication',
     ]
 }
+# KNOX
+REST_KNOX = {
+  'USER_SERIALIZER': 's3_uploader.serializers.UserSerializer',
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -233,15 +241,10 @@ CELERY_BEAT_SCHEDULE = {
 CORS_ORIGIN_ALLOW_ALL = True
 
 # Email
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'user@gmail.com'
-EMAIL_HOST_PASSWORD = 'user-token'
-DEFAULT_FROM_EMAIL = 'user@gmail.com'
+EMAIL_BACKEND = 'django_ses.SESBackend'
+# AWS_ACCESS_KEY_ID = 'AKIAIHFAW4CMLKGZJWQQ'
+# AWS_SECRET_ACCESS_KEY = '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'
+DEFAULT_FROM_EMAIL = 'mail-api@dreampotential.org'
 
 # Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
 # output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-

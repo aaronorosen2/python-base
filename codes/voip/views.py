@@ -70,7 +70,7 @@ def voip_callback(request, session_id):
         # Say a different message depending on the caller's choice
         if choice == '1':
             resp.say('Adding destination number to the conference!')
-            resp.redirect('http://3.137.150.83:8001/voip/api_voip/add_user/' + session_id)
+            resp.redirect('https://sfapp-api.dreamstate-4-all.org/voip/api_voip/add_user/' + session_id)
             print(str(resp))
             return HttpResponse(resp)
         elif choice == '2':
@@ -84,12 +84,12 @@ def voip_callback(request, session_id):
             resp.say("Sorry, I don't understand that choice.")
     else:
         # Get user input
-        gather = Gather(num_digits=1, action='http://3.137.150.83:8001/voip/api_voip/voip_callback/' + session_id)
+        gather = Gather(num_digits=1, action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
         gather.say('Please Press 1 to connect to destination. Press 2 to end the call.')
         resp.append(gather)
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
-    resp.redirect('http://3.137.150.83:8001/voip/api_voip/voip_callback/' + session_id)
+    resp.redirect('https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
 
     print(str(resp))
     return HttpResponse(resp)
@@ -112,7 +112,7 @@ def add_user_to_conf(request, session_id):
     participant = client.conferences(destination_number).participants.create(
         from_=settings.TWILIO['TWILIO_NUMBER'],
         to=destination_number,
-        conference_status_callback='http://3.137.150.83:8001/voip/api_voip/leave_conf/' + session_id,
+        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id,
         conference_status_callback_event="leave")
 
     print(participant)
@@ -185,9 +185,9 @@ def join_conference(request):
         call = twilio_client.calls.create(record=True,
                                           from_=settings.TWILIO['TWILIO_NUMBER'],
                                           to='+' + source_number,
-                                          url='http://3.137.150.83:8001/voip/api_voip/voip_callback/' + str(session_id),
+                                          url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
                                           status_callback_event=['completed'],
-                                          status_callback='http://3.137.150.83:8001/voip/api_voip/complete_call/' + str(session_id)
+                                          status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id)
                                           )
         sessionID_to_callsid[session_id] = call.sid
         sessionID_to_destNo[session_id] = '+' + dest_number
@@ -196,5 +196,3 @@ def join_conference(request):
         message = e.msg if hasattr(e, 'msg') else str(e)
         return JsonResponse({'error': message})
     return JsonResponse({'message': 'Success!'})
-
-

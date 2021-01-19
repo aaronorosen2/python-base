@@ -1,3 +1,4 @@
+import math
 import time
 import json
 import uuid
@@ -32,7 +33,10 @@ def get_services(request):
         service_types += to_list(service.services_list)
         population_types += to_list(service.population_list)
 
-        print(to_list(service.services_list))
+        # print(to_list(service.services_list))
+        if (math.isnan(float(service.latitude)) or
+                math.isnan(float(service.longitude))):
+            continue
         datas.append({
             'title': service.title,
             'description': service.description,
@@ -55,7 +59,12 @@ def get_services(request):
         'service_types': service_types,
         'population_types': population_types,
     }
-    return JsonResponse(results, safe=False)
+
+    from django.http import HttpResponse
+    print(results)
+    return HttpResponse(json.dumps(results),
+                        content_type="application/json")
+    # return JsonResponse(results, safe=False)
 
 
 @csrf_exempt
@@ -230,7 +239,7 @@ def del_med(request, med_id):
 
 @csrf_exempt
 def list_questions(request):
-    questions = Question.objects.filter().values().all()
+    questions = Question.objects.filter().order_by('id').values().all()
     for question in questions:
         question['choices'] = list(Choice.objects.filter(
             question__id=question['id']).values().all())
@@ -264,7 +273,8 @@ def test_product(request):
     return render(request, 'test/product.html')
 
 
-def get_presigned_video_url(object_name, expiration=3600, fields=None, conditions=None):
+def get_presigned_video_url(object_name, expiration=3600,
+                            fields=None, conditions=None):
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
     secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
@@ -274,7 +284,8 @@ def get_presigned_video_url(object_name, expiration=3600, fields=None, condition
         s3_client = boto3.client('s3')
     else:
         print("Use host. key or secret found")
-        s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
+        s3_client = boto3.client('s3', aws_access_key_id=key,
+                                 aws_secret_access_key=secret)
 
     # Generate a presigned S3 POST URL
     try:

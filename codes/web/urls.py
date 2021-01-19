@@ -65,6 +65,11 @@ urlpatterns = [
     path('signature_api/', include(
             ('signature.urls', 'signature_api'),
             namespace='signature_app')),
+    path('students_list/',include(
+        ('classroom.urls','classroom'),
+        namespace='classroom')),
+        
+    path('dreamreader', include('dreamreader.urls')),
 
         #  calendar URLS
 # path('calendar' , include('calendar_app.urls'))
