@@ -19,3 +19,4 @@ class ClassEnrolledSerializer(serializers.ModelSerializer):
     class Meta:
         model= ClassEnrolled
         fields = '__all__'
+        depth = 1

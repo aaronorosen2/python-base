@@ -113,6 +113,26 @@ def classapi(request):
 def classenrolledapi(request):
 
     if request.method == 'GET':
-        serializer = ClassEnrolledSerializer(ClassEnrolled.objects.all(),many=True)
 
+        serializer = ClassEnrolledSerializer(ClassEnrolled.objects.all(),many=True)
+        
         return JsonResponse(serializer.data,safe=False)
+
+    elif request.method == 'DELETE':
+        cid = request.GET.get('cid')
+        sid = request.GET.get('sid')
+        try:
+            student = ClassEnrolled.objects.get(student_id=sid,class_enrolled_id=cid)
+            student.delete()
+            return JsonResponse(data={"result":True,"success":"Successfully removed class from your list"},status=204)
+        except ClassEnrolled.DoesNotExist:
+            return JsonResponse(data={"result":False,"error":"Class does not exist"},status=404)
+        return JsonResponse(data={"result":False,"error":"Please include class id like ?id=1"},status=400)
+    
+    elif request.method == 'POST':
+        student = Student.objects.get(name=request.POST['student'])
+        class_ = Class.objects.get(class_id=request.POST['class'])
+
+        enroll = ClassEnrolled(student=student,class_enrolled=class_)
+        enroll.save()
+        return JsonResponse(data=request.data,status=200)
