@@ -48,3 +48,11 @@ class RoomVisitorsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomVisitors
         fields = '__all__'
+
+
+class RoomInfoVisitorsSerializer(serializers.ModelSerializer):
+    room = RoomInfoSerializer(read_only=True)
+
+    class Meta:
+        model = RoomVisitors
+        fields = '__all__'

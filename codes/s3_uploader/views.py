@@ -25,7 +25,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import ChangePasswordSerializer
-from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer
+from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer, RoomVisitorsSerializer, RoomInfoVisitorsSerializer
+from .models import RoomInfo, RoomVisitors
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -33,13 +34,18 @@ class Home(View):
     def get(self, request, *args, **kwargs):
         return render(request, "s3_uploader/upload.html")
 
-@method_decorator(csrf_exempt, name='dispatch')
-class UploadRoomLogo(generics.GenericAPIView):
-    serializer_class = RoomInfoSerializer
 
+@method_decorator(csrf_exempt, name='dispatch')
+class RoomInfoView(View):
     def get(self, request, *args, **kwargs):
         return render(request, "s3_uploader/upload_room_logo.html")
-    
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadRoomLogo(generics.ListCreateAPIView):
+    queryset = RoomInfo.objects.all()
+    serializer_class = RoomInfoSerializer
+
     def post(self, request, *args, **kwargs):
         # print(request.data)
         serializer = self.get_serializer(data=request.data)
@@ -51,7 +57,42 @@ class UploadRoomLogo(generics.GenericAPIView):
         })
 
 
+class RoomVisitor(generics.ListCreateAPIView):
+    queryset = RoomVisitors.objects.select_related('room')
+    serializer_class = RoomInfoVisitorsSerializer
+
+    def get_serializer_class(self, *args, **kwargs):
+        if(self.request.method == 'GET'):
+            return RoomInfoVisitorsSerializer
+        elif(self.request.method == 'POST'):
+            return RoomVisitorsSerializer
+
+    def post(self, request, *args, **kwargs):
+        # print(request.data)
+        try:
+            room_info = RoomInfo.objects.filter(room_name=request.data['room_name'])
+        except RoomInfo.DoesNotExist:
+            raise
+        # print(room_info)
+        # print(request.data)
+        tempData = request.data.copy()
+        # print(tempData)
+        tempData.__setitem__('room',room_info[0].id)
+        # print(tempData)
+        # requestDict = dict(request.data)
+        # requestDict['room'] = room_info[0].id
+        # print(requestDict)
+        serializer = self.get_serializer(data=tempData)
+        serializer.is_valid(raise_exception=True)
+        room_visitor = serializer.save()
+        # print(room)
+        return Response({
+            "room_visitor": RoomVisitorsSerializer(room_visitor, context=self.get_serializer_context()).data
+        })
+
 # Register User
+
+
 class UserRegister(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
@@ -160,7 +201,8 @@ class S3SignedUrl(generics.GenericAPIView):
         final_file_name = 'uploads/{0}'.format(file_name_uuid)
 
         # Get pre-signed post url and fields
-        resp = get_presigned_s3_url(object_name=final_file_name, expiration=seconds_per_day)
+        resp = get_presigned_s3_url(
+            object_name=final_file_name, expiration=seconds_per_day)
 
         # del os.environ['S3_USE_SIGV4']
 
@@ -187,7 +229,8 @@ class MakeS3FilePublic(generics.GenericAPIView):
         key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
         secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
 
-        s3 = boto3.resource('s3', aws_access_key_id=key, aws_secret_access_key=secret)
+        s3 = boto3.resource('s3', aws_access_key_id=key,
+                            aws_secret_access_key=secret)
         object = s3.Bucket(bucket_name).Object(file_name)
         object.Acl().put(ACL='public-read')
 
@@ -233,7 +276,8 @@ def upload_to_s3(s3_key, uploaded_file):
         s3_client = boto3.client('s3')
     else:
         print("Use host. key or secret found")
-        s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
+        s3_client = boto3.client(
+            's3', aws_access_key_id=key, aws_secret_access_key=secret)
 
     content_type, _ = mimetypes.guess_type(s3_key)
     s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key,
@@ -252,7 +296,8 @@ def get_presigned_s3_url(object_name, expiration=3600):
         s3_client = boto3.client('s3')
     else:
         print("Access Key and Secret Found")
-        s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
+        s3_client = boto3.client(
+            's3', aws_access_key_id=key, aws_secret_access_key=secret)
 
     # Get content type
     content_type, _ = mimetypes.guess_type(object_name)
