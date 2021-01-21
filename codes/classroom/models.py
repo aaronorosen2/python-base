@@ -24,7 +24,7 @@ class Class(models.Model):
     class_name = models.CharField(max_length=128,blank=True,null=True)
     class_id = models.CharField(max_length=128,blank=True,null=True)
     def __str__(self):
-        return self.name
+        return self.class_name
 
 class ClassEnrolled(models.Model):
     student = models.ForeignKey(Student,on_delete=models.CASCADE)
