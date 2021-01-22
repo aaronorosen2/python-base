@@ -5,11 +5,12 @@ from django.http.response import JsonResponse,HttpResponseRedirect
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 from .serializers import StudentSerializer, ClassSerializer, ClassEnrolledSerializer
+from .models import Student
 from rest_framework.decorators import api_view
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from django.contrib.auth.models import User
 
 
 class StudentList(APIView):
@@ -45,21 +46,26 @@ def studentapi(request):
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'POST':
-        serializer = StudentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data,status=201)
-        return JsonResponse(serializer.errors,status=400)
+        try:
+            user = User.objects.get(username=request.data.get('user'))
+            student = Student(name=request.data['name'],email=request.data['email'],phone=request.data['phone'],user=user)
+            student.save()
+            return JsonResponse({"success":True},status=201)
+        except:
+            return JsonResponse({"success":False},status=400)
     
     elif request.method == 'PUT':
         pk = request.GET.get('id')
         if pk:
             student = Student.objects.get(pk=pk)
-            serializer = StudentSerializer(student,data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data,status=201)
-        return JsonResponse(serializer.errors,status=400)
+            user = User.objects.get(username=request.data['user'])
+            student.name = request.data['name']
+            student.email = request.data['email']
+            student.phone = request.data['phone']
+            student.user = user
+            student.save()
+            return JsonResponse({"success":True},status=201)
+        return JsonResponse({"success":False},status=400)
         
     elif request.method == 'DELETE':
         pk = request.GET.get('id')
