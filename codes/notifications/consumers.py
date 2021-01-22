@@ -227,6 +227,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.user_list.clear()
             self.user_list.extend(self.user_dictionary.values())
             self.user_channels_details[send_data['user_name']] = self.channel_name
+            self.send_meeting_url_to_slack(send_data)
             # await self.print_details(send_data)
             redisconn.hset(self.room_group_name+'@back',
                            self.channel_name,
