@@ -98,7 +98,8 @@ function init() {
               action:"store_user_name",
               user_name:document.getElementById("user_name").value,
               email:document.getElementById("email").value,
-              phone_number:document.getElementById("phone_number").value
+              phone_number:document.getElementById("phone_number").value,
+              meeting_url:window.location.host
             }
             // socket.send(document.getElementById("message").value);
             socket.send(JSON.stringify(dict));
