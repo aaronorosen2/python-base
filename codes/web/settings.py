@@ -237,6 +237,7 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 
+
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
 

@@ -28,7 +28,6 @@ from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer, RoomVisitorsSerializer, RoomInfoVisitorsSerializer
 from .models import RoomInfo, RoomVisitors
 
-
 @method_decorator(csrf_exempt, name='dispatch')
 class Home(View):
     def get(self, request, *args, **kwargs):
@@ -47,14 +46,18 @@ class UploadRoomLogo(generics.ListCreateAPIView):
     serializer_class = RoomInfoSerializer
 
     def post(self, request, *args, **kwargs):
-        # print(request.data)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        room = serializer.save()
-        # print(room)
-        return Response({
-            "room": RoomInfoSerializer(room, context=self.get_serializer_context()).data
-        })
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            room = serializer.save()
+            return Response({
+                "room": RoomInfoSerializer(room, context=self.get_serializer_context()).data
+            })
+        
+        except Exception as ex:
+            return Response({
+                "error": str(ex)
+            }, status=400)
 
 
 class RoomVisitor(generics.ListCreateAPIView):
@@ -68,20 +71,14 @@ class RoomVisitor(generics.ListCreateAPIView):
             return RoomVisitorsSerializer
 
     def post(self, request, *args, **kwargs):
-        # print(request.data)
         try:
-            room_info = RoomInfo.objects.filter(room_name=request.data['room_name'])
+            room_info = RoomInfo.objects.filter(
+                room_name=request.data['room_name'])
         except RoomInfo.DoesNotExist:
             raise
-        # print(room_info)
-        # print(request.data)
+
         tempData = request.data.copy()
-        # print(tempData)
-        tempData.__setitem__('room',room_info[0].id)
-        # print(tempData)
-        # requestDict = dict(request.data)
-        # requestDict['room'] = room_info[0].id
-        # print(requestDict)
+        tempData.__setitem__('room', room_info[0].id)
         serializer = self.get_serializer(data=tempData)
         serializer.is_valid(raise_exception=True)
         room_visitor = serializer.save()
@@ -91,8 +88,6 @@ class RoomVisitor(generics.ListCreateAPIView):
         })
 
 # Register User
-
-
 class UserRegister(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 

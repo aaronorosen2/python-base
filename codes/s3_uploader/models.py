@@ -18,7 +18,7 @@ class ParentModel(models.Model):
         abstract = True
 
 class RoomInfo(ParentModel):
-    room_name = models.CharField(max_length=50)
+    room_name = models.CharField(max_length=50, unique=True)
     logo_url = models.TextField()
 
 class RoomVisitors(ParentModel):
