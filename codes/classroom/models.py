@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 # class Teacher(models.Model):
@@ -15,6 +16,7 @@ class Student(models.Model):
     name = models.CharField(max_length=128, blank=True, null=True)
     phone = models.CharField(max_length=20, null=True)
     created_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True,related_name='usernames')
 
     def __str__(self):
         return self.name
@@ -23,6 +25,7 @@ class Student(models.Model):
 class Class(models.Model):
     class_name = models.CharField(max_length=128,blank=True,null=True)
     class_id = models.CharField(max_length=128,blank=True,null=True)
+    user = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
     def __str__(self):
         return self.class_name
 

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import Student, Class, ClassEnrolled
+from django.contrib.auth.models import User
 from django.http.response import JsonResponse,HttpResponseRedirect
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
@@ -41,7 +42,6 @@ def delete(request):
 def studentapi(request):
     if request.method == 'GET':
         serializer = StudentSerializer(Student.objects.all(),many=True)
-
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'POST':
