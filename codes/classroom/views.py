@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import Student, Class, ClassEnrolled
+from django.contrib.auth.models import User
 from django.http.response import JsonResponse,HttpResponseRedirect
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
@@ -8,7 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from django.contrib.auth.models import User
 
 
 class StudentList(APIView):
@@ -41,25 +42,29 @@ def delete(request):
 def studentapi(request):
     if request.method == 'GET':
         serializer = StudentSerializer(Student.objects.all(),many=True)
-
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'POST':
-        serializer = StudentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data,status=201)
-        return JsonResponse(serializer.errors,status=400)
+        try:
+            user = User.objects.get(username=request.data.get('user'))
+            student = Student(name=request.data['name'],email=request.data['email'],phone=request.data['phone'],user=user)
+            student.save()
+            return JsonResponse({"success":True},status=201)
+        except:
+            return JsonResponse({"success":False},status=400)
     
     elif request.method == 'PUT':
         pk = request.GET.get('id')
         if pk:
             student = Student.objects.get(pk=pk)
-            serializer = StudentSerializer(student,data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data,status=201)
-        return JsonResponse(serializer.errors,status=400)
+            user = User.objects.get(username=request.data['user'])
+            student.name = request.data['name']
+            student.email = request.data['email']
+            student.phone = request.data['phone']
+            student.user = user
+            student.save()
+            return JsonResponse({"success":True},status=201)
+        return JsonResponse({"success":False},status=400)
         
     elif request.method == 'DELETE':
         pk = request.GET.get('id')
@@ -67,11 +72,11 @@ def studentapi(request):
             try:
                 student = Student.objects.get(pk=pk)
                 student.delete()
-                return JsonResponse(data={"result":True,"success":"Successfully removed student from your class"},status=204)
+                return JsonResponse(data={"success":True,"message":"Successfully removed student from your class"},status=204)
 
             except Student.DoesNotExist:
-                return JsonResponse(data={"result":False,"error":"Student does not exist on your class"},status=404)
-        return JsonResponse(data={"result":False,"error":"Please include student id like ?id=1"},status=400)
+                return JsonResponse(data={"success":False,"message":"Student does not exist on your class"},status=404)
+        return JsonResponse(data={"success":False,"message":"Please include student id like ?id=1"},status=400)
 
 @api_view(['GET','POST','DELETE','PUT'])
 def classapi(request):
@@ -81,21 +86,25 @@ def classapi(request):
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'POST':
-        serializer = ClassSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data,status=201)
-        return JsonResponse(serializer.errors,status=400)
+        try:
+            user = User.objects.get(username=request.data['user'])
+            class_ = Class(class_name=request.data['class_name'],class_id=request.data['class_id'],user=user)
+            class_.save()
+            return JsonResponse({"success":True},status=201)
+        except:
+            return JsonResponse({"success":False},status=400)
 
     elif request.method == 'PUT':
         pk = request.GET.get('id')
         if pk:
+            user = User.objects.get(username=request.data['user'])
             class_ = Class.objects.get(pk=pk)
-            serializer = ClassSerializer(class_,data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data,status=201)
-        return JsonResponse(serializer.errors,status=400)
+            class_.class_name = request.data['class_name']
+            class_.class_id = class_id=request.data['class_id']
+            class_.user = user
+            class_.save()
+            return JsonResponse({"success":True},status=201)
+        return JsonResponse({"success":False},status=400)
 
     elif request.method == 'DELETE':
         pk = request.GET.get('id')

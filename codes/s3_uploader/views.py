@@ -110,7 +110,6 @@ class UserLogin(KnoxLoginView):
 
     def post(self, request, format=None):
         data = request.data
-
         # Allow login using username/email both
         try:
             data['username'] = data['email']
