@@ -229,7 +229,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'schedule_member': {
         'task': 'web.celery.schedule_member',
-        'schedule': timedelta(seconds=50)  # execute every minute
+        'schedule': timedelta(minutes=5)  # execute every minute
     },
     'room_details': {
         'task': 'web.celery.room_details',

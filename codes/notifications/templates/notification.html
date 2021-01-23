@@ -23,7 +23,7 @@
         if (document.getElementById("room_name").value == "") {
           alert("USERNAME should no be empty");
         } else {
-          socket = new WebSocket('wss://' + window.location.host + '/notifications/' + document.getElementById("room_name").value + '/');
+          socket = new WebSocket('ws://' + window.location.host + '/notifications/' + document.getElementById("room_name").value + '/');
           socket.onopen = function open() {
             console.log('WebSockets connection created.');
             if (document.getElementById("user_name").value == "") {
