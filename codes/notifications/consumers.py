@@ -268,6 +268,17 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                     'message': text_data,
                 },
             )
+        elif (send_data['action'] == 'join_room'):
+            message = {
+                'action': 'queue_status',
+                'message': 'go_live'
+            }
+            data = {"type": "notification_to_queue_member", "message": message}
+            reciever = self.user_channels_details[send_data['client']]
+            await self.channel_layer.send(
+                reciever,
+                data,
+            )
 
     async def disconnect(self, close_code):
         # Leave room group
