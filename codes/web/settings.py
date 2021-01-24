@@ -226,16 +226,16 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
-# CELERY_BEAT_SCHEDULE = {
-#     'schedule_member': {
-#         'task': 'web.celery.schedule_member',
-#         'schedule': timedelta(minutes=5)  # execute every minute
-#     },
-#     'room_details': {
-#         'task': 'web.celery.room_details',
-#         'schedule': timedelta(seconds=1)  # execute every seconds
-#     }
-# }
+CELERY_BEAT_SCHEDULE = {
+    'schedule_member': {
+        'task': 'web.celery.schedule_member',
+        'schedule': timedelta(minutes=50)  # execute every minute
+    },
+    'room_details': {
+        'task': 'web.celery.room_details',
+        'schedule': timedelta(seconds=1)  # execute every seconds
+    }
+}
 
 
 # CORS
