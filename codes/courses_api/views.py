@@ -15,6 +15,9 @@ import json
 import uuid
 import datetime
 from datetime import time
+from knox.auth import get_user_model, AuthToken
+from knox.views import user_logged_in
+from knox.serializers import UserSerializer
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -26,6 +29,8 @@ def apiOverview(request):
 def lesson_create(request):
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
+    auth_user = AuthToken.objects.get(user=request.user)
+    les_.user = get_user_model().objects.get(id=auth_user.user_id)
     les_.save()
 
     for flashcard in request.data["flashcards"]:
@@ -274,3 +279,5 @@ def get_user_session(response):
 
     return Response({'message': 'success',
     'session_id': user_session.session_id})
+
+
