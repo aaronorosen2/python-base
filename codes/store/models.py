@@ -37,3 +37,9 @@ class subscription(models.Model):
     is_ordered = models.BooleanField(default=False)
     date_ordered = models.DateTimeField(auto_now=True)
     plan_ID = models.CharField(max_length=70, blank=False)
+
+class BrainTreeConfig(models.Model):
+    id = models.AutoField(auto_created=True, primary_key=True)
+    braintree_merchant_ID = models.CharField(max_length=70, blank=False)
+    braintree_public_key = models.CharField(max_length=70, blank=False)
+    braintree_private_key = models.CharField(max_length=70, blank=False)
