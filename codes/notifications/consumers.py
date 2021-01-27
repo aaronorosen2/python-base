@@ -275,6 +275,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             }
             data = {"type": "notification_to_queue_member", "message": message}
             reciever = self.user_channels_details[send_data['client']]
+            redisconn.hdel(self.room_group_name+'@back', reciever)
             await self.channel_layer.send(
                 reciever,
                 data,
