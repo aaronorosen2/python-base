@@ -31,7 +31,7 @@ def send_wait_notification_customer():
             }
             notification = {
                 'type': 'notification_broadcast',
-                'message': message,
+                'message': json.dumps(message),
             }
             async_to_sync(channel_layer.send)(user, notification)
 

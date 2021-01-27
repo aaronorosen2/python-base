@@ -233,7 +233,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'room_details': {
         'task': 'web.celery.room_details',
-        'schedule': timedelta(seconds=1)  # execute every seconds
+        'schedule': timedelta(minutes=1)  # execute every seconds
     },
     'send_wait_notification_customer': {
         'task': 'web.celery.send_wait_notification_customer',
