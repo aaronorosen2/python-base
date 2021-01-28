@@ -1,18 +1,20 @@
 from django.shortcuts import render, redirect
-from .models import Student, Class, ClassEnrolled
+from .models import Student, Class, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
 from django.contrib.auth.models import User
 from django.http.response import JsonResponse,HttpResponseRedirect
+from django.http import QueryDict
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
-from .serializers import StudentSerializer, ClassSerializer, ClassEnrolledSerializer
+from .serializers import StudentSerializer, ClassSerializer, ClassEnrolledSerializer, ClassEmailSerializer, ClassSMSSerializer, StudentEmailSerializer, StudentSMSSerializer
 from rest_framework.decorators import api_view
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
-
-
-
+from django.views.decorators.csrf import csrf_exempt
+from form_lead.utils.email_util import send_raw_email
+from sfapp2.utils.twilio import send_sms
+import json
 #API for create/delete student to class
 @api_view(['GET','POST','DELETE','PUT'])
 def studentapi(request):
@@ -121,3 +123,71 @@ def classenrolledapi(request):
         enroll = ClassEnrolled(student=student,class_enrolled=class_)
         enroll.save()
         return JsonResponse(data=request.data,status=200)
+
+@csrf_exempt
+@api_view(['GET','POST'])
+def send_mail(request):
+    if request.method == "POST":
+        emails = []
+        for enroll in ClassEnrolled.objects.filter(class_enrolled_id=request.POST['class_enrolled_id']):
+            emails.append(enroll.student.email)
+            student = QueryDict('', mutable=True)
+            student.update({"student_id":enroll.student.id,"message":request.POST['message']})
+            serializer = StudentEmailSerializer(data=student)
+            if serializer.is_valid():
+                serializer.save()
+
+        subject = request.POST['message'].split("\n")[0]
+        body = "\n".join(request.POST['message'].split("\n")[1:])
+        send_raw_email(to_email=emails,reply_to=None,
+                        subject=subject,
+                        message_text=body,
+                        message_html=None)
+
+        serializer = ClassEmailSerializer(data=request.POST)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data,status=200)
+        return JsonResponse(serializer.errors,status=404)
+
+    elif request.method == "GET":
+        serializer = ClassEmailSerializer(ClassEmailAlert.objects.all(),many=True)
+        
+        return JsonResponse(serializer.data,safe=False)
+
+
+@api_view(['GET'])
+def student_mail(request):
+
+    if request.method == 'GET':
+        serializer = StudentEmailSerializer(StudentEmailAlert.objects.all(), many=True)
+        return JsonResponse(serializer.data,safe=False)
+    
+
+@csrf_exempt
+@api_view(['GET','POST'])
+def send_text(request):
+
+    if request.method == 'POST':
+        for enroll in ClassEnrolled.objects.filter(class_enrolled_id = request.POST['class_enrolled_id']):
+            st_qdict = QueryDict("",mutable=True)
+            st_qdict.update({"student_id":enroll.student.id,"message":request.POST['message']})
+            send_sms(to_number=enroll.student.phone,body=request.POST['message'])
+            serializer = StudentSMSSerializer(data=st_qdict)
+            if serializer.is_valid():
+                serializer.save()
+
+        serializer = ClassSMSSerializer(data=request.POST)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data,status=200)
+        return JsonResponse(serializer.errors,status=404)
+
+    if request.method == 'GET':
+        serializer = ClassSMSSerializer(ClassSMSAlert.objects.all(),many=True)
+        return JsonResponse(serializer.data,safe=False)
+
+@api_view(['GET'])
+def student_text(request):
+    serializer = StudentSMSSerializer(StudentSMSAlert.objects.all(),many=True)
+    return JsonResponse(serializer.data, safe=False)
