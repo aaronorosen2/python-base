@@ -208,6 +208,55 @@ def checkin_activity(request):
 
 
 @csrf_exempt
+def checkin_activity_admin(request):
+    print(request.POST.get('phone'))
+    if request.POST:
+        admin = get_member_from_headers(request.headers)
+        if admin:
+            user_phone = request.POST.get('phone')
+            if user_phone:
+                print(user_phone)
+                member = Member.objects.filter(phone=user_phone).first()
+                print(member)
+                gps_checkins = GpsCheckin.objects.filter(
+                    member=member).order_by('-created_at').all()
+
+                video_events = VideoUpload.objects.filter(
+                    member=member).order_by('-created_at').all()
+
+                events = []
+                for gps_checkin in gps_checkins:
+                    t = gps_checkin.created_at
+                    events.append({
+                        'type': 'gps',
+                        'lat': gps_checkin.lat,
+                        'lng': gps_checkin.lng,
+                        'msg': gps_checkin.msg,
+                        'created_at': time.mktime(t.timetuple()),
+                    })
+
+                for event in video_events:
+                    t = event.created_at
+                    # Disable server streaming, Only show videos that are uploaded to S3
+                    if event.source == 's3':
+                        video_url = get_presigned_video_url(event.videoUrl)
+                        events.append({
+                            'type': 'video',
+                            'video_url': video_url,
+                            'video_uuid': event.video_uuid,
+                            'created_at': time.mktime(t.timetuple())
+                        })
+
+                return JsonResponse({
+                    'user_activities': sorted(events,
+                                    key=lambda i: i['created_at'], reverse=True)
+                })
+            else:
+                return None
+
+
+
+@csrf_exempt
 def add_med(request):
     member = get_member_from_headers(request.headers)
     if member and request.POST:
