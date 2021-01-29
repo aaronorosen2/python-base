@@ -227,6 +227,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.user_list.clear()
             self.user_list.extend(self.user_dictionary.values())
             self.user_channels_details[send_data['user_name']] = self.channel_name
+            await self.send_meeting_url_to_slack(send_data)
             # await self.print_details(send_data)
             redisconn.hset(self.room_group_name+'@back',
                            self.channel_name,
@@ -267,6 +268,18 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                     'message': text_data,
                 },
             )
+        elif (send_data['action'] == 'join_room'):
+            message = {
+                'action': 'queue_status',
+                'message': 'go_live'
+            }
+            data = {"type": "notification_to_queue_member", "message": message}
+            reciever = self.user_channels_details[send_data['client']]
+            redisconn.hdel(self.room_group_name+'@back', reciever)
+            await self.channel_layer.send(
+                reciever,
+                data,
+            )
 
     async def disconnect(self, close_code):
         # Leave room group
@@ -301,6 +314,16 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         self.user_list.clear()
         self.user_list.extend(self.user_dictionary.values())
         # redisconn.zadd("backstage", {channel:time.time()+60})
+    
+    @sync_to_async
+    def send_meeting_url_to_slack(self, user_data):
+        import requests
+        import json
+        url = 'https://hooks.slack.com/services/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'
+        # send_message(text="Hi, I'm a test message.")
+        slack_message = user_data['user_name'] + " wants you to join the room "+ user_data['meeting_url']
+        body = {"text": "%s" % slack_message, 'username': user_data['user_name']}
+        requests.post(url, data=json.dumps(body))  
 
     @sync_to_async
     def get_room_info(self, room_name):

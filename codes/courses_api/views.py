@@ -2,6 +2,8 @@ from django.core.files import File
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.http import Http404, HttpResponseBadRequest
+from django.http import JsonResponse
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer
 from .serializers import UserSessionEventSerializer
@@ -15,6 +17,8 @@ import json
 import uuid
 import datetime
 from datetime import time
+from sfapp2.utils.twilio import send_confirmation_code
+
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -274,3 +278,31 @@ def get_user_session(response):
 
     return Response({'message': 'success',
     'session_id': user_session.session_id})
+
+@api_view(['POST'])
+def confirm_phone_number(request):
+    phone_number = request.data['phone_number']
+    session_id = request.data['session_id']
+
+    if not phone_number:
+        raise HttpResponseBadRequest()
+    if not session_id:
+        raise HttpResponseBadRequest()
+
+    session = UserSession.objects.filter(session_id=session_id)
+    code_2fa = send_confirmation_code(phone_number)
+
+    session.update(phone=phone_number,code_2fa=code_2fa)
+    
+    return Response({'message': 'pending 2fa'})
+
+@api_view(['POST'])
+def verify_2fa(request):
+    code = request.data['code_2fa']
+    phone = request.data['phone_number']
+    member = UserSession.objects.filter(phone=phone).first()
+    if phone == member.phone and code == member.code_2fa:
+        member.has_verified_phone=True
+        member.code_2fa=''
+        return Response({'message': 'success'})
+    return Response({'message': 'error'})

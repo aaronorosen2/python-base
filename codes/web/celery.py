@@ -12,8 +12,29 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
 channel_layer = channels.layers.get_channel_layer()
-redisconn = redis.StrictRedis(host='redis', port=6379, db=0, decode_responses=True)
+redisconn = redis.StrictRedis(
+    host='redis', port=6379, db=0, decode_responses=True)
 # sudo docker build --no-cache -t python_sfapp_celery_worker -f celery.Dockerfile .
+
+
+@app.task()
+def send_wait_notification_customer():
+    room_list = redisconn.smembers('room_names')
+    room_list = list(room_list)
+    room_list.remove('chat_admin')
+    for room in room_list:
+        listOfBackUsers = redisconn.hkeys(room+'@back')
+        for user in listOfBackUsers:
+            message = {
+                'action': "queue_status",
+                'message': "Please Wait For Representative!!"
+            }
+            notification = {
+                'type': 'notification_broadcast',
+                'message': json.dumps(message),
+            }
+            async_to_sync(channel_layer.send)(user, notification)
+
 
 @app.task()
 def room_details():
@@ -25,16 +46,18 @@ def room_details():
         listOfLiveUsers = redisconn.hvals(room+'@live')
         listOfBackUsers = redisconn.hvals(room+'@back')
         # if(len(listOfLiveUsers) > 0 or len(listOfBackUsers) > 0):
-        users_dict = {'room_name':room, 'live_users':listOfLiveUsers, 'back_users':listOfBackUsers}
+        users_dict = {'room_name': room,
+                      'live_users': listOfLiveUsers, 'back_users': listOfBackUsers}
         all_users.append(users_dict)
-    
+
     if(len(all_users) > 0):
         dataListOfUsers = {'type': 'users_list',
-                        'users': json.dumps(
-                            {'all_users': all_users,
-                            'action': 'all_users'}
-                        ),}
+                           'users': json.dumps(
+                               {'all_users': all_users,
+                                'action': 'all_users'}
+                           ), }
         async_to_sync(channel_layer.group_send)('chat_admin', dataListOfUsers)
+
 
 @app.task()
 def schedule_member():
@@ -55,16 +78,17 @@ def schedule_member():
 
         listOfLiveUsers = redisconn.hvals(room+'@live')
         listOfBackUsers = redisconn.hvals(room+'@back')
-        users_dict = {'room_name':room, 'live_users':listOfLiveUsers, 'back_users':listOfBackUsers}
+        users_dict = {'room_name': room,
+                      'live_users': listOfLiveUsers, 'back_users': listOfBackUsers}
         all_users.append(users_dict)
         details_room = {'type': 'users_list',
-                    'users': json.dumps(
-                        {'live_users': listOfLiveUsers,
-                        'action': 'users_list',
-                        'back_users':listOfBackUsers}
-                    ),}
+                        'users': json.dumps(
+                            {'live_users': listOfLiveUsers,
+                             'action': 'users_list',
+                             'back_users': listOfBackUsers}
+                        ), }
         async_to_sync(channel_layer.group_send)(room, details_room)
-    
+
     # dataListOfUsers = {'type': 'users_list',
     #                 'users': json.dumps(
     #                     {'all_users': all_users,
@@ -104,7 +128,7 @@ def remove_live(room_name, live_channels_name):
         }
         data = {"type": "notification_to_queue_member", "message": message}
         async_to_sync(channel_layer.send)(key, data)
-    
+
     # listOfLiveUsers = redisconn.hvals('live')
     # listOfBackUsers = redisconn.hvals('back')
     # dataListOfUsers = {'type': 'users_list',
@@ -113,7 +137,7 @@ def remove_live(room_name, live_channels_name):
     #                     'action': 'users_list',
     #                     'back_users':listOfBackUsers}
     #                 ),}
-                    
+
     # async_to_sync(channel_layer.group_send)('chat_users', dataListOfUsers)
 
 
@@ -122,8 +146,8 @@ def send_live(room_name, back_channel_names):
     # print(back_channel_names)
     backstage = redisconn.hmget(room_name+'@back', back_channel_names)
     # print(backstage)
-    res = {back_channel_names[i]: backstage[i] for i in range(len(back_channel_names))}
-    print(res)
+    res = {back_channel_names[i]: backstage[i]
+           for i in range(len(back_channel_names))}
     redisconn.hmset(room_name+'@live', res)
     for key in back_channel_names:
         redisconn.hdel(room_name+'@back', key)
@@ -134,13 +158,12 @@ def send_live(room_name, back_channel_names):
         }
         data = {"type": "notification_to_queue_member", "message": message}
         async_to_sync(channel_layer.send)(key, data)
-    
-    
 
 
 @app.task()
 def hello():
     print("Hello there!")
+
 
 @app.task(bind=True)
 def debug_task(self):
