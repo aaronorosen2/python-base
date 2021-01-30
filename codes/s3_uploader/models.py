@@ -27,6 +27,10 @@ class RoomVisitors(ParentModel):
     phone_number = models.CharField(max_length=20)
     room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
 
+class RoomRecording(ParentModel):
+    recording_link = models.TextField()
+    room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
+
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
     # Link to password reset page

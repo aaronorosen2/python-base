@@ -25,8 +25,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import ChangePasswordSerializer
-from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer, RoomVisitorsSerializer, RoomInfoVisitorsSerializer
-from .models import RoomInfo, RoomVisitors
+from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer,RoomVisitorsSerializer, RoomInfoVisitorsSerializer, RoomRecordingSerializer
+from .models import RoomInfo, RoomVisitors, RoomRecording
 
 @method_decorator(csrf_exempt, name='dispatch')
 class Home(View):
@@ -86,6 +86,48 @@ class RoomVisitor(generics.ListCreateAPIView):
         return Response({
             "room_visitor": RoomVisitorsSerializer(room_visitor, context=self.get_serializer_context()).data
         })
+
+class RecordingUpload(generics.GenericAPIView):
+    queryset = RoomRecording.objects.all()
+    serializer_class = RoomRecordingSerializer
+
+    def post(self, request, *args, **kwargs):
+        print("Uploading", request.FILES, request.POST)
+
+        # TODO: Implement auth here
+        member = 1
+        if not member:
+            return JsonResponse({'message': 'not logged in'})
+
+        # Get uploaded file
+        uploaded_file = request.FILES.get('file')
+        room_name = uploaded_file.name.split("_")
+        try:
+            room_info = RoomInfo.objects.get(
+                room_name=room_name[0])
+        except RoomInfo.DoesNotExist:
+            raise
+        
+        if uploaded_file:
+            # Get unique filename using UUID
+            file_name = uploaded_file.name
+            file_name_uuid = uuid_file_path(file_name)
+            s3_key = 'Test/upload/{0}'.format(file_name_uuid)
+
+            content_type, file_url = upload_to_s3(s3_key, uploaded_file)
+            room_recording = {'recording_link':file_url, 'room':room_info.id}
+            serializer = self.get_serializer(data=room_recording)
+            serializer.is_valid(raise_exception=True)
+            room = serializer.save()
+            return Response({
+                "room": RoomRecordingSerializer(room, context=self.get_serializer_context()).data
+            })
+            # print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
+
+            # return JsonResponse({'message': 'Success!', 'file_url': file_url, 'content_type': content_type})
+        else:
+            return JsonResponse({'message': 'No file provided!'})
+
 
 # Register User
 class UserRegister(generics.GenericAPIView):
@@ -258,6 +300,8 @@ class S3Upload(generics.GenericAPIView):
             return JsonResponse({'message': 'Success!', 'file_url': file_url, 'content_type': content_type})
         else:
             return JsonResponse({'message': 'No file provided!'})
+
+from django.shortcuts import redirect, HttpResponseRedirect
 
 
 def upload_to_s3(s3_key, uploaded_file):

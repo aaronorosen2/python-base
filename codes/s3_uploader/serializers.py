@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import RoomInfo, RoomVisitors
+from .models import RoomInfo, RoomVisitors, RoomRecording
 
 
 # Change Password Serializer
@@ -47,6 +47,11 @@ class RoomInfoSerializer(serializers.ModelSerializer):
 class RoomVisitorsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomVisitors
+        fields = '__all__'
+
+class RoomRecordingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoomRecording
         fields = '__all__'
 
 
