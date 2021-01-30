@@ -1,10 +1,11 @@
 from django.db import models
-
+from knox.auth import get_user_model
 
 class Lesson(models.Model):
     lesson_name = models.CharField(max_length=100, blank=True, default='')
     created = models.DateTimeField(auto_now_add=True)
-
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True,
+            default=None)
     def __str__(self):
         return self.lesson_name
 

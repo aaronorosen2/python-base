@@ -42,24 +42,33 @@ class ClassEnrolled(models.Model):
 
 
 class ClassEmailAlert(models.Model):
-    class_entrolled = models.ForeignKey(Class, on_delete=models.CASCADE)
+    class_enrolled = models.ForeignKey(Class, on_delete=models.CASCADE)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.class_enrolled
 
 class ClassSMSAlert(models.Model):
-    class_entrolled = models.ForeignKey(Class, on_delete=models.CASCADE)
+    class_enrolled = models.ForeignKey(Class, on_delete=models.CASCADE)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.class_enrolled
 
 class StudentEmailAlert(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.student.name
 
 class StudentSMSAlert(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.student.name

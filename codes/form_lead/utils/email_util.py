@@ -14,7 +14,7 @@ def send_raw_email(to_email, reply_to, subject,
     msg['Subject'] = subject
     msg['From'] = SENDER
     msg['To'] = ", ".join(to_email)
-    msg['Reply-to'] = ",".join(reply_to)
+    # msg['Reply-to'] = ",".join(reply_to)
 
     CHARSET = "utf-8"
     textpart = MIMEText(message_text.encode(CHARSET), 'plain', CHARSET)

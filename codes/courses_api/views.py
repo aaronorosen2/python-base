@@ -19,6 +19,9 @@ import datetime
 from datetime import time
 from sfapp2.utils.twilio import send_confirmation_code
 
+from knox.auth import get_user_model, AuthToken
+from knox.views import user_logged_in
+from knox.serializers import UserSerializer
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -30,6 +33,8 @@ def apiOverview(request):
 def lesson_create(request):
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
+    auth_user = AuthToken.objects.get(user=request.user)
+    les_.user = get_user_model().objects.get(id=auth_user.user_id)
     les_.save()
 
     for flashcard in request.data["flashcards"]:
@@ -233,6 +238,7 @@ def flashcard_response(request):
     flashcard_id = request.data['flashcard']
     session_id = request.data['session_id']
     answer = request.data['answer']
+    signature = request.data['signature']
     flashcard = FlashCard.objects.get(id=flashcard_id)
     user_session = UserSession.objects.get(session_id=session_id)
     print("%s %s %s" % (user_session, flashcard, answer))
@@ -251,7 +257,8 @@ def flashcard_response(request):
             user_session=user_session,
             lesson=flashcard.lesson,
             flashcard=flashcard,
-            answer=answer)
+            answer=answer,
+             signature=signature)
     flashcard_response.save()
     return Response("Response Recorded")
 
