@@ -209,10 +209,9 @@ def checkin_activity(request):
 
 @csrf_exempt
 def checkin_activity_admin(request):
-    print(request.POST.get('phone'))
     if request.POST:
-        admin = get_member_from_headers(request.headers)
-        if admin:
+        admin = request.user
+        if admin != 'AnonymousUser':
             user_phone = request.POST.get('phone')
             if user_phone:
                 print(user_phone)
