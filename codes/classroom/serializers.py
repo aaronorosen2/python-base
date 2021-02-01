@@ -20,7 +20,7 @@ class ClassSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     class Meta:
         model = Class
-        fields = ['id','class_id','class_name','user']
+        fields = ['id','class_name','user']
         depth = 1
 
 class ClassEnrolledSerializer(serializers.ModelSerializer):

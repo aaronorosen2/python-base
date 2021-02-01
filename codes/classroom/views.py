@@ -66,23 +66,22 @@ def classapi(request):
     elif request.method == 'POST':
         try:
             user = User.objects.get(username=request.data['user'])
-            class_ = Class(class_name=request.data['class_name'],class_id=request.data['class_id'],user=user)
+            class_ = Class(class_name=request.data['class_name'],user=user)
             class_.save()
             return JsonResponse({"success":True},status=201)
         except:
             return JsonResponse({"success":False},status=400)
 
     elif request.method == 'PUT':
-        pk = request.GET.get('id')
-        if pk:
+        try:
             user = User.objects.get(username=request.data['user'])
-            class_ = Class.objects.get(pk=pk)
+            class_ = Class.objects.get(pk=request.data['id'])
             class_.class_name = request.data['class_name']
-            class_.class_id = class_id=request.data['class_id']
             class_.user = user
             class_.save()
             return JsonResponse({"success":True},status=201)
-        return JsonResponse({"success":False},status=400)
+        except:
+            return JsonResponse({"success":False},status=400)
 
     elif request.method == 'DELETE':
         pk = request.GET.get('id')
@@ -118,7 +117,7 @@ def classenrolledapi(request):
     
     elif request.method == 'POST':
         student = Student.objects.get(name=request.POST['student'])
-        class_ = Class.objects.get(class_id=request.POST['class'])
+        class_ = Class.objects.get(id=request.POST['class'])
 
         enroll = ClassEnrolled(student=student,class_enrolled=class_)
         enroll.save()

@@ -25,7 +25,6 @@ class Student(models.Model):
 
 class Class(models.Model):
     class_name = models.CharField(max_length=128, blank=True, null=True)
-    class_id = models.CharField(max_length=128, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              null=True, blank=True)
 
