@@ -10,21 +10,25 @@ from rest_framework.decorators import api_view
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from knox.models import AuthToken
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from form_lead.utils.email_util import send_raw_email
 from sfapp2.utils.twilio import send_sms
 import json
+
+
 #API for create/delete student to class
 @api_view(['GET','POST','DELETE','PUT'])
 def studentapi(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
-        serializer = StudentSerializer(Student.objects.all(),many=True)
+        serializer = StudentSerializer(Student.objects.filter(user_id=token.user_id),many=True)
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'POST':
         try:
-            user = User.objects.get(username=request.data.get('user'))
+            user = User.objects.get(id=token.user_id)
             student = Student(name=request.data['name'],email=request.data['email'],phone=request.data['phone'],user=user)
             student.save()
             return JsonResponse({"success":True},status=201)
@@ -32,17 +36,17 @@ def studentapi(request):
             return JsonResponse({"success":False},status=400)
     
     elif request.method == 'PUT':
-        pk = request.GET.get('id')
-        if pk:
-            student = Student.objects.get(pk=pk)
-            user = User.objects.get(username=request.data['user'])
+        try:
+            student = Student.objects.get(pk=request.data['id'])
+            user = User.objects.get(id=token.user_id)
             student.name = request.data['name']
             student.email = request.data['email']
             student.phone = request.data['phone']
             student.user = user
-            student.save()
+            student.save() 
             return JsonResponse({"success":True},status=201)
-        return JsonResponse({"success":False},status=400)
+        except:
+            return JsonResponse({"success":False},status=400)
         
     elif request.method == 'DELETE':
         pk = request.GET.get('id')
@@ -56,16 +60,17 @@ def studentapi(request):
                 return JsonResponse(data={"success":False,"message":"Student does not exist on your class"},status=404)
         return JsonResponse(data={"success":False,"message":"Please include student id like ?id=1"},status=400)
 
+
 @api_view(['GET','POST','DELETE','PUT'])
 def classapi(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
-        serializer = ClassSerializer(Class.objects.all(),many=True)
-
+        serializer = ClassSerializer(Class.objects.filter(user_id=token.user_id),many=True)
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'POST':
         try:
-            user = User.objects.get(username=request.data['user'])
+            user = User.objects.get(id=token.user_id)
             class_ = Class(class_name=request.data['class_name'],user=user)
             class_.save()
             return JsonResponse({"success":True},status=201)
@@ -74,7 +79,7 @@ def classapi(request):
 
     elif request.method == 'PUT':
         try:
-            user = User.objects.get(username=request.data['user'])
+            user = User.objects.get(id=token.user_id)
             class_ = Class.objects.get(pk=request.data['id'])
             class_.class_name = request.data['class_name']
             class_.user = user
