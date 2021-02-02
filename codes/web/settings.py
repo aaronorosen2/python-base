@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'neighbormade',
     'classroom',
     'vconf',
+    'audition',
 ]
 
 MIDDLEWARE = [
