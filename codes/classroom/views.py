@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
-from .models import Student, Class, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
+from .models import Teacher,Student, Class, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
 from django.contrib.auth.models import User
 from django.http.response import JsonResponse,HttpResponseRedirect
 from django.http import QueryDict
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
-from .serializers import StudentSerializer, ClassSerializer, ClassEnrolledSerializer, ClassEmailSerializer, ClassSMSSerializer, StudentEmailSerializer, StudentSMSSerializer
+from .serializers import TeacherSerializer,StudentSerializer,UserSerializer, ClassSerializer, ClassEnrolledSerializer, ClassEmailSerializer, ClassSMSSerializer, StudentEmailSerializer, StudentSMSSerializer
 from rest_framework.decorators import api_view
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
@@ -18,14 +18,47 @@ from sfapp2.utils.twilio import send_sms
 import json
 
 
+# teacher api
+@api_view(['GET','POST','DELETE','PUT'])
+def teacherapi(request):
+    if request.method == 'GET' and request.GET.get('teacher'):
+        serializer = TeacherSerializer(Teacher.objects.all(),many=True)
+        return JsonResponse(serializer.data,safe=False)
+    if request.method == "GET":
+        serializer = UserSerializer(User.objects.all(),many=True)
+        return JsonResponse(serializer.data,safe=False)
+
+    elif request.method == "POST":
+        teacher = User.objects.get(id=request.data.get('teacher'))
+        student = Student.objects.get(id=request.data.get('student'))
+        teacher = Teacher(teacher=teacher,student=student)
+        teacher.save()
+        return JsonResponse({"Result":True},status=201)
+
+    elif request.method == "DELETE":
+        tid = request.GET.get('tid')
+        sid = request.GET.get('sid')
+        try:
+            student = Teacher.objects.get(student_id=sid,teacher_id=tid)
+            student.delete()
+            return JsonResponse(data={"result":True,"success":"Successfully removed student from teacher"},status=204)
+            
+        except Teacher.DoesNotExist:
+            return JsonResponse(data={"result":False,"error":"Teacher-Student does not exist"},status=404)
+
 #API for create/delete student to class
 @api_view(['GET','POST','DELETE','PUT'])
 def studentapi(request):
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
-    if request.method == 'GET':
+
+    if request.method == 'GET' and request.GET.get('teacher'):
+        serializer = StudentSerializer(Student.objects.all(),many=True)
+        return JsonResponse(serializer.data,safe=False)
+             
+    elif request.method == 'GET':
         serializer = StudentSerializer(Student.objects.filter(user_id=token.user_id),many=True)
         return JsonResponse(serializer.data,safe=False)
-
+    
     elif request.method == 'POST':
         try:
             user = User.objects.get(id=token.user_id)
@@ -59,6 +92,7 @@ def studentapi(request):
             except Student.DoesNotExist:
                 return JsonResponse(data={"success":False,"message":"Student does not exist on your class"},status=404)
         return JsonResponse(data={"success":False,"message":"Please include student id like ?id=1"},status=400)
+
 
 
 @api_view(['GET','POST','DELETE','PUT'])

@@ -1,12 +1,19 @@
 from rest_framework import serializers
-from .models import Student, Class, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
+from .models import Teacher,Student, Class, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id','username']
+        fields = ['id','username','first_name']
+
+class TeacherSerializer(UserSerializer):
+    teacher = UserSerializer()
+    class Meta:
+        model = Teacher
+        fields = ['teacher','student']
+        depth = 1
 
 class StudentSerializer(UserSerializer):
     user = UserSerializer()
