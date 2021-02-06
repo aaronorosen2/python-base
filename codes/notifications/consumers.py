@@ -6,7 +6,7 @@
 
 from asgiref.sync import async_to_sync, sync_to_async
 from queue import Queue
-from s3_uploader.models import RoomInfo, RoomVisitors
+from vconf.models import RoomInfo, RoomVisitors
 from s3_uploader.serializers import RoomInfoSerializer, RoomVisitorsSerializer
 import time
 import redis
