@@ -17,7 +17,9 @@ import json
 import uuid
 import datetime
 from datetime import time
-from sfapp2.utils.twilio import send_confirmation_code
+from sfapp2.utils.twilio import send_confirmation_code, send_sms
+from form_lead.utils.email_util import send_raw_email
+from classroom.models import Student, Class, ClassEnrolled
 
 from knox.auth import get_user_model, AuthToken
 from knox.views import user_logged_in
@@ -311,3 +313,52 @@ def verify_2fa(request):
         member.code_2fa=''
         return Response({'message': 'success'})
     return Response({'message': 'error'})
+
+
+@api_view(['POST'])
+def invite_email(request):
+    subject = "Invitation to Lesson"
+    body = request.data.get('body')
+    if request.data.get('student'):
+        student = Student.objects.get(id=request.data.get('student'))
+        to_email = student.email
+        send_raw_email(to_email=[to_email],reply_to=None,
+                        subject=subject,
+                        message_text=body,
+                        message_html=None)
+        return JsonResponse({"sucess":True},status=200)
+    if request.data.get('class'):
+        emails = []
+        _class = ClassEnrolled.objects.filter(class_enrolled_id=request.data.get('class'))
+        if _class:
+            for std in _class:
+                emails.append(std.student.email)
+
+            send_raw_email(to_email=emails,reply_to=None,
+                        subject=subject,
+                        message_text=body,
+                        message_html=None)
+            return JsonResponse({"sucess":True},status=200)
+        else:
+            return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
+    
+
+@api_view(['POST'])
+def invite_text(request):
+    subject = "Invitation to Lesson"
+    body = request.data.get('body')
+    if request.data.get('student'):
+        student = Student.objects.get(id=request.data.get('student'))
+        send_sms(to_number=student.phone,body=subject +"\n"+ body)
+        return JsonResponse({"sucess":True},status=200)
+
+    if request.data.get('class'):
+        _class = ClassEnrolled.objects.filter(class_enrolled_id=request.data.get('class'))
+        if _class:
+            for std in _class:
+                send_sms(to_number=std.student.phone,body=subject +"\n"+ body)
+            return JsonResponse({"sucess":True},status=200)
+        else:
+            return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
+    
+    return JsonResponse({"sucess":True},status=200)

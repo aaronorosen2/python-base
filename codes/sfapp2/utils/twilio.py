@@ -12,7 +12,6 @@ def send_confirmation_code(to_number):
 def generate_code():
     return str(random.randrange(1000, 9999))
 
-
 def send_sms(to_number, body):
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
@@ -63,7 +62,7 @@ def list_calls():
     client = Client(account_sid, auth_token)
 
     # XXX filter calls to be 15102885469
-    calls = client.api.calls.list(limit=100)
+    calls = client.api.calls.list(limit=20)
     resps = []
     for call in calls:
         # print((call.recordings.list))

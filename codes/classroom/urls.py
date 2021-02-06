@@ -9,5 +9,7 @@ urlpatterns = [
     path('send/mail/student',views.student_mail,name='student-email'),
     path('send/text/class',views.send_text,name='class-text'),
     path('send/text/student',views.student_text,name='student-text'),
+    path('get/teachers',views.teacherapi,name='teachers-data'),
+
 ]
     
