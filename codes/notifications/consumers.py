@@ -221,6 +221,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     async def receive(self, text_data):
 
         send_data = json.loads(text_data)
+        # print(send_data)
         if(send_data['action'] == 'store_user_name'):
 
             del self.user_dictionary[self.channel_name]
@@ -248,7 +249,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                          }),
                 },
             )
-            if(redisconn.hexists("room_representative", self.room_group_name)):
+            if(redisconn.hexists("roomrepresentative", self.room_group_name)):
                 message = {
                     'action': 'queue_status',
                     'message': 'go_live'
@@ -286,8 +287,12 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 'action': 'queue_status',
                 'message': 'go_live'
             }
-            if(send_data['representatve']):
-                redisconn.hset("room_representative",
+            # await sync_to_async(print(send_data))
+            # print(send_data)
+            if(send_data['representatve'] == True):
+                # print("representative...")
+                # await self.printData(send_data)
+                redisconn.hset("roomrepresentative",
                                self.room_group_name,
                                self.channel_name)
             else:
@@ -312,7 +317,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             redisconn.hdel(self.room_group_name+'@live', self.channel_name)
         else:
             redisconn.hdel(self.room_group_name+'@back', self.channel_name)
-        redisconn.hdel("room_representative", self.room_group_name)
+        redisconn.hdel("roomrepresentative", self.room_group_name)
         listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
         listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
         dataListOfUsers = {'type': 'users_list',
@@ -333,6 +338,10 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         self.user_list.clear()
         self.user_list.extend(self.user_dictionary.values())
         # redisconn.zadd("backstage", {channel:time.time()+60})
+
+    @sync_to_async
+    def printData(self, dataDict):
+        print(dataDict)
 
     @sync_to_async
     def send_meeting_url_to_slack(self, user_data):

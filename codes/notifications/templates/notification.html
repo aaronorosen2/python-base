@@ -13,6 +13,7 @@
 
 
     var socket;
+    var roomRepresentative = true;
 
 
     if (document.getElementById("room_form")) {
@@ -26,10 +27,18 @@
           socket = new WebSocket('wss://' + window.location.host + '/notifications/' + document.getElementById("room_name").value + '/');
           socket.onopen = function open() {
             console.log('WebSockets connection created.');
+            var dictJoinRoom = {
+              action: "join_room",
+              client: "customerName",
+              representatve: roomRepresentative === null ? false : true
+            }
+            console.log("dictionary..", dictJoinRoom);
+            socket.send(JSON.stringify(dictJoinRoom));
             if (document.getElementById("user_name").value == "") {
               document.getElementById("user_name").value = "Anonymous";
             }
           };
+
           var liveUserlist = document.getElementById("liveUsers");
           var backUserlist = document.getElementById("backUsers");
 
@@ -85,6 +94,7 @@
         }
       });
     }
+
 
     if (document.getElementById("user_form")) {
       document.getElementById("user_form").addEventListener("submit", function (event) {
