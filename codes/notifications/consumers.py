@@ -229,20 +229,23 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.user_list.clear()
             self.user_list.extend(self.user_dictionary.values())
             self.user_channels_details[send_data['user_name']] = self.channel_name
-            if(send_data['roomVisitor'] == True):
-                if(redisconn.hexists("roomrepresentative", self.room_group_name)):
-                    message = {
-                        'action': 'queue_status',
-                        'message': 'go_live'
-                    }
-                    data = {"type": "notification_to_queue_member",
-                            "message": message}
-                    await self.channel_layer.send(
-                        self.channel_name,
-                        data,
-                    )
+            # if(send_data['roomVisitor'] == True):
+                # print("inside...")
+            if(redisconn.hexists("roomrepresentative", self.room_group_name)):
+                message = {
+                    'action': 'queue_status',
+                    'message': 'go_live'
+                }
+                data = {"type": "notification_to_queue_member",
+                        "message": message}
+                await self.channel_layer.send(
+                    self.channel_name,
+                    data,
+                )
             else:
                 await self.send_meeting_url_to_slack(send_data)
+            # else:
+            #     await self.send_meeting_url_to_slack(send_data)
             # await self.print_details(send_data)
             redisconn.hset(self.room_group_name+'@back',
                            self.channel_name,
