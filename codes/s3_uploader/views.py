@@ -26,7 +26,7 @@ from rest_framework.response import Response
 
 from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer,RoomVisitorsSerializer, RoomInfoVisitorsSerializer, RoomRecordingSerializer
-from .models import RoomInfo, RoomVisitors, RoomRecording
+from vconf.models import RoomInfo, RoomVisitors, RoomRecording
 
 @method_decorator(csrf_exempt, name='dispatch')
 class Home(View):

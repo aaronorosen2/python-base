@@ -7,29 +7,29 @@ import uuid
 import os
 from django.db import models
 
-# Author= Muhammad Hammad
-# Models for room infor and room visitors
-class ParentModel(models.Model):
-    id = models.CharField(primary_key=True, default=uuid.uuid4, editable=False, max_length=50)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+# # Author= Muhammad Hammad
+# # Models for room information and room visitors
+# class ParentModel(models.Model):
+#     id = models.CharField(primary_key=True, default=uuid.uuid4, editable=False, max_length=50)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        abstract = True
+#     class Meta:
+#         abstract = True
 
-class RoomInfo(ParentModel):
-    room_name = models.CharField(max_length=50, unique=True)
-    logo_url = models.TextField()
+# class RoomInfo(ParentModel):
+#     room_name = models.CharField(max_length=50, unique=True)
+#     logo_url = models.TextField()
 
-class RoomVisitors(ParentModel):
-    user_name = models.CharField(max_length=50)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=20)
-    room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
+# class RoomVisitors(ParentModel):
+#     user_name = models.CharField(max_length=50)
+#     email = models.EmailField()
+#     phone_number = models.CharField(max_length=20)
+#     room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
 
-class RoomRecording(ParentModel):
-    recording_link = models.TextField()
-    room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
+# class RoomRecording(ParentModel):
+#     recording_link = models.TextField()
+#     room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):

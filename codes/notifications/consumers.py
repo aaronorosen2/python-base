@@ -147,11 +147,12 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     user_counter = 0
     user_name = 'Anonymous'
     user_list = []
+    room_representative = {}
 
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
-        
+
         # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -164,8 +165,8 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         room_info = await self.get_room_info(self.room_name)
         if(room_info != False):
             room_info_dict = {'logo_url': room_info.logo_url,
-                            'room_name': room_info.room_name,
-                            'action': 'room_logo'}
+                              'room_name': room_info.room_name,
+                              'action': 'room_logo'}
             # print(room_info_dict)
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -176,8 +177,8 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             )
         else:
             room_info_dict = {'logo_url': "",
-                            'room_name': "Please Upload Room Info!",
-                            'action': 'room_logo'}
+                              'room_name': "Please Upload Room Info!",
+                              'action': 'room_logo'}
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -247,6 +248,18 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                          }),
                 },
             )
+            if(redisconn.hexists("room_representative", self.room_group_name)):
+                message = {
+                    'action': 'queue_status',
+                    'message': 'go_live'
+                }
+                data = {"type": "notification_to_queue_member",
+                        "message": message}
+                await self.channel_layer.send(
+                    self.channel_name,
+                    data,
+                )
+
         elif(send_data['action'] == 'solo'):
             reciever = self.user_channels_details[send_data['reciever']]
             # print(reciever)
@@ -273,13 +286,18 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 'action': 'queue_status',
                 'message': 'go_live'
             }
-            data = {"type": "notification_to_queue_member", "message": message}
-            reciever = self.user_channels_details[send_data['client']]
-            redisconn.hdel(self.room_group_name+'@back', reciever)
-            await self.channel_layer.send(
-                reciever,
-                data,
-            )
+            if(send_data['representatve']):
+                redisconn.hset("room_representative",
+                               self.room_group_name,
+                               self.channel_name)
+            else:
+                data = {"type": "notification_to_queue_member", "message": message}
+                reciever = self.user_channels_details[send_data['client']]
+                redisconn.hdel(self.room_group_name+'@back', reciever)
+                await self.channel_layer.send(
+                    reciever,
+                    data,
+                )
 
     async def disconnect(self, close_code):
         # Leave room group
@@ -294,6 +312,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             redisconn.hdel(self.room_group_name+'@live', self.channel_name)
         else:
             redisconn.hdel(self.room_group_name+'@back', self.channel_name)
+        redisconn.hdel("room_representative", self.room_group_name)
         listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
         listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
         dataListOfUsers = {'type': 'users_list',
@@ -314,16 +333,18 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         self.user_list.clear()
         self.user_list.extend(self.user_dictionary.values())
         # redisconn.zadd("backstage", {channel:time.time()+60})
-    
+
     @sync_to_async
     def send_meeting_url_to_slack(self, user_data):
         import requests
         import json
         url = 'https://hooks.slack.com/services/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'
         # send_message(text="Hi, I'm a test message.")
-        slack_message = user_data['user_name'] + " wants you to join the room "+ user_data['meeting_url']
-        body = {"text": "%s" % slack_message, 'username': user_data['user_name']}
-        requests.post(url, data=json.dumps(body))  
+        slack_message = user_data['user_name'] + \
+            " wants you to join the room " + user_data['meeting_url']
+        body = {"text": "%s" % slack_message,
+                'username': user_data['user_name']}
+        requests.post(url, data=json.dumps(body))
 
     @sync_to_async
     def get_room_info(self, room_name):
@@ -336,7 +357,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         # if(room_info):
         #     return room_info
         # return False
-    
+
     @sync_to_async
     def insert_room_visitor(self, user_details):
         room_info = RoomInfo.objects.get(room_name=self.room_name)
