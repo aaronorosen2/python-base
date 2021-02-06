@@ -27,13 +27,13 @@
           socket = new WebSocket('wss://' + window.location.host + '/notifications/' + document.getElementById("room_name").value + '/');
           socket.onopen = function open() {
             console.log('WebSockets connection created.');
-            var dictJoinRoom = {
-              action: "join_room",
-              client: "customerName",
-              representatve: roomRepresentative === null ? false : true
-            }
-            console.log("dictionary..", dictJoinRoom);
-            socket.send(JSON.stringify(dictJoinRoom));
+            // var dictJoinRoom = {
+            //   action: "join_room",
+            //   client: "customerName",
+            //   representatve: roomRepresentative === null ? false : true
+            // }
+            // console.log("dictionary..", dictJoinRoom);
+            // socket.send(JSON.stringify(dictJoinRoom));
             if (document.getElementById("user_name").value == "") {
               document.getElementById("user_name").value = "Anonymous";
             }
@@ -110,7 +110,7 @@
             email: document.getElementById("email").value,
             phone_number: document.getElementById("phone_number").value,
             meeting_url: "https://localhost:8080/room1" + "#config.prejoinPageEnabled=false&username=" + document.getElementById("user_name").value,
-            roomVisitor: true
+            roomVisitor: false
           }
           // socket.send(document.getElementById("message").value);
           socket.send(JSON.stringify(dict));

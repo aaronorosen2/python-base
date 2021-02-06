@@ -229,7 +229,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.user_list.clear()
             self.user_list.extend(self.user_dictionary.values())
             self.user_channels_details[send_data['user_name']] = self.channel_name
-            if(send_data['roomVisitor']):
+            if(send_data['roomVisitor'] == True):
                 if(redisconn.hexists("roomrepresentative", self.room_group_name)):
                     message = {
                         'action': 'queue_status',
