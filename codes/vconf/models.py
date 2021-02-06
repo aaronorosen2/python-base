@@ -15,16 +15,22 @@ class ParentModel(models.Model):
 class RoomInfo(ParentModel):
     room_name = models.CharField(max_length=50, unique=True)
     logo_url = models.TextField()
+    class Meta:
+        db_table = "s3_uploader_roominfo"
 
 class RoomVisitors(ParentModel):
     user_name = models.CharField(max_length=50)
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
     room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
+    class Meta:
+        db_table = "s3_uploader_roomvisitors"
 
 class RoomRecording(ParentModel):
     recording_link = models.TextField()
     room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
+    class Meta:
+        db_table = "s3_uploader_roomrecording"
 
 class Brand(models.Model):
     logo_img_url = models.CharField(max_length=500)
