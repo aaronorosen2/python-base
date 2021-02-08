@@ -25,8 +25,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import ChangePasswordSerializer
-from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer,RoomVisitorsSerializer, RoomInfoVisitorsSerializer, RoomRecordingSerializer
+from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer, RoomVisitorsSerializer, RoomInfoVisitorsSerializer, RoomRecordingSerializer
 from vconf.models import RoomInfo, RoomVisitors, RoomRecording
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class Home(View):
@@ -53,7 +54,7 @@ class UploadRoomLogo(generics.ListCreateAPIView):
             return Response({
                 "room": RoomInfoSerializer(room, context=self.get_serializer_context()).data
             })
-        
+
         except Exception as ex:
             return Response({
                 "error": str(ex)
@@ -87,10 +88,22 @@ class RoomVisitor(generics.ListCreateAPIView):
             "room_visitor": RoomVisitorsSerializer(room_visitor, context=self.get_serializer_context()).data
         })
 
+
 class RecordingUpload(generics.GenericAPIView):
     queryset = RoomRecording.objects.all()
     serializer_class = RoomRecordingSerializer
 
+
+    def send_recording_url_to_slack(self, room_name, video_url):
+        import requests
+        import json
+        url = 'https://hooks.slack.com/services/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'
+        # send_message(text="Hi, I'm a test message.")
+        slack_message = "Recording video url: " + video_url
+        body = {"text": "%s" % slack_message,
+                'username': room_name}
+        requests.post(url, data=json.dumps(body))
+    
     def post(self, request, *args, **kwargs):
         print("Uploading", request.FILES, request.POST)
 
@@ -119,6 +132,7 @@ class RecordingUpload(generics.GenericAPIView):
             serializer = self.get_serializer(data=room_recording)
             serializer.is_valid(raise_exception=True)
             room = serializer.save()
+            self.send_recording_url_to_slack(room_name[0], file_url)
             return Response({
                 "room": RoomRecordingSerializer(room, context=self.get_serializer_context()).data
             })

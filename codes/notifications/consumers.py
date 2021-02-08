@@ -295,20 +295,30 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             }
             # await sync_to_async(print(send_data))
             # print(send_data)
-            if(send_data['representatve'] == True):
-                # print("representative...")
-                # await self.printData(send_data)
-                redisconn.hset("roomrepresentative",
+            redisconn.hset("roomrepresentative",
                                self.room_group_name,
                                self.channel_name)
-            else:
-                data = {"type": "notification_to_queue_member", "message": message}
-                reciever = self.user_channels_details[send_data['client']]
-                redisconn.hdel(self.room_group_name+'@back', reciever)
-                await self.channel_layer.send(
-                    reciever,
-                    data,
-                )
+            data = {"type": "notification_to_queue_member", "message": message}
+            reciever = self.user_channels_details[send_data['client']]
+            redisconn.hdel(self.room_group_name+'@back', reciever)
+            await self.channel_layer.send(
+                reciever,
+                data,
+            )
+            # if(send_data['representatve'] == True):
+            #     # print("representative...")
+            #     # await self.printData(send_data)
+            #     redisconn.hset("roomrepresentative",
+            #                    self.room_group_name,
+            #                    self.channel_name)
+            # else:
+            #     data = {"type": "notification_to_queue_member", "message": message}
+            #     reciever = self.user_channels_details[send_data['client']]
+            #     redisconn.hdel(self.room_group_name+'@back', reciever)
+            #     await self.channel_layer.send(
+            #         reciever,
+            #         data,
+            #     )
 
     async def disconnect(self, close_code):
         # Leave room group
