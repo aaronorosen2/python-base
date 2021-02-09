@@ -6,7 +6,7 @@
 
 from asgiref.sync import async_to_sync, sync_to_async
 from queue import Queue
-from vconf.models import RoomInfo, RoomVisitors
+from vconf.models import RoomInfo, RoomVisitors, Brand, Visitor, Recording
 from s3_uploader.serializers import RoomInfoSerializer, RoomVisitorsSerializer
 import time
 import redis
@@ -375,9 +375,9 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     def get_room_info(self, room_name):
         # print(RoomInfo.objects.get(room_name=room_name))
         try:
-            room_info = RoomInfo.objects.get(room_name=room_name)
+            room_info = Brand.objects.get(room_name=room_name)
             return room_info
-        except RoomInfo.DoesNotExist:
+        except Brand.DoesNotExist:
             return False
         # if(room_info):
         #     return room_info
@@ -385,7 +385,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
 
     @sync_to_async
     def insert_room_visitor(self, user_details):
-        room_info = RoomInfo.objects.get(room_name=self.room_name)
+        room_info = Brand.objects.get(room_name=self.room_name)
         user_details['room'] = room_info.id
         # print(user_details)
         room_visitor_serializer = RoomVisitorsSerializer(data=user_details)

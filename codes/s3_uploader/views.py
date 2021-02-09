@@ -26,7 +26,7 @@ from rest_framework.response import Response
 
 from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer, RoomVisitorsSerializer, RoomInfoVisitorsSerializer, RoomRecordingSerializer
-from vconf.models import RoomInfo, RoomVisitors, RoomRecording
+from vconf.models import RoomInfo, RoomVisitors, RoomRecording, Brand, Visitor, Recording
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -43,7 +43,7 @@ class RoomInfoView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadRoomLogo(generics.ListCreateAPIView):
-    queryset = RoomInfo.objects.all()
+    queryset = Brand.objects.all()
     serializer_class = RoomInfoSerializer
 
     def post(self, request, *args, **kwargs):
@@ -62,7 +62,7 @@ class UploadRoomLogo(generics.ListCreateAPIView):
 
 
 class RoomVisitor(generics.ListCreateAPIView):
-    queryset = RoomVisitors.objects.select_related('room')
+    queryset = Visitor.objects.select_related('room')
     serializer_class = RoomInfoVisitorsSerializer
 
     def get_serializer_class(self, *args, **kwargs):
@@ -73,9 +73,9 @@ class RoomVisitor(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            room_info = RoomInfo.objects.filter(
+            room_info = Brand.objects.filter(
                 room_name=request.data['room_name'])
-        except RoomInfo.DoesNotExist:
+        except Brand.DoesNotExist:
             raise
 
         tempData = request.data.copy()
@@ -90,7 +90,7 @@ class RoomVisitor(generics.ListCreateAPIView):
 
 
 class RecordingUpload(generics.GenericAPIView):
-    queryset = RoomRecording.objects.all()
+    queryset = Recording.objects.all()
     serializer_class = RoomRecordingSerializer
 
 
@@ -116,9 +116,9 @@ class RecordingUpload(generics.GenericAPIView):
         uploaded_file = request.FILES.get('file')
         room_name = uploaded_file.name.split("_")
         try:
-            room_info = RoomInfo.objects.get(
+            room_info = Brand.objects.get(
                 room_name=room_name[0])
-        except RoomInfo.DoesNotExist:
+        except Brand.DoesNotExist:
             raise
         
         if uploaded_file:

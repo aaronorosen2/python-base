@@ -1,13 +1,14 @@
 from django.db import models
 import uuid
+from datetime import datetime    
 
 
 # Author= Muhammad Hammad
 # Models for room information and room visitors
 class ParentModel(models.Model):
     id = models.CharField(primary_key=True, default=uuid.uuid4, editable=False, max_length=50)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, blank=True)
 
     class Meta:
         abstract = True
@@ -16,9 +17,9 @@ class RoomInfo(ParentModel):
     room_name = models.CharField(max_length=50, unique=True)
     logo_url = models.TextField()
     video_url = models.CharField(max_length=500,default='')
-    slack_channel = models.CharField(max_length=500, default='', unique=True)
+    slack_channel = models.CharField(max_length=500, unique=True)
     class Meta:
-        db_table = "s3_uploader_roominfo"
+        db_table = "roominfo"
 
 class RoomVisitors(ParentModel):
     user_name = models.CharField(max_length=50)
@@ -26,20 +27,27 @@ class RoomVisitors(ParentModel):
     phone_number = models.CharField(max_length=20)
     room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
     class Meta:
-        db_table = "s3_uploader_roomvisitors"
+        db_table = "roomvisitors"
 
 class RoomRecording(ParentModel):
     recording_link = models.TextField()
     room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
     class Meta:
-        db_table = "s3_uploader_roomrecording"
+        db_table = "roomrecording"
 
-class Brand(models.Model):
-    logo_img_url = models.CharField(max_length=500)
+class Brand(ParentModel):
+    logo_url = models.CharField(max_length=500)
     room_name = models.CharField(max_length=500)
+    video_url = models.CharField(max_length=500,default='')
+    slack_channel = models.CharField(max_length=500, unique=True)
 
 
-class Vistor(models.Model):
-    name = models.CharField(max_length=2000, default='')
+class Visitor(ParentModel):
+    user_name = models.CharField(max_length=2000, default='')
     email = models.EmailField(max_length=512, blank=True, null=True)
-    phone = models.CharField(max_length=24, blank=True, null=True)
+    phone_number = models.CharField(max_length=24, blank=True, null=True)
+    room = models.ForeignKey(Brand, on_delete=models.CASCADE)
+
+class Recording(ParentModel):
+    recording_link = models.TextField()
+    room = models.ForeignKey(Brand, on_delete=models.CASCADE)
