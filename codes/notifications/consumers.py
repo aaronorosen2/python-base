@@ -226,8 +226,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             self.user_dictionary[self.channel_name] = send_data['user_name']
             self.user_list.clear()
             self.user_list.extend(self.user_dictionary.values())
-            self.user_channels_details[send_data['user_name']
-                                       ] = self.channel_name
+            self.user_channels_details[send_data['user_name']] = self.channel_name
             if(redisconn.hexists("roomrepresentative", self.room_group_name)):
                 message = {
                     'action': 'queue_status',
@@ -241,13 +240,16 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 await self.channel_layer.send(
                     self.channel_name,
                     data,
-                )  
+                )
             else:
                 await self.send_meeting_url_to_slack(send_data)
                 redisconn.hset(self.room_group_name+'@back',
                                self.channel_name,
                                send_data['user_name'])
-            
+
+            await self.insert_room_visitor(send_data)
+            await self.send_user_list()
+
         elif(send_data['action'] == 'solo'):
             reciever = self.user_channels_details[send_data['reciever']]
             del send_data['reciever']
@@ -278,15 +280,17 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             reciever = self.user_channels_details[send_data['client']]
             redisconn.hdel(self.room_group_name+'@back', reciever)
             redisconn.hset(self.room_group_name+'@live',
-                               reciever,
-                               send_data['client'])
+                           reciever,
+                           send_data['client'])
+            await self.send_user_list()
             await self.channel_layer.send(
                 reciever,
                 data,
             )
+
+    async def send_user_list(self):
         listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
         listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
-        await self.insert_room_visitor(send_data)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -295,7 +299,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                     {'live_users': listOfLiveUsers,
                         'action': 'users_list',
                         'back_users': listOfBackUsers
-                        }),
+                     }),
             },
         )
 
@@ -367,14 +371,17 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
 
     @sync_to_async
     def insert_room_visitor(self, user_details):
-        room_info = Brand.objects.get(room_name=self.room_name)
-        user_details['room'] = room_info.id
-        # print(user_details)
-        room_visitor_serializer = RoomVisitorsSerializer(data=user_details)
-        room_visitor_serializer.is_valid(raise_exception=True)
-        room_visitor = room_visitor_serializer.save()
-        # print(room_visitor)
-        return RoomVisitorsSerializer(room_visitor).data
+        try:
+            room_info = Brand.objects.get(room_name=self.room_name)
+            user_details['room'] = room_info.id
+            # print(user_details)
+            room_visitor_serializer = RoomVisitorsSerializer(data=user_details)
+            room_visitor_serializer.is_valid(raise_exception=True)
+            room_visitor = room_visitor_serializer.save()
+            # print(room_visitor)
+            return RoomVisitorsSerializer(room_visitor).data
+        except Brand.DoesNotExist:
+            return False
 
     # async def get_room_info(self, room_name):
     #     room_info = sync_to_async(RoomInfo.objects.get(room_name=room_name))()
@@ -390,7 +397,6 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     #     )
 
     async def users_list(self, event):
-        # print(self.channel_layer)
         await self.send(text_data=event["users"])
 
     async def print_details(self, send_data):
