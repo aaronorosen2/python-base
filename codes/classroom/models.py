@@ -22,7 +22,7 @@ class Teacher(models.Model):
     created_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.teacher.first_name} {self.student.name}"
+        return f"{self.teacher} {self.student}"
 
 class Class(models.Model):
     class_name = models.CharField(max_length=128, blank=True, null=True)
