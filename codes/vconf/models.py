@@ -15,8 +15,8 @@ class ParentModel(models.Model):
 class RoomInfo(ParentModel):
     room_name = models.CharField(max_length=50, unique=True)
     logo_url = models.TextField()
-    video_url = models.TextField()
-    slack_channel = models.CharField(max_length=500, default='')
+    video_url = models.CharField(max_length=500,default='')
+    slack_channel = models.CharField(max_length=500, default='', unique=True)
     class Meta:
         db_table = "s3_uploader_roominfo"
 
