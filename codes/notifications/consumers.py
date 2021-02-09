@@ -221,16 +221,13 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     async def receive(self, text_data):
 
         send_data = json.loads(text_data)
-        # print(send_data)
         if(send_data['action'] == 'store_user_name'):
-
             del self.user_dictionary[self.channel_name]
             self.user_dictionary[self.channel_name] = send_data['user_name']
             self.user_list.clear()
             self.user_list.extend(self.user_dictionary.values())
-            self.user_channels_details[send_data['user_name']] = self.channel_name
-            # if(send_data['roomVisitor'] == True):
-                # print("inside...")
+            self.user_channels_details[send_data['user_name']
+                                       ] = self.channel_name
             if(redisconn.hexists("roomrepresentative", self.room_group_name)):
                 message = {
                     'action': 'queue_status',
@@ -238,41 +235,22 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 }
                 data = {"type": "notification_to_queue_member",
                         "message": message}
+                redisconn.hset(self.room_group_name+'@live',
+                               self.channel_name,
+                               send_data['user_name'])
                 await self.channel_layer.send(
                     self.channel_name,
                     data,
-                )
+                )  
             else:
                 await self.send_meeting_url_to_slack(send_data)
-            # else:
-            #     await self.send_meeting_url_to_slack(send_data)
-            # await self.print_details(send_data)
-            redisconn.hset(self.room_group_name+'@back',
-                           self.channel_name,
-                           send_data['user_name'])
-            listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
-            listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
-            await self.insert_room_visitor(send_data)
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'users_list',
-                    'users': json.dumps(
-                        # {'users': listOfLiveUsers, 'action': 'users_list'}
-                        {'live_users': listOfLiveUsers,
-                         'action': 'users_list',
-                         'back_users': listOfBackUsers
-                         }),
-                },
-            )
+                redisconn.hset(self.room_group_name+'@back',
+                               self.channel_name,
+                               send_data['user_name'])
             
-
         elif(send_data['action'] == 'solo'):
             reciever = self.user_channels_details[send_data['reciever']]
-            # print(reciever)
             del send_data['reciever']
-            # send_data['sender'] = self
-            # message = send_data['message']
             await self.channel_layer.send(
                 reciever,
                 {
@@ -293,32 +271,33 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 'action': 'queue_status',
                 'message': 'go_live'
             }
-            # await sync_to_async(print(send_data))
-            # print(send_data)
             redisconn.hset("roomrepresentative",
-                               self.room_group_name,
-                               self.channel_name)
+                           self.room_group_name,
+                           self.channel_name)
             data = {"type": "notification_to_queue_member", "message": message}
             reciever = self.user_channels_details[send_data['client']]
             redisconn.hdel(self.room_group_name+'@back', reciever)
+            redisconn.hset(self.room_group_name+'@live',
+                               reciever,
+                               send_data['client'])
             await self.channel_layer.send(
                 reciever,
                 data,
             )
-            # if(send_data['representatve'] == True):
-            #     # print("representative...")
-            #     # await self.printData(send_data)
-            #     redisconn.hset("roomrepresentative",
-            #                    self.room_group_name,
-            #                    self.channel_name)
-            # else:
-            #     data = {"type": "notification_to_queue_member", "message": message}
-            #     reciever = self.user_channels_details[send_data['client']]
-            #     redisconn.hdel(self.room_group_name+'@back', reciever)
-            #     await self.channel_layer.send(
-            #         reciever,
-            #         data,
-            #     )
+        listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
+        listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
+        await self.insert_room_visitor(send_data)
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'users_list',
+                'users': json.dumps(
+                    {'live_users': listOfLiveUsers,
+                        'action': 'users_list',
+                        'back_users': listOfBackUsers
+                        }),
+            },
+        )
 
     async def disconnect(self, close_code):
         # Leave room group
@@ -363,13 +342,16 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     def send_meeting_url_to_slack(self, user_data):
         import requests
         import json
-        url = 'https://hooks.slack.com/services/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'
-        # send_message(text="Hi, I'm a test message.")
-        slack_message = user_data['user_name'] + \
-            " wants you to join the room " + user_data['meeting_url']
-        body = {"text": "%s" % slack_message,
-                'username': user_data['user_name']}
-        requests.post(url, data=json.dumps(body))
+        try:
+            room_info = Brand.objects.get(room_name=self.room_name)
+            url = room_info.slack_channel
+            slack_message = user_data['user_name'] + \
+                " wants you to join the room " + user_data['meeting_url']
+            body = {"text": "%s" % slack_message,
+                    'username': user_data['user_name']}
+            requests.post(url, data=json.dumps(body))
+        except Brand.DoesNotExist:
+            print("room does not exists!!")
 
     @sync_to_async
     def get_room_info(self, room_name):
