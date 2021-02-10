@@ -34,6 +34,8 @@ def get_client():
 @csrf_exempt
 def twilio_inbound_sms(request):
     # start populate twilio cache -
+    print(request.POST)
+    print(request)
     send_sms("18434259777",
              request.POST.get("Body"))
 
