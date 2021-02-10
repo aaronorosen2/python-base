@@ -70,3 +70,13 @@ class Invite(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.params}"
+
+class Lesson_responses(models.Model):
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    flashcard = models.ForeignKey(FlashCard,on_delete=models.CASCADE)
+    flashcardresponse = models.ForeignKey(FlashCardResponse,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.student}- {self.lesson}"

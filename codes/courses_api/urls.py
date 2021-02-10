@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path("", views.apiOverview),
+    path("lesson/responses", views.Lesson_responses, name="lesson-responses"),
     path("lesson/create", views.lesson_create, name="lesson-create"),
     path("lesson/all", views.lesson_all, name="lesson-all"),
     path("lesson/read/<int:pk>/", views.lesson_read, name="lesson-read"),
@@ -27,6 +28,10 @@ urlpatterns = [
 
     path("lesson/response/get/<str:lesson_id>/<str:session_id>",
          views.lesson_flashcard_responses, name="get-lesson-response"),
+
+     path("lesson/responses2/get/<str:lesson_id>/<str:session_id>/<str:param_id>",
+         views.lesson_responses, name="get-lesson-response2"),
+
     path("lesson/response/get/<str:lesson_id>/",
          views.overall_flashcard_responses, name="get-lesson-response"),
          
