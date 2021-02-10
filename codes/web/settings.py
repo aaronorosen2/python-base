@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'classroom',
     'vconf',
     'audition',
+    'facets',
 ]
 
 MIDDLEWARE = [
