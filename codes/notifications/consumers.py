@@ -276,6 +276,9 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             redisconn.hset("roomrepresentative",
                            self.room_group_name,
                            self.channel_name)
+            redisconn.hset(self.room_group_name+'@live',
+                               self.channel_name,
+                               "Representative")
             data = {"type": "notification_to_queue_member", "message": message}
             reciever = self.user_channels_details[send_data['client']]
             redisconn.hdel(self.room_group_name+'@back', reciever)
@@ -316,7 +319,8 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             redisconn.hdel(self.room_group_name+'@live', self.channel_name)
         else:
             redisconn.hdel(self.room_group_name+'@back', self.channel_name)
-        redisconn.hdel("roomrepresentative", self.room_group_name)
+        if(redisconn.hexists("roomrepresentative", self.channel_name)):
+            redisconn.hdel("roomrepresentative", self.room_group_name)
         listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
         listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
         dataListOfUsers = {'type': 'users_list',
