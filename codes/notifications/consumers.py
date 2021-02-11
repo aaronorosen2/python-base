@@ -165,6 +165,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         room_info = await self.get_room_info(self.room_name)
         if(room_info != False):
             room_info_dict = {'logo_url': room_info.logo_url,
+                              'video_url': room_info.video_url,
                               'room_name': room_info.room_name,
                               'action': 'room_logo'}
             # print(room_info_dict)
@@ -176,9 +177,8 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 },
             )
         else:
-            room_info_dict = {'logo_url': "",
-                              'room_name': "Please Upload Room Info!",
-                              'action': 'room_logo'}
+            room_info_dict = {'decription': "Room Does Not Exists!",
+                              'action': 'error_room'}
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
