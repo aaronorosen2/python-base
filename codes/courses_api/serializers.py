@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Lesson, FlashCard, UserSessionEvent, FlashCardResponse,UserSession, Lesson_responses
+from .models import Lesson, FlashCard, UserSessionEvent, FlashCardResponse,UserSession
 
 class LessonSerializer(serializers.ModelSerializer):
     flashcards = serializers.SerializerMethodField('get_flashcards')
@@ -45,9 +45,3 @@ class FlashcardResponseSerializer(serializers.ModelSerializer):
 
     def get_usersession(self,flashcardresponse):
         return UserSessionSerializer(UserSession.objects.filter(session_id=flashcardresponse.user_session.session_id),many=True).data
-
-class LessonResponsesSerializer(serializers.ModelSerializer):
-
-     class Meta:
-        model = Lesson_responses
-        fields ='__all__'

@@ -8,14 +8,12 @@ from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer
 from .serializers import UserSessionEventSerializer
 from .serializers import FlashcardResponseSerializer
-from .serializers import LessonResponsesSerializer
 from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
 from .models import UserSession
 from .models import Invite
-from .models import Lesson_responses
 import json
 import uuid
 import datetime
@@ -273,16 +271,6 @@ def lesson_flashcard_responses(request,lesson_id,session_id):
     lesson = Lesson.objects.get(id=lesson_id)
     flashcard_responses = FlashCardResponse.objects.filter(user_session=user_session,lesson=lesson)
     return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
-
-
-@api_view(['GET'])
-def lesson_responses(request, lesson_id , student_id):
-    student = Student.objects.get(student_id=student_id)
-    lesson = Lesson.objects.get(lesson_id=lesson_id)
-    flashcard_responses = FlashCardResponse.objects.filter(lesson=lesson)
-    lesson_response = lesson_responses.objects.filter(flashcard_responses = flashcard_responses)
-    return Response(LessonResponsesSerializer(lesson_response,many=True).data)
-
 
 @api_view(['GET'])
 def overall_flashcard_responses(request,lesson_id):
