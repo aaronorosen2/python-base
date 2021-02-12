@@ -37,7 +37,7 @@ class RoomRecording(ParentModel):
 
 class Brand(ParentModel):
     logo_url = models.CharField(max_length=500)
-    room_name = models.CharField(max_length=500)
+    room_name = models.CharField(max_length=500, unique=True)
     video_url = models.CharField(max_length=500,default='')
     slack_channel = models.CharField(max_length=500, unique=True)
 

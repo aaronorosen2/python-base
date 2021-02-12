@@ -46,15 +46,31 @@ class UploadRoomLogo(generics.ListCreateAPIView):
     queryset = Brand.objects.all()
     serializer_class = RoomInfoSerializer
 
+    def upload_brand_video(self, brand_video):
+        file_name = brand_video.name
+        file_name_uuid = uuid_file_path(file_name)
+        s3_key = 'Test/upload/{0}'.format(file_name_uuid)
+
+        content_type, file_url = upload_to_s3(s3_key, brand_video)
+        return file_url
+
     def post(self, request, *args, **kwargs):
+        
         try:
-            serializer = self.get_serializer(data=request.data)
+            try:
+                room_info = Brand.objects.get(
+                    room_name=request.data['room_name'])
+                return Response({"error": "Brand Already Exists!"}, status=400)
+            except Brand.DoesNotExist:
+                video_url = self.upload_brand_video(request.FILES.get('video_url'))
+            tempData = request.data.dict()
+            tempData['video_url'] = video_url
+            serializer = self.get_serializer(data=tempData)
             serializer.is_valid(raise_exception=True)
             room = serializer.save()
             return Response({
                 "room": RoomInfoSerializer(room, context=self.get_serializer_context()).data
             })
-
         except Exception as ex:
             return Response({
                 "error": str(ex)
