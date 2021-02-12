@@ -110,14 +110,15 @@ class RecordingUpload(generics.GenericAPIView):
     serializer_class = RoomRecordingSerializer
 
 
-    def send_recording_url_to_slack(self, room_name, video_url):
+    def send_recording_url_to_slack(self, room, video_url):
         import requests
         import json
-        url = 'https://hooks.slack.com/services/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'
+        # url = 'https://hooks.slack.com/services/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'
+        url = room.slack_channel
         # send_message(text="Hi, I'm a test message.")
         slack_message = "Recording video url: " + video_url
         body = {"text": "%s" % slack_message,
-                'username': room_name}
+                'username': room.room_name}
         requests.post(url, data=json.dumps(body))
     
     def post(self, request, *args, **kwargs):
@@ -148,7 +149,7 @@ class RecordingUpload(generics.GenericAPIView):
             serializer = self.get_serializer(data=room_recording)
             serializer.is_valid(raise_exception=True)
             room = serializer.save()
-            self.send_recording_url_to_slack(room_name[0], file_url)
+            self.send_recording_url_to_slack(room_info, file_url)
             return Response({
                 "room": RoomRecordingSerializer(room, context=self.get_serializer_context()).data
             })
