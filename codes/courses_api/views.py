@@ -247,8 +247,13 @@ def flashcard_response(request):
     flashcard_id = request.data['flashcard']
     session_id = request.data['session_id']
     answer = request.data['answer']
+    params = request.data.get('params',None)
+    student = ''
+    if params:
+        student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
     signature = request.data['signature']
     flashcard = FlashCard.objects.get(id=flashcard_id)
+    
     user_session = UserSession.objects.get(session_id=session_id)
     print("%s %s %s" % (user_session, flashcard, answer))
 
@@ -262,14 +267,23 @@ def flashcard_response(request):
         # update answer...
         flashcard_response.answer = answer
     else:
-        flashcard_response = FlashCardResponse(
-            user_session=user_session,
-            lesson=flashcard.lesson,
-            flashcard=flashcard,
-            answer=answer,
-             signature=signature)
+        if student:
+            flashcard_response = FlashCardResponse(
+                user_session=user_session,
+                lesson=flashcard.lesson,
+                flashcard=flashcard,
+                answer=answer,
+                student= student,
+                signature=signature)
+        else:
+            flashcard_response = FlashCardResponse(
+                user_session=user_session,
+                lesson=flashcard.lesson,
+                flashcard=flashcard,
+                answer=answer,
+                signature=signature)
     flashcard_response.save()
-    return Response("Response Recorded")
+    return Response("Response Recorded",status=200)
 
 @api_view(['GET'])
 def lesson_flashcard_responses(request,lesson_id,session_id):
