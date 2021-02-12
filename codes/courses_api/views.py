@@ -76,10 +76,15 @@ def lesson_read(request,pk):
 @api_view(['GET'])
 def lesson_all(request):
     flashcards = {}
-    user_id = request.headers.get('Authorization')
-    les_= Lesson.objects.filter(user=user_id)
-    less_serialized = LessonSerializer(les_,many=True)
-    return JsonResponse(less_serialized.data,safe=False)
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+
+    if 'Authorization' in request.headers:
+        user_id = request.headers.get('Authorization')
+        les_= Lesson.objects.filter(user=token.user_id)
+        less_serialized = LessonSerializer(les_,many=True)
+        return JsonResponse(less_serialized.data,safe=False)
+    else:
+        return JsonResponse({"message":"Unauthorized"})
 
 @api_view(['POST'])
 def lesson_update(request,pk):
