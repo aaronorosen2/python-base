@@ -76,7 +76,8 @@ def lesson_read(request,pk):
 @api_view(['GET'])
 def lesson_all(request):
     flashcards = {}
-    les_= Lesson.objects.all()
+    user_id = request.headers.get('Authorization')
+    les_= Lesson.objects.filter(user=user_id)
     less_serialized = LessonSerializer(les_,many=True)
     return JsonResponse(less_serialized.data,safe=False)
 
