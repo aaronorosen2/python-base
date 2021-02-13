@@ -34,10 +34,10 @@ def apiOverview(request):
 
 @api_view(['POST'])
 def lesson_create(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
-    auth_user = AuthToken.objects.get(user=request.user)
-    les_.user = get_user_model().objects.get(id=auth_user.user_id)
+    les_.user = get_user_model().objects.get(id=token.user_id)
     les_.save()
 
     for flashcard in request.data["flashcards"]:
