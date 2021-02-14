@@ -21,6 +21,7 @@ from datetime import time
 from sfapp2.utils.twilio import send_confirmation_code, send_sms
 from form_lead.utils.email_util import send_raw_email
 from classroom.models import Student, Class, ClassEnrolled
+from django.contrib.auth.models import User
 
 from knox.auth import get_user_model, AuthToken
 from knox.views import user_logged_in
