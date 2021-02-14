@@ -37,7 +37,7 @@ def lesson_create(request):
     user_token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
-    les_.user = get_user_model().objects.get(id=user_token.user_id)
+    les_.user = user_token.user_id
     les_.save()
 
     for flashcard in request.data["flashcards"]:
