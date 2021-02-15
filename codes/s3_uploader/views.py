@@ -26,7 +26,7 @@ from rest_framework.response import Response
 
 from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer, RoomVisitorsSerializer, RoomInfoVisitorsSerializer, RoomRecordingSerializer
-from vconf.models import RoomInfo, RoomVisitors, RoomRecording
+from vconf.models import RoomInfo, RoomVisitors, RoomRecording, Brand, Visitor, Recording
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -43,18 +43,34 @@ class RoomInfoView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadRoomLogo(generics.ListCreateAPIView):
-    queryset = RoomInfo.objects.all()
+    queryset = Brand.objects.all()
     serializer_class = RoomInfoSerializer
 
+    def upload_brand_video(self, brand_video):
+        file_name = brand_video.name
+        file_name_uuid = uuid_file_path(file_name)
+        s3_key = 'Test/upload/{0}'.format(file_name_uuid)
+
+        content_type, file_url = upload_to_s3(s3_key, brand_video)
+        return file_url
+
     def post(self, request, *args, **kwargs):
+        
         try:
-            serializer = self.get_serializer(data=request.data)
+            try:
+                room_info = Brand.objects.get(
+                    room_name=request.data['room_name'])
+                return Response({"error": "Brand Already Exists!"}, status=400)
+            except Brand.DoesNotExist:
+                video_url = self.upload_brand_video(request.FILES.get('video_url'))
+            tempData = request.data.dict()
+            tempData['video_url'] = video_url
+            serializer = self.get_serializer(data=tempData)
             serializer.is_valid(raise_exception=True)
             room = serializer.save()
             return Response({
                 "room": RoomInfoSerializer(room, context=self.get_serializer_context()).data
             })
-
         except Exception as ex:
             return Response({
                 "error": str(ex)
@@ -62,7 +78,7 @@ class UploadRoomLogo(generics.ListCreateAPIView):
 
 
 class RoomVisitor(generics.ListCreateAPIView):
-    queryset = RoomVisitors.objects.select_related('room')
+    queryset = Visitor.objects.select_related('room')
     serializer_class = RoomInfoVisitorsSerializer
 
     def get_serializer_class(self, *args, **kwargs):
@@ -73,9 +89,9 @@ class RoomVisitor(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            room_info = RoomInfo.objects.filter(
+            room_info = Brand.objects.filter(
                 room_name=request.data['room_name'])
-        except RoomInfo.DoesNotExist:
+        except Brand.DoesNotExist:
             raise
 
         tempData = request.data.copy()
@@ -90,18 +106,19 @@ class RoomVisitor(generics.ListCreateAPIView):
 
 
 class RecordingUpload(generics.GenericAPIView):
-    queryset = RoomRecording.objects.all()
+    queryset = Recording.objects.all()
     serializer_class = RoomRecordingSerializer
 
 
-    def send_recording_url_to_slack(self, room_name, video_url):
+    def send_recording_url_to_slack(self, room, video_url):
         import requests
         import json
-        url = 'https://hooks.slack.com/services/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'
+        # url = 'https://hooks.slack.com/services/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'
+        url = room.slack_channel
         # send_message(text="Hi, I'm a test message.")
         slack_message = "Recording video url: " + video_url
         body = {"text": "%s" % slack_message,
-                'username': room_name}
+                'username': room.room_name}
         requests.post(url, data=json.dumps(body))
     
     def post(self, request, *args, **kwargs):
@@ -116,9 +133,9 @@ class RecordingUpload(generics.GenericAPIView):
         uploaded_file = request.FILES.get('file')
         room_name = uploaded_file.name.split("_")
         try:
-            room_info = RoomInfo.objects.get(
+            room_info = Brand.objects.get(
                 room_name=room_name[0])
-        except RoomInfo.DoesNotExist:
+        except Brand.DoesNotExist:
             raise
         
         if uploaded_file:
@@ -132,7 +149,7 @@ class RecordingUpload(generics.GenericAPIView):
             serializer = self.get_serializer(data=room_recording)
             serializer.is_valid(raise_exception=True)
             room = serializer.save()
-            self.send_recording_url_to_slack(room_name[0], file_url)
+            self.send_recording_url_to_slack(room_info, file_url)
             return Response({
                 "room": RoomRecordingSerializer(room, context=self.get_serializer_context()).data
             })

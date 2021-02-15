@@ -6,7 +6,7 @@
 
 from asgiref.sync import async_to_sync, sync_to_async
 from queue import Queue
-from vconf.models import RoomInfo, RoomVisitors
+from vconf.models import RoomInfo, RoomVisitors, Brand, Visitor, Recording
 from s3_uploader.serializers import RoomInfoSerializer, RoomVisitorsSerializer
 import time
 import redis
@@ -165,6 +165,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         room_info = await self.get_room_info(self.room_name)
         if(room_info != False):
             room_info_dict = {'logo_url': room_info.logo_url,
+                              'video_url': room_info.video_url,
                               'room_name': room_info.room_name,
                               'action': 'room_logo'}
             # print(room_info_dict)
@@ -176,9 +177,8 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 },
             )
         else:
-            room_info_dict = {'logo_url': "",
-                              'room_name': "Please Upload Room Info!",
-                              'action': 'room_logo'}
+            room_info_dict = {'decription': "Room Does Not Exists!",
+                              'action': 'error_room'}
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -221,16 +221,12 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     async def receive(self, text_data):
 
         send_data = json.loads(text_data)
-        # print(send_data)
         if(send_data['action'] == 'store_user_name'):
-
             del self.user_dictionary[self.channel_name]
             self.user_dictionary[self.channel_name] = send_data['user_name']
             self.user_list.clear()
             self.user_list.extend(self.user_dictionary.values())
             self.user_channels_details[send_data['user_name']] = self.channel_name
-            # if(send_data['roomVisitor'] == True):
-                # print("inside...")
             if(redisconn.hexists("roomrepresentative", self.room_group_name)):
                 message = {
                     'action': 'queue_status',
@@ -238,41 +234,25 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 }
                 data = {"type": "notification_to_queue_member",
                         "message": message}
+                redisconn.hset(self.room_group_name+'@live',
+                               self.channel_name,
+                               send_data['user_name'])
                 await self.channel_layer.send(
                     self.channel_name,
                     data,
                 )
             else:
                 await self.send_meeting_url_to_slack(send_data)
-            # else:
-            #     await self.send_meeting_url_to_slack(send_data)
-            # await self.print_details(send_data)
-            redisconn.hset(self.room_group_name+'@back',
-                           self.channel_name,
-                           send_data['user_name'])
-            listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
-            listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
+                redisconn.hset(self.room_group_name+'@back',
+                               self.channel_name,
+                               send_data['user_name'])
+
             await self.insert_room_visitor(send_data)
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'users_list',
-                    'users': json.dumps(
-                        # {'users': listOfLiveUsers, 'action': 'users_list'}
-                        {'live_users': listOfLiveUsers,
-                         'action': 'users_list',
-                         'back_users': listOfBackUsers
-                         }),
-                },
-            )
-            
+            await self.send_user_list()
 
         elif(send_data['action'] == 'solo'):
             reciever = self.user_channels_details[send_data['reciever']]
-            # print(reciever)
             del send_data['reciever']
-            # send_data['sender'] = self
-            # message = send_data['message']
             await self.channel_layer.send(
                 reciever,
                 {
@@ -293,32 +273,38 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 'action': 'queue_status',
                 'message': 'go_live'
             }
-            # await sync_to_async(print(send_data))
-            # print(send_data)
             redisconn.hset("roomrepresentative",
-                               self.room_group_name,
-                               self.channel_name)
+                           self.room_group_name,
+                           self.channel_name)
+            redisconn.hset(self.room_group_name+'@live',
+                               self.channel_name,
+                               "Representative")
             data = {"type": "notification_to_queue_member", "message": message}
             reciever = self.user_channels_details[send_data['client']]
             redisconn.hdel(self.room_group_name+'@back', reciever)
+            redisconn.hset(self.room_group_name+'@live',
+                           reciever,
+                           send_data['client'])
+            await self.send_user_list()
             await self.channel_layer.send(
                 reciever,
                 data,
             )
-            # if(send_data['representatve'] == True):
-            #     # print("representative...")
-            #     # await self.printData(send_data)
-            #     redisconn.hset("roomrepresentative",
-            #                    self.room_group_name,
-            #                    self.channel_name)
-            # else:
-            #     data = {"type": "notification_to_queue_member", "message": message}
-            #     reciever = self.user_channels_details[send_data['client']]
-            #     redisconn.hdel(self.room_group_name+'@back', reciever)
-            #     await self.channel_layer.send(
-            #         reciever,
-            #         data,
-            #     )
+
+    async def send_user_list(self):
+        listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
+        listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'users_list',
+                'users': json.dumps(
+                    {'live_users': listOfLiveUsers,
+                        'action': 'users_list',
+                        'back_users': listOfBackUsers
+                     }),
+            },
+        )
 
     async def disconnect(self, close_code):
         # Leave room group
@@ -333,7 +319,8 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             redisconn.hdel(self.room_group_name+'@live', self.channel_name)
         else:
             redisconn.hdel(self.room_group_name+'@back', self.channel_name)
-        redisconn.hdel("roomrepresentative", self.room_group_name)
+        if(redisconn.hget(self.room_group_name+'@live', self.channel_name) == "Representative"):
+            redisconn.hdel("roomrepresentative", self.room_group_name)
         listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
         listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
         dataListOfUsers = {'type': 'users_list',
@@ -363,21 +350,24 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     def send_meeting_url_to_slack(self, user_data):
         import requests
         import json
-        url = 'https://hooks.slack.com/services/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'
-        # send_message(text="Hi, I'm a test message.")
-        slack_message = user_data['user_name'] + \
-            " wants you to join the room " + user_data['meeting_url']
-        body = {"text": "%s" % slack_message,
-                'username': user_data['user_name']}
-        requests.post(url, data=json.dumps(body))
+        try:
+            room_info = Brand.objects.get(room_name=self.room_name)
+            url = room_info.slack_channel
+            slack_message = user_data['user_name'] + \
+                " wants you to join the room " + user_data['meeting_url']
+            body = {"text": "%s" % slack_message,
+                    'username': user_data['user_name']}
+            requests.post(url, data=json.dumps(body))
+        except Brand.DoesNotExist:
+            print("room does not exists!!")
 
     @sync_to_async
     def get_room_info(self, room_name):
         # print(RoomInfo.objects.get(room_name=room_name))
         try:
-            room_info = RoomInfo.objects.get(room_name=room_name)
+            room_info = Brand.objects.get(room_name=room_name)
             return room_info
-        except RoomInfo.DoesNotExist:
+        except Brand.DoesNotExist:
             return False
         # if(room_info):
         #     return room_info
@@ -385,14 +375,17 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
 
     @sync_to_async
     def insert_room_visitor(self, user_details):
-        room_info = RoomInfo.objects.get(room_name=self.room_name)
-        user_details['room'] = room_info.id
-        # print(user_details)
-        room_visitor_serializer = RoomVisitorsSerializer(data=user_details)
-        room_visitor_serializer.is_valid(raise_exception=True)
-        room_visitor = room_visitor_serializer.save()
-        # print(room_visitor)
-        return RoomVisitorsSerializer(room_visitor).data
+        try:
+            room_info = Brand.objects.get(room_name=self.room_name)
+            user_details['room'] = room_info.id
+            # print(user_details)
+            room_visitor_serializer = RoomVisitorsSerializer(data=user_details)
+            room_visitor_serializer.is_valid(raise_exception=True)
+            room_visitor = room_visitor_serializer.save()
+            # print(room_visitor)
+            return RoomVisitorsSerializer(room_visitor).data
+        except Brand.DoesNotExist:
+            return False
 
     # async def get_room_info(self, room_name):
     #     room_info = sync_to_async(RoomInfo.objects.get(room_name=room_name))()
@@ -408,7 +401,6 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
     #     )
 
     async def users_list(self, event):
-        # print(self.channel_layer)
         await self.send(text_data=event["users"])
 
     async def print_details(self, send_data):
@@ -434,3 +426,6 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'message': message
         }))
+
+
+# 18.221.30.46

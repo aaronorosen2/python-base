@@ -29,22 +29,22 @@ urlpatterns = [
     path('voip/', include(
         ('voip.urls', 'voip'),
         namespace='sfapp2_voip')),
-    path('video', include(
+    path('video/', include(
         ('video.urls', 'video'),
         namespace='sfapp2_video')),
     path('sfapp2/', include(
         ('sfapp2.urls', 'sfapp2'),
         namespace='sfapp2')),
-    path('store', include(
+    path('store/', include(
         ('store.urls', 'store'),
         namespace='sfapp2')),
     path('bookbikerescue', include(
         ('bookbikerescue.urls', 'bookbikerescue'),
         namespace='bookbikerescue')),
-    path('form_lead', include(
+    path('form_lead/', include(
         ('form_lead.urls', 'form_lead'),
         namespace='form_lead')),
-    path('admin_backend', include(
+    path('admin_backend/', include(
         ('admin_backend.urls', 'admin_backend'),
         namespace='admin_backend')),
     path('api_pdf/', include(
@@ -58,7 +58,7 @@ urlpatterns = [
     path('calendar', include('calendar_app.urls')),
     path('manifest', include('manifest_app.urls')),
 
-    path('s3_uploader', include(
+    path('s3_uploader/', include(
         ('s3_uploader.urls', 's3_uploader'),
         namespace='s3_uploader')),
 
@@ -69,7 +69,7 @@ urlpatterns = [
         ('classroom.urls','classroom'),
         namespace='classroom')),
         
-    path('dreamreader', include('dreamreader.urls')),
+    path('dreamreader/', include('dreamreader.urls')),
 
         #  calendar URLS
 # path('calendar' , include('calendar_app.urls'))

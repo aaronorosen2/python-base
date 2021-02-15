@@ -27,6 +27,7 @@ urlpatterns = [
 
     path("lesson/response/get/<str:lesson_id>/<str:session_id>",
          views.lesson_flashcard_responses, name="get-lesson-response"),
+
     path("lesson/response/get/<str:lesson_id>/",
          views.overall_flashcard_responses, name="get-lesson-response"),
          

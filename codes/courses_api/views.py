@@ -13,6 +13,7 @@ from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
 from .models import UserSession
+from .models import Invite
 import json
 import uuid
 import datetime
@@ -20,6 +21,7 @@ from datetime import time
 from sfapp2.utils.twilio import send_confirmation_code, send_sms
 from form_lead.utils.email_util import send_raw_email
 from classroom.models import Student, Class, ClassEnrolled
+from django.contrib.auth.models import User
 
 from knox.auth import get_user_model, AuthToken
 from knox.views import user_logged_in
@@ -33,10 +35,11 @@ def apiOverview(request):
 
 @api_view(['POST'])
 def lesson_create(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    user = User.objects.get(id=token.user_id)
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
-    auth_user = AuthToken.objects.get(user=request.user)
-    les_.user = get_user_model().objects.get(id=auth_user.user_id)
+    les_.user = user
     les_.save()
 
     for flashcard in request.data["flashcards"]:
@@ -67,17 +70,20 @@ def lesson_create(request):
 
 @api_view(['GET'])
 def lesson_read(request,pk):
-    flashcards = {}
     les_= Lesson.objects.get(id=pk)
     less_serialized = LessonSerializer(les_)
     return Response(less_serialized.data)
 
 @api_view(['GET'])
 def lesson_all(request):
-    flashcards = {}
-    les_= Lesson.objects.all()
-    less_serialized = LessonSerializer(les_,many=True)
-    return Response(less_serialized.data)
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+
+    if 'Authorization' in request.headers:
+        les_= Lesson.objects.filter(user=token.user_id)
+        less_serialized = LessonSerializer(les_,many=True)
+        return JsonResponse(less_serialized.data,safe=False)
+    else:
+        return JsonResponse({"message":"Unauthorized"})
 
 @api_view(['POST'])
 def lesson_update(request,pk):
@@ -240,8 +246,13 @@ def flashcard_response(request):
     flashcard_id = request.data['flashcard']
     session_id = request.data['session_id']
     answer = request.data['answer']
+    params = request.data.get('params',None)
+    student = ''
+    if params:
+        student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
     signature = request.data['signature']
     flashcard = FlashCard.objects.get(id=flashcard_id)
+    
     user_session = UserSession.objects.get(session_id=session_id)
     print("%s %s %s" % (user_session, flashcard, answer))
 
@@ -255,14 +266,23 @@ def flashcard_response(request):
         # update answer...
         flashcard_response.answer = answer
     else:
-        flashcard_response = FlashCardResponse(
-            user_session=user_session,
-            lesson=flashcard.lesson,
-            flashcard=flashcard,
-            answer=answer,
-             signature=signature)
+        if student:
+            flashcard_response = FlashCardResponse(
+                user_session=user_session,
+                lesson=flashcard.lesson,
+                flashcard=flashcard,
+                answer=answer,
+                student= student,
+                signature=signature)
+        else:
+            flashcard_response = FlashCardResponse(
+                user_session=user_session,
+                lesson=flashcard.lesson,
+                flashcard=flashcard,
+                answer=answer,
+                signature=signature)
     flashcard_response.save()
-    return Response("Response Recorded")
+    return Response("Response Recorded",status=200)
 
 @api_view(['GET'])
 def lesson_flashcard_responses(request,lesson_id,session_id):
@@ -317,27 +337,52 @@ def verify_2fa(request):
 
 @api_view(['POST'])
 def invite_email(request):
-    subject = "Invitation to Lesson"
+    invite_type = 'email'
     body = request.data.get('body')
+    lesson = Lesson.objects.get(id=request.data.get('lesson'))
+    subject = f"Invitation to {lesson.lesson_name} (Lesson)"
     if request.data.get('student'):
         student = Student.objects.get(id=request.data.get('student'))
+        unique_id = ''
+        params = str(uuid.uuid4())
+
+        invited = Invite.objects.filter(lesson_id =request.data.get('lesson'),student_id=request.data.get('student'),invite_type=invite_type)
+        if invited:
+            unique_id = invited.get().params
+        else:
+            invite = Invite(lesson=lesson,student=student,params=params,invite_type=invite_type)
+            invite.save()
+            unique_id = invite.params
+
         to_email = student.email
         send_raw_email(to_email=[to_email],reply_to=None,
                         subject=subject,
-                        message_text=body,
+                        message_text=f"{body}&params={unique_id}",
                         message_html=None)
+
         return JsonResponse({"sucess":True},status=200)
     if request.data.get('class'):
-        emails = []
+        # emails = []
         _class = ClassEnrolled.objects.filter(class_enrolled_id=request.data.get('class'))
         if _class:
             for std in _class:
-                emails.append(std.student.email)
+                # emails.append(std.student.email)
+                student = Student.objects.get(id=std.student.id)
+                unique_id = ''
+                params = str(uuid.uuid4())
 
-            send_raw_email(to_email=emails,reply_to=None,
-                        subject=subject,
-                        message_text=body,
-                        message_html=None)
+                invited = Invite.objects.filter(lesson_id =request.data.get('lesson'),student_id=std.student.id,invite_type=invite_type)
+                if invited:
+                    unique_id = invited.get().params
+                else:
+                    invite = Invite(lesson=lesson,student=student,params=params,invite_type=invite_type)
+                    invite.save()
+                    unique_id = invite.params
+
+                send_raw_email(to_email=[std.student.email],reply_to=None,
+                            subject=subject,
+                            message_text=f"{body}&params={unique_id}",
+                            message_html=None)
             return JsonResponse({"sucess":True},status=200)
         else:
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
@@ -345,18 +390,41 @@ def invite_email(request):
 
 @api_view(['POST'])
 def invite_text(request):
-    subject = "Invitation to Lesson"
+    lesson = Lesson.objects.get(id=request.data.get('lesson'))
+    subject = f"Invitation to {lesson.lesson_name} (Lesson)"
+    invite_type = 'text'
     body = request.data.get('body')
     if request.data.get('student'):
         student = Student.objects.get(id=request.data.get('student'))
-        send_sms(to_number=student.phone,body=subject +"\n"+ body)
+        unique_id = ''
+        params = str(uuid.uuid4())
+
+        invited = Invite.objects.filter(lesson_id =request.data.get('lesson'),student_id=request.data.get('student'),invite_type=invite_type)
+        if invited:
+            unique_id = invited.get().params
+        else:
+            invite = Invite(lesson=lesson,student=student,params=params,invite_type=invite_type)
+            invite.save()
+            unique_id = invite.params
+        send_sms(to_number=student.phone,body=subject +"\n\n"+ f"{body}&params={unique_id}")
         return JsonResponse({"sucess":True},status=200)
 
     if request.data.get('class'):
         _class = ClassEnrolled.objects.filter(class_enrolled_id=request.data.get('class'))
         if _class:
             for std in _class:
-                send_sms(to_number=std.student.phone,body=subject +"\n"+ body)
+                student = Student.objects.get(id=std.student.id)
+                unique_id = ''
+                params = str(uuid.uuid4())
+
+                invited = Invite.objects.filter(lesson_id =request.data.get('lesson'),student_id=std.student.id,invite_type=invite_type)
+                if invited:
+                    unique_id = invited.get().params
+                else:
+                    invite = Invite(lesson=lesson,student=student,params=params,invite_type=invite_type)
+                    invite.save()
+                    unique_id = invite.params
+                send_sms(to_number=std.student.phone,body=subject +"\n\n"+ f"{body}&params={unique_id}")
             return JsonResponse({"sucess":True},status=200)
         else:
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
