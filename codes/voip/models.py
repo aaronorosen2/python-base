@@ -17,6 +17,7 @@ class SMS(models.Model):
 class Call(models.Model):
     twilio_phone = models.ForeignKey(to=Phone, on_delete=models.CASCADE,
                                      default="")
+    number = models.CharField(max_length=20,blank=True,null=True)
     created_at = models.DateTimeField(auto_now=True)
     time_duration = models.IntegerField(default=0)
 

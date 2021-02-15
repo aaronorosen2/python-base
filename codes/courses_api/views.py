@@ -70,18 +70,15 @@ def lesson_create(request):
 
 @api_view(['GET'])
 def lesson_read(request,pk):
-    flashcards = {}
     les_= Lesson.objects.get(id=pk)
     less_serialized = LessonSerializer(les_)
     return Response(less_serialized.data)
 
 @api_view(['GET'])
 def lesson_all(request):
-    flashcards = {}
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
 
     if 'Authorization' in request.headers:
-        user_id = request.headers.get('Authorization')
         les_= Lesson.objects.filter(user=token.user_id)
         less_serialized = LessonSerializer(les_,many=True)
         return JsonResponse(less_serialized.data,safe=False)
