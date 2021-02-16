@@ -36,5 +36,6 @@ urlpatterns = [
     path("verify/phone", views.verify_2fa, name="verify-2fa"),
     path("invite/text",views.invite_text,name="invite-text"),
     path("invite/email",views.invite_email,name="invite-email"),
+    path("invite/response", views.invite_response, name="invite-response"),
 
 ]

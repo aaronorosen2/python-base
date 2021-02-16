@@ -14,6 +14,7 @@ from .models import UserSessionEvent
 from .models import FlashCardResponse
 from .models import UserSession
 from .models import Invite
+from .models import InviteResponse
 import json
 import uuid
 import datetime
@@ -80,7 +81,8 @@ def lesson_all(request):
 
     if 'Authorization' in request.headers:
         les_= Lesson.objects.filter(user=token.user_id)
-        less_serialized = LessonSerializer(les_,many=True)
+        # less_serialized = LessonSerializer(les_,many=True)
+        less_serialized = LessonSerializer(Lesson.objects.all(),many=True)
         return JsonResponse(less_serialized.data,safe=False)
     else:
         return JsonResponse({"message":"Unauthorized"})
@@ -430,3 +432,48 @@ def invite_text(request):
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
     
     return JsonResponse({"sucess":True},status=200)
+
+@api_view(['POST'])
+def invite_response(request):
+    print(" ........................as......invite........response..........................................", )
+
+    # flashcard_id = request.data['flashcard']
+    # flashcard = FlashCard.objects.get(id=flashcard_id)
+    # student = '' 
+    lesson_id = request.data['lesson']
+    lesson = Lesson.objects.get(lesson_name = lesson_id)
+    params = request.data['params']
+
+    # answer = request.data['answer']
+    # params = request.data.get('params',None)
+
+    if params:
+        student = Student.objects.get(id= Invite.objects.get(params=params).student_id)
+
+
+    # first check if we have FlashCardResponse
+    # flashcard_response = FlashCardResponse.objects.filter(
+    #     lesson=flashcard.lesson,
+    #     flashcard=flashcard).first()
+
+    # if flashcard_response:
+    #     # update answer...
+    #     flashcard_response.answer = answer
+    # else:
+
+    # if student:
+    #     invite_response = InviteResponse(
+    #         lesson=flashcard.lesson,
+    #         flashcard=flashcard,
+    #         answer=answer,
+    #         student= student)
+    # else:
+    invite_response = InviteResponse(
+        # lesson=flashcard.lesson,
+        lesson=lesson,
+        student=student
+        # flashcard=flashcard_id,
+        # answer=answer 
+        )
+    invite_response.save()
+    return Response("invite Response Recorded",status=200)
