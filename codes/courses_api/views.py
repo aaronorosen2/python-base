@@ -12,6 +12,7 @@ from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
+from .models import FlashCard
 from .models import UserSession
 from .models import Invite
 from .models import InviteResponse
@@ -435,45 +436,21 @@ def invite_text(request):
 
 @api_view(['POST'])
 def invite_response(request):
-    print(" ........................as......invite........response..........................................", )
-
-    # flashcard_id = request.data['flashcard']
-    # flashcard = FlashCard.objects.get(id=flashcard_id)
-    # student = '' 
+    lesson_type = request.data['lesson_type']
+    answer = request.data['answer']
     lesson_id = request.data['lesson']
-    lesson = Lesson.objects.get(lesson_name = lesson_id)
+    lesson = Lesson.objects.get(id = lesson_id) 
     params = request.data['params']
+    flashcard = FlashCard.objects.filter(lesson_type = lesson_type).first()
+    # flashcard = FlashCard.objects.filter(lesson_type = lesson_type or lesson_id = (lesson.id)).first()
+    answer = request.data['answer']
+    student = Student.objects.get(id= Invite.objects.get(params=params).student_id)
 
-    # answer = request.data['answer']
-    # params = request.data.get('params',None)
-
-    if params:
-        student = Student.objects.get(id= Invite.objects.get(params=params).student_id)
-
-
-    # first check if we have FlashCardResponse
-    # flashcard_response = FlashCardResponse.objects.filter(
-    #     lesson=flashcard.lesson,
-    #     flashcard=flashcard).first()
-
-    # if flashcard_response:
-    #     # update answer...
-    #     flashcard_response.answer = answer
-    # else:
-
-    # if student:
-    #     invite_response = InviteResponse(
-    #         lesson=flashcard.lesson,
-    #         flashcard=flashcard,
-    #         answer=answer,
-    #         student= student)
-    # else:
     invite_response = InviteResponse(
-        # lesson=flashcard.lesson,
         lesson=lesson,
-        student=student
-        # flashcard=flashcard_id,
-        # answer=answer 
+        student=student,
+        flashcard=flashcard,
+        answer=answer,
         )
     invite_response.save()
     return Response("invite Response Recorded",status=200)
