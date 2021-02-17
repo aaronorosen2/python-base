@@ -71,3 +71,11 @@ class Invite(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.params}"
+
+
+class InviteResponse(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE , null=True, blank=True)
+    flashcard = models.ForeignKey(FlashCard, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE,
+                               null=True, blank=True)
+    answer = models.TextField()

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'knox',
     'django_rest_passwordreset',
     'sfapp',
@@ -50,7 +51,6 @@ INSTALLED_APPS = [
     'video',
     'channels',
     'notifications',
-    'rest_framework',
     'courses_api',
     'pdf_sign',
     'store',
@@ -256,3 +256,5 @@ DEFAULT_FROM_EMAIL = 'mail-api@dreampotential.org'
 
 # Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
 # output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS
+
+# APPEND_SLASH=False

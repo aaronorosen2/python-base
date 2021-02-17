@@ -9,12 +9,18 @@ from sfapp2.utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
 from sfapp2.models import Member, Token, Service, GpsCheckin
 from sfapp2.models import VideoUpload
-from sfapp2.models import MyMed, Question, Choice
+from sfapp2.models import MyMed, Question, Choice, AdminFeedback
 from django.conf import settings
 import logging
 import boto3
 from botocore.exceptions import ClientError
-
+from knox.auth import get_user_model, AuthToken
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from knox.auth import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from .serializers import CheckinActivityAdminSerializer
 
 def to_list(el):
     if not el:
@@ -208,9 +214,11 @@ def checkin_activity(request):
 
 
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def checkin_activity_admin(request):
-    admin = request.user
-    if admin != 'AnonymousUser':
+    if request.user.is_authenticated:
         user_phone = request.GET.get('phone')
         if user_phone:
             member = Member.objects.filter(phone=user_phone).first()
@@ -218,15 +226,18 @@ def checkin_activity_admin(request):
                 member=member).order_by('-created_at').all()
             video_events = VideoUpload.objects.filter(
                 member=member).order_by('-created_at').all()
-
             events = []
             for gps_checkin in gps_checkins:
                 t = gps_checkin.created_at
+                feedbacks = AdminFeedback.objects.filter(gpscheckin=gps_checkin.id).select_related('user')
+                feed_serialized = CheckinActivityAdminSerializer(feedbacks, many=True)
                 events.append({
                     'type': 'gps',
+                    'id': gps_checkin.id,
                     'lat': gps_checkin.lat,
                     'lng': gps_checkin.lng,
                     'msg': gps_checkin.msg,
+                    'feedbacks': list(feed_serialized.data),
                     'created_at': time.mktime(t.timetuple()),
                 })
 
@@ -235,10 +246,13 @@ def checkin_activity_admin(request):
                 # Disable server streaming, Only show videos that are uploaded to S3
                 if event.source == 's3':
                     video_url = get_presigned_video_url(event.videoUrl)
+                    feedbacks = AdminFeedback.objects.filter(videoupload=event.id).select_related('user')
+                    feed_serialized = CheckinActivityAdminSerializer(feedbacks, many=True)
                     events.append({
                         'type': 'video',
                         'video_url': video_url,
                         'video_uuid': event.video_uuid,
+                        'feedbacks': list(feed_serialized.data),
                         'created_at': time.mktime(t.timetuple())
                     })
 
@@ -249,6 +263,30 @@ def checkin_activity_admin(request):
         else:
             return None
 
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def checkin_feedback_admin(request):
+    admin = request.user
+    if request.user.is_authenticated:
+        message = request.POST.get('msg')
+        if message is not None and request.POST.get('logId') is not None and request.POST.get('logType') in ['video','gps']:
+            log_type = request.POST.get('logType')
+            # print(message, request.POST.get('logId'))
+            feedback = AdminFeedback(message=message, user=admin)
+            feedback.save()
+            log = None
+            if log_type == 'video':
+                log = VideoUpload.objects.filter(video_uuid=request.POST.get('logId')).first()
+            elif log_type == 'gps':
+                log = GpsCheckin.objects.filter(id=request.POST.get('logId')).first()
+            if log:
+                log.admin_feedback.add(feedback)
+                return JsonResponse({'success':True,'feed': {'feed_id':feedback.id, 'user_details': 
+                {'first_name': feedback.user.first_name, 'last_name': feedback.user.last_name, 'user_id': feedback.user.id },
+                 'created_at': feedback.created_at}})
+    return None
 
 
 @csrf_exempt

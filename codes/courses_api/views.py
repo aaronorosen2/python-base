@@ -14,6 +14,7 @@ from .models import UserSessionEvent
 from .models import FlashCardResponse
 from .models import UserSession
 from .models import Invite
+from .models import InviteResponse
 import json
 import uuid
 import datetime
@@ -21,6 +22,7 @@ from datetime import time
 from sfapp2.utils.twilio import send_confirmation_code, send_sms
 from form_lead.utils.email_util import send_raw_email
 from classroom.models import Student, Class, ClassEnrolled
+from django.contrib.auth.models import User
 
 from knox.auth import get_user_model, AuthToken
 from knox.views import user_logged_in
@@ -34,10 +36,11 @@ def apiOverview(request):
 
 @api_view(['POST'])
 def lesson_create(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    user = User.objects.get(id=token.user_id)
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
-    auth_user = AuthToken.objects.get(user=request.user)
-    les_.user = get_user_model().objects.get(id=auth_user.user_id)
+    les_.user = user
     les_.save()
 
     for flashcard in request.data["flashcards"]:
@@ -68,20 +71,18 @@ def lesson_create(request):
 
 @api_view(['GET'])
 def lesson_read(request,pk):
-    flashcards = {}
     les_= Lesson.objects.get(id=pk)
     less_serialized = LessonSerializer(les_)
     return Response(less_serialized.data)
 
 @api_view(['GET'])
 def lesson_all(request):
-    flashcards = {}
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
 
     if 'Authorization' in request.headers:
-        user_id = request.headers.get('Authorization')
         les_= Lesson.objects.filter(user=token.user_id)
-        less_serialized = LessonSerializer(les_,many=True)
+        # less_serialized = LessonSerializer(les_,many=True)
+        less_serialized = LessonSerializer(Lesson.objects.all(),many=True)
         return JsonResponse(less_serialized.data,safe=False)
     else:
         return JsonResponse({"message":"Unauthorized"})
@@ -431,3 +432,48 @@ def invite_text(request):
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
     
     return JsonResponse({"sucess":True},status=200)
+
+@api_view(['POST'])
+def invite_response(request):
+    print(" ........................as......invite........response..........................................", )
+
+    # flashcard_id = request.data['flashcard']
+    # flashcard = FlashCard.objects.get(id=flashcard_id)
+    # student = '' 
+    lesson_id = request.data['lesson']
+    lesson = Lesson.objects.get(lesson_name = lesson_id)
+    params = request.data['params']
+
+    # answer = request.data['answer']
+    # params = request.data.get('params',None)
+
+    if params:
+        student = Student.objects.get(id= Invite.objects.get(params=params).student_id)
+
+
+    # first check if we have FlashCardResponse
+    # flashcard_response = FlashCardResponse.objects.filter(
+    #     lesson=flashcard.lesson,
+    #     flashcard=flashcard).first()
+
+    # if flashcard_response:
+    #     # update answer...
+    #     flashcard_response.answer = answer
+    # else:
+
+    # if student:
+    #     invite_response = InviteResponse(
+    #         lesson=flashcard.lesson,
+    #         flashcard=flashcard,
+    #         answer=answer,
+    #         student= student)
+    # else:
+    invite_response = InviteResponse(
+        # lesson=flashcard.lesson,
+        lesson=lesson,
+        student=student
+        # flashcard=flashcard_id,
+        # answer=answer 
+        )
+    invite_response.save()
+    return Response("invite Response Recorded",status=200)
