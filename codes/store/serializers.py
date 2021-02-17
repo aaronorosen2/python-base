@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import item
+from .models import item, order
 
 class itemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,4 +8,18 @@ class itemSerializer(serializers.ModelSerializer):
                     'title',
                     'description',
                     'price'
+                    )
+        
+class orderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = order
+        fields = (  'id',
+                    'name',
+                    'email',
+                    'phone',
+                    'is_ordered',
+                    'date_ordered',
+                    'braintreeID',
+                    'item_ID',
+                    'user'
                     )
