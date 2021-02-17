@@ -3,12 +3,14 @@ from knox import views as knox_views
 
 from .views import UserRegister, PasswordReset, UserCourses, UserLogin, AllCourses, list_courses, list_courses_auth, \
     ChangePasswordView, Home, S3SignedUrl, S3Upload, MakeS3FilePublic, UploadRoomLogo, RoomInfoView, RoomVisitor, \
-    RecordingUpload
+    RecordingUpload, BrandInfo, ChannelList
 
 urlpatterns = [
     # User Management and Auth APIs
     path('/', Home.as_view(), name='home'),
     path('/room_info', RoomInfoView.as_view(), name='RoomInfoView'),
+    path('/brand_info/<str:pk>', BrandInfo.as_view(), name='BrandInfoView'),
+    path('/channel_list', ChannelList.as_view(), name='ChannelListView'),
     path('/upload/record_video', RecordingUpload.as_view(), name='RecordingUploadView'),
     path('/upload/room_logo', UploadRoomLogo.as_view(), name='room_upload'),
     path('/room_visitor', RoomVisitor.as_view(), name='room_upload'),
