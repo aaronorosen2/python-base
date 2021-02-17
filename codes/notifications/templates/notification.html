@@ -24,16 +24,15 @@
         if (document.getElementById("room_name").value == "") {
           alert("USERNAME should no be empty");
         } else {
-          socket = new WebSocket('wss://' + window.location.host + '/notifications/' + document.getElementById("room_name").value + '/');
+          socket = new WebSocket('ws://' + window.location.host + '/notifications/' + document.getElementById("room_name").value + '/');
           socket.onopen = function open() {
             console.log('WebSockets connection created.');
-            // var dictJoinRoom = {
-            //   action: "join_room",
-            //   client: "customerName",
-            //   representatve: true
-            // }
-            // console.log("dictionary..", dictJoinRoom);
-            // socket.send(JSON.stringify(dictJoinRoom));
+            var dictJoinRoom = {
+              action: "join_room",
+              representatve: true
+            }
+            console.log("dictionary..", dictJoinRoom);
+            socket.send(JSON.stringify(dictJoinRoom));
             if (document.getElementById("user_name").value == "") {
               document.getElementById("user_name").value = "Anonymous";
             }
