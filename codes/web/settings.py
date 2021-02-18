@@ -94,7 +94,6 @@ else:
     BT_MERCHANT_ID = ''
     BT_PUBLIC_KEY = ''
     BT_PRIVATE_KEY = ''
-CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'web.urls'
 
 TWILIO = {
@@ -247,6 +246,7 @@ CELERY_BEAT_SCHEDULE = {
 
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
+ALLOWED_HOSTS=['*']
 
 # Email
 EMAIL_BACKEND = 'django_ses.SESBackend'
