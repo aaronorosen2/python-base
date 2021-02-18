@@ -18,6 +18,7 @@ class RoomInfo(ParentModel):
     logo_url = models.TextField()
     video_url = models.CharField(max_length=500,default='')
     slack_channel = models.CharField(max_length=500, unique=True)
+
     class Meta:
         db_table = "roominfo"
 
@@ -26,12 +27,14 @@ class RoomVisitors(ParentModel):
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
     room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
+
     class Meta:
         db_table = "roomvisitors"
 
 class RoomRecording(ParentModel):
     recording_link = models.TextField()
     room = models.ForeignKey(RoomInfo, on_delete=models.CASCADE)
+
     class Meta:
         db_table = "roomrecording"
 

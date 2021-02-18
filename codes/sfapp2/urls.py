@@ -8,6 +8,7 @@ urlpatterns = [
     path('api/do_checkin_gps', views.do_checkin_gps),
     path('api/checkin_activity', views.checkin_activity),
     path('api/checkin_activity_admin', views.checkin_activity_admin),
+    path('api/checkin_admin_feedback', views.checkin_feedback_admin),
     path('api/add_med', views.add_med),
     path('api/list_meds', views.list_meds),
     path('api/list_questions', views.list_questions),

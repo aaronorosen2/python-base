@@ -12,8 +12,10 @@ from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
+from .models import FlashCard
 from .models import UserSession
 from .models import Invite
+from .models import InviteResponse
 import json
 import uuid
 import datetime
@@ -70,20 +72,18 @@ def lesson_create(request):
 
 @api_view(['GET'])
 def lesson_read(request,pk):
-    flashcards = {}
     les_= Lesson.objects.get(id=pk)
     less_serialized = LessonSerializer(les_)
     return Response(less_serialized.data)
 
 @api_view(['GET'])
 def lesson_all(request):
-    flashcards = {}
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
 
     if 'Authorization' in request.headers:
-        user_id = request.headers.get('Authorization')
         les_= Lesson.objects.filter(user=token.user_id)
-        less_serialized = LessonSerializer(les_,many=True)
+        # less_serialized = LessonSerializer(les_,many=True)
+        less_serialized = LessonSerializer(Lesson.objects.all(),many=True)
         return JsonResponse(less_serialized.data,safe=False)
     else:
         return JsonResponse({"message":"Unauthorized"})
@@ -433,3 +433,24 @@ def invite_text(request):
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
     
     return JsonResponse({"sucess":True},status=200)
+
+@api_view(['POST'])
+def invite_response(request):
+    lesson_type = request.data['lesson_type']
+    answer = request.data['answer']
+    lesson_id = request.data['lesson']
+    lesson = Lesson.objects.get(id = lesson_id) 
+    params = request.data['params']
+    flashcard = FlashCard.objects.filter(lesson_type = lesson_type).first()
+    # flashcard = FlashCard.objects.filter(lesson_type = lesson_type or lesson_id = (lesson.id)).first()
+    answer = request.data['answer']
+    student = Student.objects.get(id= Invite.objects.get(params=params).student_id)
+
+    invite_response = InviteResponse(
+        lesson=lesson,
+        student=student,
+        flashcard=flashcard,
+        answer=answer,
+        )
+    invite_response.save()
+    return Response("invite Response Recorded",status=200)

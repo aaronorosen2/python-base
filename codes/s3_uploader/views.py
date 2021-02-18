@@ -1,3 +1,4 @@
+from django.shortcuts import redirect, HttpResponseRedirect
 import logging
 import mimetypes
 import os
@@ -40,6 +41,39 @@ class RoomInfoView(View):
     def get(self, request, *args, **kwargs):
         return render(request, "s3_uploader/upload_room_logo.html")
 
+from rest_framework import mixins
+
+class BrandInfo(generics.RetrieveAPIView, generics.UpdateAPIView):
+    queryset = Brand.objects.all()
+    serializer_class = RoomInfoSerializer
+
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            room_info = Brand.objects.get(
+                        room_name=pk)
+            serializer = self.get_serializer(room_info)
+            return Response(serializer.data)
+        except Exception as ex:
+            return Response({
+                "error": str(ex)
+            }, status=400)
+    
+
+import redis
+@method_decorator(csrf_exempt, name='dispatch')
+class ChannelList(generics.ListAPIView):
+    def get(self, request, *args, **kwargs):
+        channel_list = []
+        redisconn = redis.StrictRedis(
+            host='redis', port=6379, db=0, decode_responses=True)
+        room_list = redisconn.smembers('room_names')
+        room_list = list(room_list)
+        for room in room_list:
+            live_users = redisconn.hvals(room+'@live')
+            room_dict = {'room_name': room.split("_")[1],
+                        'members': len(live_users), 'live_users':live_users}
+            channel_list.append(room_dict)
+        return Response({'channel_list': sorted(channel_list, key = lambda i: i['members'],reverse=True)})
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadRoomLogo(generics.ListCreateAPIView):
@@ -55,14 +89,14 @@ class UploadRoomLogo(generics.ListCreateAPIView):
         return file_url
 
     def post(self, request, *args, **kwargs):
-        
         try:
             try:
                 room_info = Brand.objects.get(
                     room_name=request.data['room_name'])
                 return Response({"error": "Brand Already Exists!"}, status=400)
             except Brand.DoesNotExist:
-                video_url = self.upload_brand_video(request.FILES.get('video_url'))
+                video_url = self.upload_brand_video(
+                    request.FILES.get('video_url'))
             tempData = request.data.dict()
             tempData['video_url'] = video_url
             serializer = self.get_serializer(data=tempData)
@@ -109,7 +143,6 @@ class RecordingUpload(generics.GenericAPIView):
     queryset = Recording.objects.all()
     serializer_class = RoomRecordingSerializer
 
-
     def send_recording_url_to_slack(self, room, video_url):
         import requests
         import json
@@ -120,7 +153,7 @@ class RecordingUpload(generics.GenericAPIView):
         body = {"text": "%s" % slack_message,
                 'username': room.room_name}
         requests.post(url, data=json.dumps(body))
-    
+
     def post(self, request, *args, **kwargs):
         print("Uploading", request.FILES, request.POST)
 
@@ -137,7 +170,7 @@ class RecordingUpload(generics.GenericAPIView):
                 room_name=room_name[0])
         except Brand.DoesNotExist:
             raise
-        
+
         if uploaded_file:
             # Get unique filename using UUID
             file_name = uploaded_file.name
@@ -145,7 +178,7 @@ class RecordingUpload(generics.GenericAPIView):
             s3_key = 'Test/upload/{0}'.format(file_name_uuid)
 
             content_type, file_url = upload_to_s3(s3_key, uploaded_file)
-            room_recording = {'recording_link':file_url, 'room':room_info.id}
+            room_recording = {'recording_link': file_url, 'room': room_info.id}
             serializer = self.get_serializer(data=room_recording)
             serializer.is_valid(raise_exception=True)
             room = serializer.save()
@@ -331,8 +364,6 @@ class S3Upload(generics.GenericAPIView):
             return JsonResponse({'message': 'Success!', 'file_url': file_url, 'content_type': content_type})
         else:
             return JsonResponse({'message': 'No file provided!'})
-
-from django.shortcuts import redirect, HttpResponseRedirect
 
 
 def upload_to_s3(s3_key, uploaded_file):
