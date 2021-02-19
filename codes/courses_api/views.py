@@ -437,15 +437,14 @@ def invite_text(request):
 @api_view(['POST'])
 def invite_response(request):
     lesson_type = request.data['lesson_type']
-    answer = request.data['answer']
-    lesson_id = request.data['lesson']
-    lesson = Lesson.objects.get(id = lesson_id) 
+    lesson_id = request.data['lesson_id']
+    lesson = Lesson.objects.get(id = lesson_id)
     params = request.data['params']
     flashcard = FlashCard.objects.filter(lesson_type = lesson_type).first()
     # flashcard = FlashCard.objects.filter(lesson_type = lesson_type or lesson_id = (lesson.id)).first()
     answer = request.data['answer']
     student = Student.objects.get(id= Invite.objects.get(params=params).student_id)
-
+    
     invite_response = InviteResponse(
         lesson=lesson,
         student=student,
