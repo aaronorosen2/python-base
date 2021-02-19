@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'knox',
     'django_rest_passwordreset',
     'sfapp',
@@ -50,7 +51,6 @@ INSTALLED_APPS = [
     'video',
     'channels',
     'notifications',
-    'rest_framework',
     'courses_api',
     'pdf_sign',
     'store',
@@ -61,7 +61,13 @@ INSTALLED_APPS = [
     'manifest_app',
     's3_uploader',
     'parking',
-    'signature'
+    'signature',
+    'dreamreader',
+    'neighbormade',
+    'classroom',
+    'vconf',
+    'audition',
+    'facets',
 ]
 
 MIDDLEWARE = [
@@ -88,13 +94,13 @@ else:
     BT_MERCHANT_ID = ''
     BT_PUBLIC_KEY = ''
     BT_PRIVATE_KEY = ''
-CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'web.urls'
 
 TWILIO = {
     'TWILIO_ACCOUNT_SID': 'AC8c34b4a961b611a3606f55a0e182ad72',
     'TWILIO_AUTH_TOKEN': '7287d6460e997c4c8dfc196fe622fee0',
-    'TWILIO_NUMBER': '(510) 288-5469',
+#    'TWILIO_NUMBER': '(510) 288-5469',
+    'TWILIO_NUMBER': '(425) 578-5798',
 }
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -225,27 +231,30 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'schedule_member': {
         'task': 'web.celery.schedule_member',
-        'schedule': timedelta(seconds=50)  # execute every minute
+        'schedule': timedelta(minutes=50)  # execute every minute
     },
     'room_details': {
         'task': 'web.celery.room_details',
+        'schedule': timedelta(minutes=1)  # execute every seconds
+    },
+    'send_wait_notification_customer': {
+        'task': 'web.celery.send_wait_notification_customer',
         'schedule': timedelta(seconds=1)  # execute every seconds
     }
 }
 
+
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
+ALLOWED_HOSTS=['*']
 
 # Email
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'user@gmail.com'
-EMAIL_HOST_PASSWORD = 'user-token'
-DEFAULT_FROM_EMAIL = 'user@gmail.com'
+EMAIL_BACKEND = 'django_ses.SESBackend'
+# AWS_ACCESS_KEY_ID = 'AKIAIHFAW4CMLKGZJWQQ'
+# AWS_SECRET_ACCESS_KEY = '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'
+DEFAULT_FROM_EMAIL = 'mail-api@dreampotential.org'
 
 # Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
 # output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+APPEND_SLASH=False

@@ -56,6 +56,16 @@
                    <option value="6:45">6:45</option>
                    <option value="7:00">7:00</option>
                  </select>
+
+
+                 <select name="choices" class="form-control form-group" id="">
+                  <option></option>
+                  {% for value, ratings_group in choices  %}
+                  <option value='{{value}}'>{{ratings_group}}</option>
+                  {% endfor %}
+                 
+                 </select>
+                 
                  
                  <div class="modal-footer">
                <button type="submit" class="btn btn-primary">Create</button>

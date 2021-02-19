@@ -14,6 +14,8 @@ from .models import Event
 from .utils import Calendar
 from django.views.decorators.clickjacking import xframe_options_exempt
 
+from    sfapp2.utils.twilio import send_sms
+from form_lead.utils.email_util import send_raw_email
 
 class XFrameOptionsExemptMixin:
     @xframe_options_exempt
@@ -65,6 +67,8 @@ class CreateEvent(XFrameOptionsExemptMixin, View):
         start_time = request.POST.get('start_time')
         end_time = request.POST.get('end_time')
         date = request.POST.get('date')
+        choices            = request.POST.get('choices')
+        date_obj           = datetime.strptime(date, "%Y-%m-%d")
 
         Event.objects.create(
             date=date,
@@ -72,8 +76,87 @@ class CreateEvent(XFrameOptionsExemptMixin, View):
             end_time=end_time,
             name=name,
             email=email,
-            phone=phone
+            phone=phone, 
+            frequency = choices
             )
+        send_sms('8434259777', 'test body')
+        send_raw_email(
+            to_email= ['aaronorosen@gmail.com',],
+             reply_to=['test@test.com',], 
+              subject='test Subject',
+            message_text='test message',
+        )
+
+        
+#! Daily Event Creation
+
+        list_of_mnth = calendar.monthcalendar( date_obj.year  , date_obj.month)
+        
+        if choices == "bg-primary":
+            
+            for i in list_of_mnth:
+                for j in i:
+                    if j > date_obj.day:
+                        date_updated=date_obj.replace(day=j)
+                        Event.objects.create(
+                            date= date_updated , 
+                            start_time= start_time , 
+                            end_time=end_time ,
+                            name= name, 
+                            email=email, 
+                            phone=phone,
+                            frequency = choices
+                            )
+
+#! Weekly Event Creation
+
+                        
+        if choices == "bg-success":
+            date = date_obj
+            for_week_recurring = []
+            for i in range(7):
+                date =  date + timedelta(days=7)
+               
+               
+                for_week_recurring.append(date)
+            
+            for i in for_week_recurring:
+                
+                Event.objects.create(
+                    date= i , 
+                    start_time= start_time , 
+                    end_time=end_time ,
+                    name= name, 
+                    email=email, 
+                    phone=phone,
+                    frequency = choices
+                    )
+                
+#! BiWeekly Event Creation
+        
+        
+        if choices == "bg-danger":
+            date = date_obj
+            for_week_recurring = []
+            for i in range(7):
+                date =  date + timedelta(days=14)
+                
+                for_week_recurring.append(date)
+            
+            for i in for_week_recurring:
+                
+                Event.objects.create(
+                    date= i , 
+                    start_time= start_time , 
+                    end_time=end_time ,
+                    name= name, 
+                    email=email, 
+                    phone=phone,
+                    frequency = choices
+                    )
+    
+            
+
         messages.success(request,
                          f"Event has been created {start_time} - {end_time}.")
         return redirect('bookbikerescue:calendar')

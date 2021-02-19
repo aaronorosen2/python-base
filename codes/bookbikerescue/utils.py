@@ -19,7 +19,7 @@ class Calendar(HTMLCalendar ):
 		d = ''
 		for event in events_per_day:
 			d += f"""
-				<li class="list-group-item"> {event.get_html_url} </li>
+				<li class="list-group-item  {event.frequency}  "> {event.get_html_url} </li>
 				"""
 		
 		if day != 0:

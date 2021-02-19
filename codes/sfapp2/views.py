@@ -1,3 +1,4 @@
+import math
 import time
 import json
 import uuid
@@ -8,12 +9,18 @@ from sfapp2.utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
 from sfapp2.models import Member, Token, Service, GpsCheckin
 from sfapp2.models import VideoUpload
-from sfapp2.models import MyMed, Question, Choice
+from sfapp2.models import MyMed, Question, Choice, AdminFeedback
 from django.conf import settings
 import logging
 import boto3
 from botocore.exceptions import ClientError
-
+from knox.auth import get_user_model, AuthToken
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from knox.auth import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from .serializers import CheckinActivityAdminSerializer
 
 def to_list(el):
     if not el:
@@ -32,7 +39,10 @@ def get_services(request):
         service_types += to_list(service.services_list)
         population_types += to_list(service.population_list)
 
-        print(to_list(service.services_list))
+        # print(to_list(service.services_list))
+        if (math.isnan(float(service.latitude)) or
+                math.isnan(float(service.longitude))):
+            continue
         datas.append({
             'title': service.title,
             'description': service.description,
@@ -55,7 +65,12 @@ def get_services(request):
         'service_types': service_types,
         'population_types': population_types,
     }
-    return JsonResponse(results, safe=False)
+
+    from django.http import HttpResponse
+    print(results)
+    return HttpResponse(json.dumps(results),
+                        content_type="application/json")
+    # return JsonResponse(results, safe=False)
 
 
 @csrf_exempt
@@ -199,6 +214,82 @@ def checkin_activity(request):
 
 
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def checkin_activity_admin(request):
+    if request.user.is_authenticated:
+        user_phone = request.GET.get('phone')
+        if user_phone:
+            member = Member.objects.filter(phone=user_phone).first()
+            gps_checkins = GpsCheckin.objects.filter(
+                member=member).order_by('-created_at').all()
+            video_events = VideoUpload.objects.filter(
+                member=member).order_by('-created_at').all()
+            events = []
+            for gps_checkin in gps_checkins:
+                t = gps_checkin.created_at
+                feedbacks = AdminFeedback.objects.filter(gpscheckin=gps_checkin.id).select_related('user')
+                feed_serialized = CheckinActivityAdminSerializer(feedbacks, many=True)
+                events.append({
+                    'type': 'gps',
+                    'id': gps_checkin.id,
+                    'lat': gps_checkin.lat,
+                    'lng': gps_checkin.lng,
+                    'msg': gps_checkin.msg,
+                    'feedbacks': list(feed_serialized.data),
+                    'created_at': time.mktime(t.timetuple()),
+                })
+
+            for event in video_events:
+                t = event.created_at
+                # Disable server streaming, Only show videos that are uploaded to S3
+                if event.source == 's3':
+                    video_url = get_presigned_video_url(event.videoUrl)
+                    feedbacks = AdminFeedback.objects.filter(videoupload=event.id).select_related('user')
+                    feed_serialized = CheckinActivityAdminSerializer(feedbacks, many=True)
+                    events.append({
+                        'type': 'video',
+                        'video_url': video_url,
+                        'video_uuid': event.video_uuid,
+                        'feedbacks': list(feed_serialized.data),
+                        'created_at': time.mktime(t.timetuple())
+                    })
+
+            return JsonResponse({
+                'user_activities': sorted(events,
+                                key=lambda i: i['created_at'], reverse=True)
+            })
+        else:
+            return None
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def checkin_feedback_admin(request):
+    admin = request.user
+    if request.user.is_authenticated:
+        message = request.POST.get('msg')
+        if message is not None and request.POST.get('logId') is not None and request.POST.get('logType') in ['video','gps']:
+            log_type = request.POST.get('logType')
+            # print(message, request.POST.get('logId'))
+            feedback = AdminFeedback(message=message, user=admin)
+            feedback.save()
+            log = None
+            if log_type == 'video':
+                log = VideoUpload.objects.filter(video_uuid=request.POST.get('logId')).first()
+            elif log_type == 'gps':
+                log = GpsCheckin.objects.filter(id=request.POST.get('logId')).first()
+            if log:
+                log.admin_feedback.add(feedback)
+                return JsonResponse({'success':True,'feed': {'feed_id':feedback.id, 'user_details': 
+                {'first_name': feedback.user.first_name, 'last_name': feedback.user.last_name, 'user_id': feedback.user.id },
+                 'created_at': feedback.created_at}})
+    return None
+
+
+@csrf_exempt
 def add_med(request):
     member = get_member_from_headers(request.headers)
     if member and request.POST:
@@ -230,7 +321,7 @@ def del_med(request, med_id):
 
 @csrf_exempt
 def list_questions(request):
-    questions = Question.objects.filter().values().all()
+    questions = Question.objects.filter().order_by('id').values().all()
     for question in questions:
         question['choices'] = list(Choice.objects.filter(
             question__id=question['id']).values().all())
@@ -264,7 +355,8 @@ def test_product(request):
     return render(request, 'test/product.html')
 
 
-def get_presigned_video_url(object_name, expiration=3600, fields=None, conditions=None):
+def get_presigned_video_url(object_name, expiration=3600,
+                            fields=None, conditions=None):
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
     secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
@@ -274,7 +366,8 @@ def get_presigned_video_url(object_name, expiration=3600, fields=None, condition
         s3_client = boto3.client('s3')
     else:
         print("Use host. key or secret found")
-        s3_client = boto3.client('s3', aws_access_key_id=key, aws_secret_access_key=secret)
+        s3_client = boto3.client('s3', aws_access_key_id=key,
+                                 aws_secret_access_key=secret)
 
     # Generate a presigned S3 POST URL
     try:

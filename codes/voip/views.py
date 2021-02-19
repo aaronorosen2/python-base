@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 from sfapp2.utils.twilio import send_sms, list_sms, send_sms_file
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
@@ -17,16 +15,33 @@ sessionID_to_destNo = {}
 
 # Generate a session id for conference
 def get_session_id(source_number, destination_number):
-    return 'Conf' + source_number + '-To-' + destination_number + '-' +uuid.uuid4().hex
+    return (
+        'Conf' + source_number +
+        '-To-' + destination_number + '-' + uuid.uuid4().hex
+    )
 
 
 def get_client():
     try:
-        twilio_client = Client(settings.TWILIO['TWILIO_ACCOUNT_SID'], settings.TWILIO['TWILIO_AUTH_TOKEN'])
+        twilio_client = Client(settings.TWILIO['TWILIO_ACCOUNT_SID'],
+                               settings.TWILIO['TWILIO_AUTH_TOKEN'])
         return twilio_client
     except Exception as e:
         msg = "Missing configuration variable: {}".format(e)
         return JsonResponse({'error': msg})
+
+
+@csrf_exempt
+def twilio_inbound_sms(request):
+    # start populate twilio cache -
+    print(request.POST)
+    print(request)
+
+    # XXX populate voip.model.SMS and voip.model.Phone
+    send_sms("18434259777",
+             request.POST.get("Body"))
+
+    return JsonResponse({'message': 'success'})
 
 
 @csrf_exempt
@@ -35,13 +50,15 @@ def send_sms_api(request):
              request.POST.get("msg"))
     return JsonResponse({'message': 'success'})
 
+
 @csrf_exempt
 def send_sms_file_api(request):
     send_sms_file(request.POST.get("to_number"),
-             request.POST.get("image"))
+                  request.POST.get("image"))
     # print(request.POST.get("to_number"))
     # print(request.POST.get("image"))
     return JsonResponse({'message': 'success'})
+
 
 @csrf_exempt
 def list_sms_api(request):
@@ -58,11 +75,13 @@ def twilio_call_status(request):
 @csrf_exempt
 def voip_callback(request, session_id):
     # print(request.POST)
-    print("## Conference request received, session id:{0} Making a conference call".format(session_id))
+    print("## Conference session id:{0} Making a conference call".format(
+        session_id))
 
     resp = VoiceResponse()
 
-    # If Twilio's request to our app included already gathered digits, process them
+    # If Twilio's request to our app included already
+    # gathered digits, process them
     if 'Digits' in request.POST:
         # Get which digit the caller chose
         choice = request.POST.get('Digits')
@@ -70,7 +89,8 @@ def voip_callback(request, session_id):
         # Say a different message depending on the caller's choice
         if choice == '1':
             resp.say('Adding destination number to the conference!')
-            resp.redirect('http://3.137.150.83:8001/voip/api_voip/add_user/' + session_id)
+            resp.redirect(
+                'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/add_user/' + session_id)
             print(str(resp))
             return HttpResponse(resp)
         elif choice == '2':
@@ -84,12 +104,15 @@ def voip_callback(request, session_id):
             resp.say("Sorry, I don't understand that choice.")
     else:
         # Get user input
-        gather = Gather(num_digits=1, action='http://3.137.150.83:8001/voip/api_voip/voip_callback/' + session_id)
+        gather = Gather(
+            num_digits=1,
+            action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
         gather.say('Please Press 1 to connect to destination. Press 2 to end the call.')
         resp.append(gather)
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
-    resp.redirect('http://3.137.150.83:8001/voip/api_voip/voip_callback/' + session_id)
+    resp.redirect(
+        'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
 
     print(str(resp))
     return HttpResponse(resp)
@@ -112,7 +135,7 @@ def add_user_to_conf(request, session_id):
     participant = client.conferences(destination_number).participants.create(
         from_=settings.TWILIO['TWILIO_NUMBER'],
         to=destination_number,
-        conference_status_callback='http://3.137.150.83:8001/voip/api_voip/leave_conf/' + session_id,
+        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id,
         conference_status_callback_event="leave")
 
     print(participant)
@@ -185,9 +208,9 @@ def join_conference(request):
         call = twilio_client.calls.create(record=True,
                                           from_=settings.TWILIO['TWILIO_NUMBER'],
                                           to='+' + source_number,
-                                          url='http://3.137.150.83:8001/voip/api_voip/voip_callback/' + str(session_id),
+                                          url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
                                           status_callback_event=['completed'],
-                                          status_callback='http://3.137.150.83:8001/voip/api_voip/complete_call/' + str(session_id)
+                                          status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id)
                                           )
         sessionID_to_callsid[session_id] = call.sid
         sessionID_to_destNo[session_id] = '+' + dest_number
@@ -196,5 +219,3 @@ def join_conference(request):
         message = e.msg if hasattr(e, 'msg') else str(e)
         return JsonResponse({'error': message})
     return JsonResponse({'message': 'Success!'})
-
-

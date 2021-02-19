@@ -1,6 +1,7 @@
 import uuid
 import os
 from django.db import models
+from knox.auth import get_user_model
 
 
 # TODO:
@@ -14,6 +15,10 @@ class Upload(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     file = models.FileField(upload_to=uuid_file_path)
 
+class AdminFeedback(models.Model):
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="")
+    message = models.TextField(default="")
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Member(models.Model):
     phone = models.CharField(max_length=20, unique=True)
@@ -37,6 +42,7 @@ class GpsCheckin(models.Model):
     lat = models.CharField(max_length=500, default='')
     lng = models.CharField(max_length=500, default='')
     created_at = models.DateTimeField(auto_now_add=True)
+    admin_feedback = models.ManyToManyField(AdminFeedback)
 
 
 class VideoUpload(models.Model):
@@ -45,6 +51,7 @@ class VideoUpload(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     source = models.CharField(max_length=500, default="")
     video_uuid = models.CharField(max_length=500, default='')
+    admin_feedback = models.ManyToManyField(AdminFeedback)
 
 
 class MyMed(models.Model):
