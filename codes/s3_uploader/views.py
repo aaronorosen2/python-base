@@ -24,6 +24,7 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer, RoomInfoSerializer, RoomVisitorsSerializer, RoomInfoVisitorsSerializer, RoomRecordingSerializer
@@ -109,6 +110,48 @@ class UploadRoomLogo(generics.ListCreateAPIView):
             return Response({
                 "error": str(ex)
             }, status=400)
+
+class EditRoomLogo(APIView):
+    
+    def put(self,request,*args,**kwargs):
+        try:
+            room_ = Brand.objects.get(id=request.POST['room_id'])
+            room_logo = request.FILES.get("room_logo",None)
+            room_video = request.FILES.get("video_url",None)
+            
+            video_url = None
+            room_logo_url = None
+            upload = UploadRoomLogo()
+            if room_video:
+                video_url = upload.upload_brand_video(room_video)
+
+            if room_logo:
+                file_name = room_logo.name
+                file_name_uuid = uuid_file_path(file_name)
+                s3_key = 'Test/upload/{0}'.format(file_name_uuid)
+
+                content_type, room_logo_url = upload_to_s3(s3_key, room_logo)
+            room_.room_name = request.POST['room_name']
+            room_.slack_channel = request.POST['slack_channel']
+
+            if video_url:
+                room_.video_url = video_url
+            if room_logo_url:
+                room_.logo_url = room_logo_url
+
+            room_.save()
+            return JsonResponse({"message":"Success!"},status=200)
+        except:
+            return JsonResponse({"message":"Error!"},status=404)
+    
+    def delete(self,request,*args,**kwargs):
+        try:
+            room_ = Brand.objects.get(id=request.POST['room_id'])
+            room_.delete()
+            return JsonResponse({"message":"Successfully Deleted!"},status=200)
+        except Brand.DoesNotExist:
+            return JsonResponse({"message":"Error!"},status=404)
+
 
 
 class RoomVisitor(generics.ListCreateAPIView):
