@@ -39,46 +39,73 @@ def viewNeighbours(request):
 
 @api_view(['GET'])
 def get_states(request):
-    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    # if request.user.is_authenticated:
+    states = Neighborhood.objects.values_list('state', flat=True).distinct()
+    state_serialized = list(states)
+    return JsonResponse({'states':state_serialized})
 
-    if request.method == 'GET' and request.GET.get('teacher'):
-        serializer = StudentSerializer(Student.objects.all(),many=True)
-        return JsonResponse(serializer.data,safe=False)
+@api_view(['GET'])
+def get_cities(request, state):
+    # if request.user.is_authenticated:
+    cities = Neighborhood.objects.filter(state=state).values_list('city', flat=True).distinct()
+    city_serialized = list(cities)
+    return JsonResponse({'cities':city_serialized})
+
+@api_view(['GET'])
+def get_hoods(request, state, city):
+    # if request.user.is_authenticated:
+    hoods = Neighborhood.objects.filter(state=state, city=city).values_list('name', flat=True).distinct()
+    hoods_serialized = list(hoods)
+    return JsonResponse({'hoods':hoods_serialized})
+
+
+
+
+
+
+
+
+
+    # token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+
+    # if request.method == 'GET' and request.GET.get('teacher'):
+    #     serializer = StudentSerializer(Student.objects.all(),many=True)
+    #     return JsonResponse(serializer.data,safe=False)
              
-    elif request.method == 'GET':
-        serializer = StudentSerializer(Student.objects.filter(user_id=token.user_id),many=True)
-        return JsonResponse(serializer.data,safe=False)
+    # elif request.method == 'GET':
+    #     serializer = StudentSerializer(Student.objects.filter(user_id=token.user_id),many=True)
+    #     return JsonResponse(serializer.data,safe=False)
     
-    elif request.method == 'POST':
-        try:
-            user = User.objects.get(id=token.user_id)
-            student = Student(name=request.data['name'],email=request.data['email'],phone=request.data['phone'],user=user)
-            student.save()
-            return JsonResponse({"success":True},status=201)
-        except:
-            return JsonResponse({"success":False},status=400)
+    # elif request.method == 'POST':
+    #     try:
+    #         user = User.objects.get(id=token.user_id)
+    #         student = Student(name=request.data['name'],email=request.data['email'],phone=request.data['phone'],user=user)
+    #         student.save()
+    #         return JsonResponse({"success":True},status=201)
+    #     except:
+    #         return JsonResponse({"success":False},status=400)
     
-    elif request.method == 'PUT':
-        try:
-            student = Student.objects.get(pk=request.data['id'])
-            user = User.objects.get(id=token.user_id)
-            student.name = request.data['name']
-            student.email = request.data['email']
-            student.phone = request.data['phone']
-            student.user = user
-            student.save() 
-            return JsonResponse({"success":True},status=201)
-        except:
-            return JsonResponse({"success":False},status=400)
+    # elif request.method == 'PUT':
+    #     try:
+    #         student = Student.objects.get(pk=request.data['id'])
+    #         user = User.objects.get(id=token.user_id)
+    #         student.name = request.data['name']
+    #         student.email = request.data['email']
+    #         student.phone = request.data['phone']
+    #         student.user = user
+    #         student.save() 
+    #         return JsonResponse({"success":True},status=201)
+    #     except:
+    #         return JsonResponse({"success":False},status=400)
         
-    elif request.method == 'DELETE':
-        pk = request.GET.get('id')
-        if pk:
-            try:
-                student = Student.objects.get(pk=pk)
-                student.delete()
-                return JsonResponse(data={"success":True,"message":"Successfully removed student from your class"},status=204)
+    # elif request.method == 'DELETE':
+    #     pk = request.GET.get('id')
+    #     if pk:
+    #         try:
+    #             student = Student.objects.get(pk=pk)
+    #             student.delete()
+    #             return JsonResponse(data={"success":True,"message":"Successfully removed student from your class"},status=204)
 
-            except Student.DoesNotExist:
-                return JsonResponse(data={"success":False,"message":"Student does not exist on your class"},status=404)
-        return JsonResponse(data={"success":False,"message":"Please include student id like ?id=1"},status=400)
+    #         except Student.DoesNotExist:
+    #             return JsonResponse(data={"success":False,"message":"Student does not exist on your class"},status=404)
+    #     return JsonResponse(data={"success":False,"message":"Please include student id like ?id=1"},status=400)

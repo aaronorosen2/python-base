@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/add_med', views.add_med),
     path('api/list_meds', views.list_meds),
     path('api/list_questions', views.list_questions),
+    path('api/assign_tag', views.assign_tag),
     path('api/del_med/<int:med_id>', views.del_med),
     path('api/login-phone-number', views.confirm_phone_number,
         name='confirm_phone_number'),
