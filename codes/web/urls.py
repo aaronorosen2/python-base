@@ -70,7 +70,7 @@ urlpatterns = [
         namespace='classroom')),
         
     path('dreamreader/', include('dreamreader.urls')),
-
+    path('token/', include('video_call.urls')),
         #  calendar URLS
 # path('calendar' , include('calendar_app.urls'))
     
