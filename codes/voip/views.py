@@ -5,6 +5,9 @@ from django.conf import settings
 from twilio.twiml.voice_response import VoiceResponse, Gather, Dial
 from twilio.rest import Client
 import uuid
+from .models import Phone
+from .serializers import TwilioPhoneSerializer
+from rest_framework.decorators import api_view 
 
 
 # To store session variables
@@ -42,6 +45,14 @@ def twilio_inbound_sms(request):
              request.POST.get("Body"))
 
     return JsonResponse({'message': 'success'})
+
+# fatching the all twilio phon numbers
+@api_view(['GET'])
+def twilio_phon_numbers(request):
+
+    serializer = TwilioPhoneSerializer(Phone.objects.all(), many=True)
+
+    return JsonResponse(serializer.data,safe=False)
 
 
 @csrf_exempt
