@@ -394,6 +394,7 @@ class S3Upload(generics.GenericAPIView):
             return JsonResponse({'message': 'not logged in'})
 
         # Get uploaded file
+        print(request.FILES.get('file'))
         uploaded_file = request.FILES.get('file')
         if uploaded_file:
             # Get unique filename using UUID
@@ -410,6 +411,7 @@ class S3Upload(generics.GenericAPIView):
 
 
 def upload_to_s3(s3_key, uploaded_file):
+    print(uploaded_file)
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
     secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
@@ -424,7 +426,7 @@ def upload_to_s3(s3_key, uploaded_file):
 
     content_type, _ = mimetypes.guess_type(s3_key)
     s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key,
-                             ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
+                            ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
 
     return content_type, f'https://s3.amazonaws.com/{bucket_name}/{s3_key}'
 

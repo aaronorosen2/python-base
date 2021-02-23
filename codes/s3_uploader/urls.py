@@ -34,7 +34,7 @@ urlpatterns = [
     path('user/password_reset/', include('django_rest_passwordreset.urls',
                                          namespace='password_reset')),
     # S3 APIs
-    path('upload/', S3Upload.as_view(), name='upload file'),
+    path('upload', S3Upload.as_view(), name='upload file'),
     path('get-s3-url', S3SignedUrl.as_view(), name='Get s3 signed url'),
     path('make-public', MakeS3FilePublic.as_view(), name='Make video public'),
 

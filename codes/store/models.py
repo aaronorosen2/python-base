@@ -9,6 +9,7 @@ class item(models.Model):
     title = models.CharField(max_length=70, blank=False)
     description = models.TextField(null=True, blank=True)
     price = models.IntegerField()
+    images = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                             null=True, blank=True)
 

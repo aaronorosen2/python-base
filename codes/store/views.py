@@ -5,6 +5,7 @@ from rest_framework import status
 
 from .models import item, order, subscription
 from .serializers import itemSerializer, orderSerializer
+from s3_uploader.views import upload_to_s3
 from knox.models import AuthToken
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
@@ -12,6 +13,13 @@ from rest_framework.decorators import api_view
 from .extras import transact, generate_client_token, create_customer, create_subscription
 from rest_framework.response import Response
 import requests
+
+import base64
+import six
+import uuid
+import imghdr
+import io
+import json
 
 
 # Create your views here.
@@ -41,19 +49,54 @@ def Item(request):
         return JsonResponse({'message': '{} items were deleted successfully!'.format(count[0])})
         # ,status=status.HTTP_204_NO_CONTENT)
 
+def get_file_extension(file_name, decoded_file):
+    extension = imghdr.what(file_name, decoded_file)
+    extension = "jpg" if extension == "jpeg" else extension
+    return extension
+
 @api_view(['GET', 'POST', 'DELETE'])
 def userItem(request):
     # GET list of items, POST a new item, DELETE all items
+    print("farrukh enter")
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
+        print(token)
         allItems = item.objects.filter(user = User.objects.get(id=token.user_id))
         item_serializer = itemSerializer(allItems, many=True)
         return JsonResponse(item_serializer.data, safe=False)
         # 'safe=False' for objects serialization
     elif request.method == 'POST':
         try:
+            member = 1
+            img_str = ''
+            count = 0
+            uploaded_file = request.data['images']
+            uploaded_file = json.loads(uploaded_file)
+            if uploaded_file:
+                # Get unique filename using UUID
+                for img in uploaded_file:
+                    header, data = img.split(';base64,')
+                    try:
+                        decoded_file = base64.b64decode(data)
+                    except TypeError:
+                        TypeError('invalid_image')
+                    # Generate file name:
+                    file_name = str(uuid.uuid4())[:12]  # 12 characters are more than enough.
+                    # Get the file name extension:
+                    file_extension = get_file_extension(file_name, decoded_file)
+                    complete_file_name = "%s.%s" % (file_name, file_extension,)
+                    s3_key = 'Test/upload/{0}'.format(complete_file_name)
+                    content_type, file_url = upload_to_s3(s3_key, io.BytesIO(decoded_file))
+                    if (len(uploaded_file)-1) > count:
+                        img_str += file_url + ','
+                    else:
+                        img_str += file_url
+                    count += 1
+                    print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
+            
             user = User.objects.get(id=token.user_id)
-            item_obj = item(title=request.data['title'],description=request.data['description'],price=request.data['price'],user=user)
+            item_obj = item(title=request.data['title'],description=request.data['description'],
+                            price=request.data['price'],images=img_str,user=user)
             item_obj.save()
             return JsonResponse({"success":True},status=201)
         except:
