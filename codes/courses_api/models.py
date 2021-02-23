@@ -1,4 +1,5 @@
 from django.db import models
+from store.models import item, BrainTreeConfig
 from knox.auth import get_user_model
 from classroom.models import Student
 
@@ -21,6 +22,8 @@ class FlashCard(models.Model):
     answer = models.CharField(max_length=250)
     image = models.CharField(max_length=250)
     position = models.IntegerField()
+    braintree_config = models.ForeignKey(BrainTreeConfig, on_delete=models.CASCADE,blank=True, null=True)
+    item_store = models.ForeignKey(item, on_delete=models.CASCADE,blank=True, null=True)
 
 
 class UserSession(models.Model):
