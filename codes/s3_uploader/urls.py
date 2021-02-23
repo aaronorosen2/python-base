@@ -8,7 +8,7 @@ from .views import UserRegister, PasswordReset, UserCourses, UserLogin, AllCours
 from .views import UserRegister, PasswordReset, UserCourses, UserLogin, \
                    AllCourses, list_courses, list_courses_auth, \
                    ChangePasswordView, Home, S3SignedUrl, S3Upload, \
-                   MakeS3FilePublic, UploadRoomLogo, RoomInfoView, \
+                   MakeS3FilePublic, UploadRoomLogo, EditRoomLogo, RoomInfoView, \
                    RoomVisitor, RecordingUpload, BrandInfo, ChannelList
 
 
@@ -21,6 +21,7 @@ urlpatterns = [
     path('upload/record_video/', RecordingUpload.as_view(),
          name='RecordingUploadView'),
     path('upload/room_logo/', UploadRoomLogo.as_view(), name='room_upload'),
+    path('edit/room_logo/', EditRoomLogo.as_view(), name='room_upload'),
     path('room_visitor/', RoomVisitor.as_view(), name='room_upload'),
     path('user/register/', UserRegister.as_view(), name='register'),
     path('user/login', UserLogin.as_view(), name='login'),
@@ -33,7 +34,7 @@ urlpatterns = [
     path('user/password_reset/', include('django_rest_passwordreset.urls',
                                          namespace='password_reset')),
     # S3 APIs
-    path('upload', S3Upload.as_view(), name='upload file'),
+    path('upload/', S3Upload.as_view(), name='upload file'),
     path('get-s3-url', S3SignedUrl.as_view(), name='Get s3 signed url'),
     path('make-public', MakeS3FilePublic.as_view(), name='Make video public'),
 

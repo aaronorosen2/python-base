@@ -24,6 +24,7 @@ def teacherapi(request):
     if request.method == 'GET' and request.GET.get('teacher'):
         serializer = TeacherSerializer(Teacher.objects.all(),many=True)
         return JsonResponse(serializer.data,safe=False)
+        
     if request.method == "GET":
         serializer = UserSerializer(User.objects.all(),many=True)
         return JsonResponse(serializer.data,safe=False)

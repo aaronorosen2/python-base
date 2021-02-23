@@ -13,5 +13,6 @@ urlpatterns = [
     path('api_voip/add_user/<str:session_id>', views.add_user_to_conf),
     path('api_voip/complete_call/<str:session_id>', views.complete_call),
     path('api_voip/leave_conf/<str:session_id>', views.leave_conf),
+    path('api_voip/twilio_phon_numbers', views.twilio_phon_numbers),
 ]
 

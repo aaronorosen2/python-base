@@ -9,7 +9,7 @@ from sfapp2.utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
 from sfapp2.models import Member, Token, Service, GpsCheckin
 from sfapp2.models import VideoUpload
-from sfapp2.models import MyMed, Question, Choice, AdminFeedback
+from sfapp2.models import MyMed, Question, Choice, AdminFeedback, TagEntry
 from django.conf import settings
 import logging
 import boto3
@@ -20,7 +20,7 @@ from rest_framework.views import APIView
 from knox.auth import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .serializers import CheckinActivityAdminSerializer
+from .serializers import CheckinActivityAdminSerializer, TagEntrySerializer
 
 def to_list(el):
     if not el:
@@ -381,3 +381,28 @@ def get_presigned_video_url(object_name, expiration=3600,
 
     # The response contains the presigned URL and required fields
     return response
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def assign_tag(request):
+    member = Member.objects.filter(id=request.POST.get('member_id')).first()
+    tag = request.POST.get('tag')
+    if request.user.is_authenticated:
+        if member and tag is not None:
+            tag = TagEntry(assigned_by=request.user, tag=tag, assigned_to=member)
+            tag.save()
+            return JsonResponse({'success': True, 'tagId': tag.id})
+
+@csrf_exempt
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_tags(request):
+    if request.user.is_authenticated:
+        member = Member.objects.filter(id=request.GET.get('member_id')).first()
+        if member:
+            tags = TagEntry.objects.filter(assigned_to=member).select_related('assigned_by')
+            tags_serialised = TagEntrySerializer(tags, many=True)
+            return JsonResponse({'tags': list(tags_serialised.data)})
