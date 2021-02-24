@@ -27,11 +27,15 @@ urlpatterns = [
 
     path("lesson/response/get/<str:lesson_id>/<str:session_id>",
          views.lesson_flashcard_responses, name="get-lesson-response"),
+
     path("lesson/response/get/<str:lesson_id>/",
          views.overall_flashcard_responses, name="get-lesson-response"),
          
     path("session/get", views.get_user_session, name="get-user-session"),
     path("confirm/phone", views.confirm_phone_number, name="confirm-phone-numer"),
-    path("verify/phone", views.verify_2fa, name="verify-2fa")
+    path("verify/phone", views.verify_2fa, name="verify-2fa"),
+    path("invite/text",views.invite_text,name="invite-text"),
+    path("invite/email",views.invite_email,name="invite-email"),
+    path("invite/response", views.invite_response, name="invite-response"),
 
 ]

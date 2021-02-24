@@ -13,6 +13,7 @@
 
 
     var socket;
+    var roomRepresentative = true;
 
 
     if (document.getElementById("room_form")) {
@@ -23,13 +24,20 @@
         if (document.getElementById("room_name").value == "") {
           alert("USERNAME should no be empty");
         } else {
-          socket = new WebSocket('wss://' + window.location.host + '/notifications/' + document.getElementById("room_name").value + '/');
+          socket = new WebSocket('ws://' + window.location.host + '/notifications/' + document.getElementById("room_name").value + '/');
           socket.onopen = function open() {
             console.log('WebSockets connection created.');
+            var dictJoinRoom = {
+              action: "join_room",
+              representatve: true
+            }
+            console.log("dictionary..", dictJoinRoom);
+            socket.send(JSON.stringify(dictJoinRoom));
             if (document.getElementById("user_name").value == "") {
               document.getElementById("user_name").value = "Anonymous";
             }
           };
+
           var liveUserlist = document.getElementById("liveUsers");
           var backUserlist = document.getElementById("backUsers");
 
@@ -86,6 +94,7 @@
       });
     }
 
+
     if (document.getElementById("user_form")) {
       document.getElementById("user_form").addEventListener("submit", function (event) {
         event.preventDefault()
@@ -99,7 +108,8 @@
             user_name: document.getElementById("user_name").value,
             email: document.getElementById("email").value,
             phone_number: document.getElementById("phone_number").value,
-            meeting_url: "https://localhost:8080/room1" + "#config.prejoinPageEnabled=false&username=" + document.getElementById("user_name").value
+            meeting_url: "https://localhost:8080/room1" + "#config.prejoinPageEnabled=false&username=" + document.getElementById("user_name").value,
+            roomVisitor: true
           }
           // socket.send(document.getElementById("message").value);
           socket.send(JSON.stringify(dict));

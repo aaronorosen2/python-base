@@ -1,11 +1,15 @@
 from django.db import models
+from store.models import item, BrainTreeConfig
 from knox.auth import get_user_model
+from classroom.models import Student
+
 
 class Lesson(models.Model):
     lesson_name = models.CharField(max_length=100, blank=True, default='')
     created = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True,
-            default=None)
+                             default=None)
+
     def __str__(self):
         return self.lesson_name
 
@@ -18,6 +22,8 @@ class FlashCard(models.Model):
     answer = models.CharField(max_length=250)
     image = models.CharField(max_length=250)
     position = models.IntegerField()
+    braintree_config = models.ForeignKey(BrainTreeConfig, on_delete=models.CASCADE,blank=True, null=True)
+    item_store = models.ForeignKey(item, on_delete=models.CASCADE,blank=True, null=True)
 
 
 class UserSession(models.Model):
@@ -52,6 +58,26 @@ class UserSessionEvent(models.Model):
 class FlashCardResponse(models.Model):
     user_session = models.ForeignKey(UserSession, on_delete=models.CASCADE,
                                      null=True, blank=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE , null=True, blank=True)
+    flashcard = models.ForeignKey(FlashCard, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE,
+                               null=True, blank=True)
+    answer = models.TextField()
+
+
+class Invite(models.Model):
+
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    params = models.TextField(null=False, blank=False)
+    invite_type = models.CharField(null=False,blank=False,max_length=10)
+
+    def __str__(self):
+        return f"{self.student} - {self.params}"
+
+
+class InviteResponse(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE , null=True, blank=True)
     flashcard = models.ForeignKey(FlashCard, on_delete=models.CASCADE)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE,
                                null=True, blank=True)

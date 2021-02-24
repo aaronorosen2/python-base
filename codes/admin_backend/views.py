@@ -3,7 +3,11 @@ from sfapp2.models import Member, Question, Choice
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from sfapp2.utils import twilio
-
+from knox.auth import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from voip.models import Call_list
+from django.core import serializers
 
 def parse_question_answers(question_answers):
     response = []
@@ -21,6 +25,9 @@ def parse_question_answers(question_answers):
 
 
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def get_question_counters(request):
     members = Member.objects.all().values()
     choice_counters = {}
@@ -62,6 +69,9 @@ def get_question_counters(request):
 
 
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def get_members(request):
     members = Member.objects.all().values()
 
@@ -74,8 +84,11 @@ def get_members(request):
 
 
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def list_calls(request):
-    return JsonResponse(list(twilio.list_calls()), safe=False)
+    return JsonResponse(serializers.serialize("json",Call_list.objects.all()), safe=False)
 
 
 @csrf_exempt

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'knox',
     'django_rest_passwordreset',
     'sfapp',
@@ -50,7 +51,6 @@ INSTALLED_APPS = [
     'video',
     'channels',
     'notifications',
-    'rest_framework',
     'courses_api',
     'pdf_sign',
     'store',
@@ -66,6 +66,8 @@ INSTALLED_APPS = [
     'neighbormade',
     'classroom',
     'vconf',
+    'audition',
+    'facets',
 ]
 
 MIDDLEWARE = [
@@ -92,13 +94,13 @@ else:
     BT_MERCHANT_ID = ''
     BT_PUBLIC_KEY = ''
     BT_PRIVATE_KEY = ''
-CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'web.urls'
 
 TWILIO = {
     'TWILIO_ACCOUNT_SID': 'AC8c34b4a961b611a3606f55a0e182ad72',
     'TWILIO_AUTH_TOKEN': '7287d6460e997c4c8dfc196fe622fee0',
-    'TWILIO_NUMBER': '(510) 288-5469',
+#    'TWILIO_NUMBER': '(510) 288-5469',
+    'TWILIO_NUMBER': '(425) 578-5798',
 }
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -244,6 +246,7 @@ CELERY_BEAT_SCHEDULE = {
 
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
+ALLOWED_HOSTS=['*']
 
 # Email
 EMAIL_BACKEND = 'django_ses.SESBackend'
@@ -253,3 +256,5 @@ DEFAULT_FROM_EMAIL = 'mail-api@dreampotential.org'
 
 # Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
 # output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS
+
+APPEND_SLASH=False
