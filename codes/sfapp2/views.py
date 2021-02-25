@@ -240,7 +240,6 @@ def checkin_activity_admin(request):
                     'feedbacks': list(feed_serialized.data),
                     'created_at': time.mktime(t.timetuple()),
                 })
-
             for event in video_events:
                 t = event.created_at
                 # Disable server streaming, Only show videos that are uploaded to S3
@@ -255,7 +254,6 @@ def checkin_activity_admin(request):
                         'feedbacks': list(feed_serialized.data),
                         'created_at': time.mktime(t.timetuple())
                     })
-
             return JsonResponse({
                 'user_activities': sorted(events,
                                 key=lambda i: i['created_at'], reverse=True)
@@ -393,7 +391,7 @@ def assign_tag(request):
         if member and tag is not None:
             tag = TagEntry(assigned_by=request.user, tag=tag, assigned_to=member)
             tag.save()
-            return JsonResponse({'success': True, 'tagId': tag.id})
+            return JsonResponse({'success': True, 'tagId': tag.id, 'assigned_by': tag.assigned_by.first_name})
 
 @csrf_exempt
 @api_view(['GET'])
