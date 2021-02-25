@@ -69,6 +69,7 @@ class CreateEvent(XFrameOptionsExemptMixin, View):
         date = request.POST.get('date')
         choices            = request.POST.get('choices')
         date_obj           = datetime.strptime(date, "%Y-%m-%d")
+        date_range         = int(request.POST.get('date_range'))
 
         Event.objects.create(
             date=date,
@@ -114,7 +115,7 @@ class CreateEvent(XFrameOptionsExemptMixin, View):
         if choices == "bg-success":
             date = date_obj
             for_week_recurring = []
-            for i in range(7):
+            for i in range(date_range):
                 date =  date + timedelta(days=7)
                
                
@@ -138,7 +139,7 @@ class CreateEvent(XFrameOptionsExemptMixin, View):
         if choices == "bg-danger":
             date = date_obj
             for_week_recurring = []
-            for i in range(7):
+            for i in range(date_range):
                 date =  date + timedelta(days=14)
                 
                 for_week_recurring.append(date)

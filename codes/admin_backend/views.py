@@ -6,6 +6,8 @@ from sfapp2.utils import twilio
 from knox.auth import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from voip.models import Call_list
+from django.core import serializers
 
 def parse_question_answers(question_answers):
     response = []
@@ -86,7 +88,7 @@ def get_members(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def list_calls(request):
-    return JsonResponse(list(twilio.list_calls()), safe=False)
+    return JsonResponse(serializers.serialize("json",Call_list.objects.all()), safe=False)
 
 
 @csrf_exempt
