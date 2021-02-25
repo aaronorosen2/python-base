@@ -389,9 +389,14 @@ def assign_tag(request):
     tag = request.POST.get('tag')
     if request.user.is_authenticated:
         if member and tag is not None:
-            tag = TagEntry(assigned_by=request.user, tag=tag, assigned_to=member)
-            tag.save()
-            return JsonResponse({'success': True, 'tagId': tag.id, 'assigned_by': tag.assigned_by.first_name})
+            tag = tag.strip()
+            tag = TagEntry.objects.filter(assigned_to=member, tag=tag).first()
+            if tag is None:
+                tag = TagEntry(assigned_by=request.user, tag=tag, assigned_to=member)
+                tag.save()
+                return JsonResponse({'success': True, 'tagId': tag.id, 'assigned_by': tag.assigned_by.first_name})
+            else:
+                return HttpResponseBadRequest('Tag already present')
 
 @csrf_exempt
 @api_view(['GET'])
