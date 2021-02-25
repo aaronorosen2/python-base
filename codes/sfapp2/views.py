@@ -390,8 +390,8 @@ def assign_tag(request):
     if request.user.is_authenticated:
         if member and tag is not None:
             tag = tag.strip()
-            tag = TagEntry.objects.filter(assigned_to=member, tag=tag).first()
-            if tag is None:
+            tagExist = TagEntry.objects.filter(assigned_to=member, tag=tag).first()
+            if tagExist is None:
                 tag = TagEntry(assigned_by=request.user, tag=tag, assigned_to=member)
                 tag.save()
                 return JsonResponse({'success': True, 'tagId': tag.id, 'assigned_by': tag.assigned_by.first_name})
