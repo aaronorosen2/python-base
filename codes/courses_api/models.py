@@ -19,7 +19,7 @@ class FlashCard(models.Model):
     lesson_type = models.CharField(max_length=250)
     question = models.CharField(max_length=250)
     options = models.CharField(max_length=250)
-    answer = models.CharField(max_length=250)
+    answer = models.CharField(max_length=300)
     image = models.CharField(max_length=250)
     position = models.IntegerField()
     braintree_config = models.ForeignKey(BrainTreeConfig, on_delete=models.CASCADE,blank=True, null=True)

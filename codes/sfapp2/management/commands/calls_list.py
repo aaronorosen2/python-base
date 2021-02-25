@@ -21,8 +21,10 @@ class Command(BaseCommand):
             duration = call['duration']
             
             try:
-                Call_data = (date = date , from_number = from_num , to_number = to_num , recording_url= recording_url, duration=duration)
+                Call_data = Call_list(date = date , from_number = from_num , to_number = to_num , recording_url= recording_url, duration=duration)
                 Call_data.save()
 
             except Call_list.unique_error_message:
                 continue
+        
+        # cprint("Successfully Populate All Call List To Database",color="green")
