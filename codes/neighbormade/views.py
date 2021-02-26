@@ -6,7 +6,7 @@ from neighbormade.models import Neighborhood, Stadium
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from .serializers import NeighborhoodSerializer, StadiumSerializer
 import requests
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 
 # Create your views here.
 def importNeighbours(request):
