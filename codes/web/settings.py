@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'vconf',
     'audition',
     'facets',
+    'messaging',
 ]
 
 MIDDLEWARE = [
