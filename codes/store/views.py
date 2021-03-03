@@ -29,16 +29,12 @@ import json
 def Item(request):
     # GET list of items, POST a new item, DELETE all items
     if request.method == 'GET':
-        print("done")
         allItems = item.objects.all()
         item_serializer = itemSerializer(allItems, many=True)
-        print(item_serializer.data)
         return JsonResponse(item_serializer.data, safe=False)
         # 'safe=False' for objects serialization
     elif request.method == 'POST':
-        print(request)
         item_data = JSONParser().parse(request)
-        print(item_data)
         item_serializer = itemSerializer(data=item_data)
         if item_serializer.is_valid():
             item_serializer.save()
@@ -57,10 +53,8 @@ def get_file_extension(file_name, decoded_file):
 @api_view(['GET', 'POST', 'DELETE'])
 def userItem(request):
     # GET list of items, POST a new item, DELETE all items
-    print("farrukh enter")
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
-        print(token)
         allItems = item.objects.filter(user = User.objects.get(id=token.user_id))
         item_serializer = itemSerializer(allItems, many=True)
         return JsonResponse(item_serializer.data, safe=False)
@@ -95,10 +89,17 @@ def userItem(request):
                     print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
             
             user = User.objects.get(id=token.user_id)
-            item_obj = item(title=request.data['title'],description=request.data['description'],
-                            price=request.data['price'],images=img_str,user=user)
+            
+            item_obj = item(title=request.data['title'],
+                            description=request.data['description'],
+                            price=request.data['price'],
+                            images=img_str,
+                            # quality= 1,
+                            # amount=1,
+                            user=User.objects.get(id=token.user_id))
             item_obj.save()
             return JsonResponse({"success":True},status=201)
+            
         except:
             return JsonResponse({"success":False},status=400)
     # elif request.method == 'DELETE':
@@ -135,9 +136,41 @@ def userItemDetail(request, pk):
         itemDataPK = item.objects.get(pk=pk,user = User.objects.get(id=token.user_id))
         if request.method == 'POST':
             try:
+                member = 1
+                img_str = ''
+                count = 0
+                uploaded_file = request.data['images']
+                uploaded_file = json.loads(uploaded_file)
+                if uploaded_file:
+                    # Get unique filename using UUID
+                    for img in uploaded_file:
+                        header, data = img.split(';base64,')
+                        try:
+                            decoded_file = base64.b64decode(data)
+                        except TypeError:
+                            TypeError('invalid_image')
+                        # Generate file name:
+                        file_name = str(uuid.uuid4())[:12]  # 12 characters are more than enough.
+                        # Get the file name extension:
+                        file_extension = get_file_extension(file_name, decoded_file)
+                        complete_file_name = "%s.%s" % (file_name, file_extension,)
+                        s3_key = 'Test/upload/{0}'.format(complete_file_name)
+                        content_type, file_url = upload_to_s3(s3_key, io.BytesIO(decoded_file))
+                        if (len(uploaded_file)-1) > count:
+                            img_str += file_url + ','
+                        else:
+                            img_str += file_url
+                        count += 1
+                        print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
+                
                 itemDataPK.title = request.data['title']
                 itemDataPK.description = request.data['description']
                 itemDataPK.price = request.data['price']
+                temp_images_str = itemDataPK.images
+                if(temp_images_str == ""):
+                    itemDataPK.images=img_str
+                else:
+                    itemDataPK.images=img_str+","+temp_images_str
                 itemDataPK.save()
                 return JsonResponse({"success":True},status=201)
             except:
@@ -154,7 +187,6 @@ def OrderItem(request, pk):
     # GET / PUT / DELETE item by pk (id)
     try:
         itemDataPK = item.objects.get(pk=pk)
-        print(itemDataPK.id)
         client_token = generate_client_token()
         return render(request, 'checkout.html', {"client_token": client_token, "item": itemDataPK})
     except item.DoesNotExist:
@@ -173,7 +205,6 @@ def Checkout(request, **kwargs):
         })
 
         if result.is_success or result.transaction:
-            print(result.transaction.id)
             obj = order(name=request.POST['name'],
                         email=request.POST['email'],
                         phone=request.POST['phone'],
@@ -217,7 +248,6 @@ def UserCheckout(request, **kwargs):
             }
         })
         if result.is_success or result.transaction:
-            print(result.transaction.id)
             obj = order(name=request.data['user-name'],
                         is_ordered=True,
                         braintreeID=result.transaction.id,
@@ -316,7 +346,6 @@ def brainTreeSubscription(request):
 @api_view(['GET', 'POST'])
 def userSubscribe(request):
     # GET / PUT / DELETE item by pk (id)
-    print("enter")
     try:
         client_token = generate_client_token()
         return JsonResponse({"success":True,"client_token": client_token},status=201)
@@ -325,7 +354,6 @@ def userSubscribe(request):
 
 @api_view(['GET', 'POST'])
 def userbrainTreeSubscription(request):
-    print("farrukh check it",request.data)
     custy_result = create_customer( {
         'payment_method_nonce': request.data['payment_method_nonce'],
     })
@@ -368,3 +396,22 @@ def userOrderList(request):
         allOrders = order.objects.filter(user = User.objects.get(id=token.user_id))
         order_serializer = orderSerializer(allOrders, many=True)
         return JsonResponse(order_serializer.data, safe=False)
+    
+@api_view(['GET', 'POST', 'DELETE'])
+def deleteImage(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'POST':
+        id_item = request.data['id']
+        imageURL = request.data['imageURL']
+        Item_obj = item.objects.get(id = id_item)
+        # Item_obj = item.objects.filter(id = id_item)
+        allImagesURL = Item_obj.images
+        image_list = allImagesURL.split(",")
+        image_list.remove(imageURL)
+        if(len(image_list)>0):
+            image_string = ','.join(image_list)
+        else:
+            image_string = ""
+        Item_obj.images = image_string
+        Item_obj.save()
+        return JsonResponse({"success":True},status=201)

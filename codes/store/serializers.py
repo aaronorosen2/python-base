@@ -7,8 +7,10 @@ class itemSerializer(serializers.ModelSerializer):
         fields = (  'id',
                     'title',
                     'description',
-                    'price'
+                    'price',
+                    'images'
                     )
+        extra_kwargs = {"images": {"required": False, "allow_null": True}}
         
 class orderSerializer(serializers.ModelSerializer):
     class Meta:
