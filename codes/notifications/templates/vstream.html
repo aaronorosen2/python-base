@@ -1,0 +1,24 @@
+<script>
+    function init() {
+        var socket = new WebSocket('ws://' + window.location.host + '/vstream/');
+        socket.onopen = function open() {
+            console.log('WebSockets connection created.');
+            // var dictJoinRoom = {
+            //     action: "join_room",
+            //     representatve: true
+            // }
+            // console.log("dictionary..", dictJoinRoom);
+            // socket.send(JSON.stringify(dictJoinRoom));
+            // if (document.getElementById("user_name").value == "") {
+            //     document.getElementById("user_name").value = "Anonymous";
+            // }
+        };
+        socket.onmessage = function (event) {
+            web_socket_data = JSON.parse(event.data);
+            console.log(web_socket_data);
+        };
+    }
+    window.addEventListener("DOMContentLoaded", init, false);
+
+
+</script>
