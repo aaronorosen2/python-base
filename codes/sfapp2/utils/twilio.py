@@ -62,7 +62,7 @@ def list_calls():
     client = Client(account_sid, auth_token)
 
     # XXX filter calls to be 15102885469
-    calls = client.api.calls.list(limit=20)
+    calls = client.api.calls.list()
     resps = []
     for call in calls:
         # print((call.recordings.list))

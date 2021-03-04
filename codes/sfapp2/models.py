@@ -18,7 +18,8 @@ class Upload(models.Model):
 class AdminFeedback(models.Model):
     user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="")
     message = models.TextField(default="")
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)    
+
 
 class Member(models.Model):
     phone = models.CharField(max_length=20, unique=True)
@@ -28,6 +29,11 @@ class Member(models.Model):
     created_at = models.DateTimeField(auto_now=True)
     question_answers = models.TextField(blank=True, null=True)
 
+class TagEntry(models.Model):
+    assigned_by = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="")
+    tag = models.TextField(default="", max_length=150)
+    assigned_to = models.ForeignKey(to=Member, on_delete=models.CASCADE, default="")
+    created_at = models.DateTimeField(auto_now_add=True)   
 
 class MemberMonitor(models.Model):
     member = models.ForeignKey(to=Member, on_delete=models.CASCADE,

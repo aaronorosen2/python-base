@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'vconf',
     'audition',
     'facets',
+    'messaging',
 ]
 
 MIDDLEWARE = [
@@ -94,7 +95,6 @@ else:
     BT_MERCHANT_ID = ''
     BT_PUBLIC_KEY = ''
     BT_PRIVATE_KEY = ''
-CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'web.urls'
 
 TWILIO = {
@@ -247,6 +247,7 @@ CELERY_BEAT_SCHEDULE = {
 
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
+ALLOWED_HOSTS=['*']
 
 # Email
 EMAIL_BACKEND = 'django_ses.SESBackend'
@@ -257,4 +258,4 @@ DEFAULT_FROM_EMAIL = 'mail-api@dreampotential.org'
 # Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
 # output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS
 
-# APPEND_SLASH=False
+APPEND_SLASH=False

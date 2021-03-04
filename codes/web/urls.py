@@ -38,7 +38,7 @@ urlpatterns = [
         namespace='sfapp2')),
     path('store/', include(
         ('store.urls', 'store'),
-        namespace='sfapp2')),
+        namespace='sfapp2_store')),
     path('bookbikerescue', include(
         ('bookbikerescue.urls', 'bookbikerescue'),
         namespace='bookbikerescue')),
@@ -71,7 +71,8 @@ urlpatterns = [
         namespace='classroom')),
         
     path('dreamreader/', include('dreamreader.urls')),
-
+    path('token/', include('video_call.urls')),
+    path('neighbormade/', include('neighbormade.urls')),
         #  calendar URLS
 # path('calendar' , include('calendar_app.urls'))
     
