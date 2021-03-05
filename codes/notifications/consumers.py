@@ -440,17 +440,17 @@ class VstreamConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # Called on connection.
         # To accept the connection call:
+        await self.channel_layer.group_add(
+            'vstream',
+            self.channel_name
+        )
         await self.accept()
         categories = await self.get_categories()
-        if categories != False:
-            category_people_count = [{
-                'category': cat, 'count': len(redisconn.hkeys(cat))
-            } for cat in categories]
-            message = {
+        message = {
                 'action': 'category',
-                'categories': category_people_count
+                'categories': categories
             }
-            await self.send(text_data=json.dumps(message))
+        await self.send(text_data=json.dumps(message))
         # Or accept the connection and specify a chosen subprotocol.
         # A list of subprotocols specified by the connecting client
         # will be available in self.scope['subprotocols']
@@ -468,15 +468,9 @@ class VstreamConsumer(AsyncWebsocketConsumer):
                            "vstream")
             message = {
                 'action': 'conference_url',
-                'message': 'go_live'
+                'message': 'https://live.dreampotential.org/'+send_data['category'],
             }
             await self.send(text_data=json.dumps(message))
-            # data = {"type": "send_conference_room_url",
-            #         "message": message}
-            # await self.channel_layer.send(
-            #     self.channel_name,
-            #     data,
-            # )
         # await self.send(text_data="Hello world!")
         # Or, to send a binary frame:
         # await self.send(bytes_data="Hello world!")
@@ -494,14 +488,13 @@ class VstreamConsumer(AsyncWebsocketConsumer):
     
     @sync_to_async
     def get_categories(self):
-        print("categoriess...")
+        # print("categoriess...")
         # print(RoomInfo.objects.get(room_name=room_name))
-        try:
-            categories = Categories.objects.all()
-            print(categories)
-            return categories
-        except Brand.DoesNotExist:
-            return False
-    
-    # def get_count_of_categories(self):
-
+        categories = Categories.objects.all()
+        # print(categories)
+        if len(categories) != 0:
+            category_people_count = [{
+                'category': cat.category, 'count': len(redisconn.hkeys(cat.category))
+            } for cat in categories]
+            return category_people_count
+        return list(categories)
