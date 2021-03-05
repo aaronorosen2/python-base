@@ -6,7 +6,7 @@
 
 from asgiref.sync import async_to_sync, sync_to_async
 from queue import Queue
-from vconf.models import RoomInfo, RoomVisitors, Brand, Visitor, Recording
+from vconf.models import RoomInfo, RoomVisitors, Brand, Visitor, Recording, Categories
 from s3_uploader.serializers import RoomInfoSerializer, RoomVisitorsSerializer
 import time
 import redis
@@ -276,8 +276,8 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                            self.room_group_name,
                            self.channel_name)
             redisconn.hset(self.room_group_name+'@live',
-                               self.channel_name,
-                               self.room_name+"_rep")
+                           self.channel_name,
+                           self.room_name+"_rep")
             print(redisconn.hgetall(self.room_group_name+'@live'))
             data = {"type": "notification_to_queue_member", "message": message}
             # reciever = self.user_channels_details[send_data['client']]
@@ -327,7 +327,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             redisconn.hdel(self.room_group_name+'@live', self.channel_name)
         else:
             redisconn.hdel(self.room_group_name+'@back', self.channel_name)
-        
+
         listOfLiveUsers = redisconn.hvals(self.room_group_name+'@live')
         listOfBackUsers = redisconn.hvals(self.room_group_name+'@back')
         dataListOfUsers = {'type': 'users_list',
@@ -436,3 +436,65 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
 
 
 # 18.221.30.46
+class VstreamConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        # Called on connection.
+        # To accept the connection call:
+        await self.channel_layer.group_add(
+            'vstream',
+            self.channel_name
+        )
+        await self.accept()
+        categories = await self.get_categories()
+        message = {
+                'action': 'category',
+                'categories': categories
+            }
+        await self.send(text_data=json.dumps(message))
+        # Or accept the connection and specify a chosen subprotocol.
+        # A list of subprotocols specified by the connecting client
+        # will be available in self.scope['subprotocols']
+        # await self.accept("subprotocol")
+        # To reject the connection, call:
+        # await self.close()
+
+    async def receive(self, text_data=None, bytes_data=None):
+        # Called with either text_data or bytes_data for each frame
+        # You can call:
+        send_data = json.loads(text_data)
+        if(send_data['action'] == 'join_category'):
+            redisconn.hset(send_data['category'],
+                           self.channel_name,
+                           "vstream")
+            message = {
+                'action': 'conference_url',
+                'message': 'https://live.dreampotential.org/'+send_data['category'],
+            }
+            await self.send(text_data=json.dumps(message))
+        # await self.send(text_data="Hello world!")
+        # Or, to send a binary frame:
+        # await self.send(bytes_data="Hello world!")
+        # Want to force-close the connection? Call:
+        # await self.close()
+        # Or add a custom WebSocket error code!
+        # await self.close(code=4123)
+
+    async def disconnect(self, close_code):
+        # Called when the socket closes
+        await self.close()
+    
+    async def send_conference_room_url(self, event):
+        await self.send(text_data=json.dumps(event["message"]))
+    
+    @sync_to_async
+    def get_categories(self):
+        # print("categoriess...")
+        # print(RoomInfo.objects.get(room_name=room_name))
+        categories = Categories.objects.all()
+        # print(categories)
+        if len(categories) != 0:
+            category_people_count = [{
+                'category': cat.category, 'count': len(redisconn.hkeys(cat.category))
+            } for cat in categories]
+            return category_people_count
+        return list(categories)

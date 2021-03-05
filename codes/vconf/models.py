@@ -54,3 +54,10 @@ class Visitor(ParentModel):
 class Recording(ParentModel):
     recording_link = models.TextField()
     room = models.ForeignKey(Brand, on_delete=models.CASCADE)
+
+class Categories(ParentModel):
+    category = models.CharField(max_length=100)
+    description = models.TextField()
+
+# class CategoriesVisitor(ParentModel):
+
