@@ -1,0 +1,45 @@
+<script>
+    function init() {
+        var socket = new WebSocket('ws://' + window.location.host + '/vstream/');
+        socket.onopen = function open() {
+            console.log('WebSockets connection created.');
+            // var dictJoinRoom = {
+            //     action: "join_room",
+            //     representatve: true
+            // }
+            // console.log("dictionary..", dictJoinRoom);
+            // socket.send(JSON.stringify(dictJoinRoom));
+            // if (document.getElementById("user_name").value == "") {
+            //     document.getElementById("user_name").value = "Anonymous";
+            // }
+        };
+        if (document.getElementById("vstream_form")) {
+            document.getElementById("vstream_form").addEventListener("submit", function (event) {
+                event.preventDefault()
+                if (document.getElementById("category").value != "") {
+                    var joinCategory = {
+                        action: "join_category",
+                        category: document.getElementById("category").value
+                    }
+                    console.log("dictionary..", joinCategory);
+                    socket.send(JSON.stringify(joinCategory));
+                }
+            });
+        }
+
+        socket.onmessage = function (event) {
+            web_socket_data = JSON.parse(event.data);
+            console.log(web_socket_data);
+        };
+    }
+    window.addEventListener("DOMContentLoaded", init, false);
+
+
+</script>
+
+<form id="vstream_form" style="width:30%;margin: 20px auto">
+    <input id="category" type="text" style="width:100%;font-size:20px;padding:10px;"
+        placeholder="Please Type Category!">
+    <button type="submit" id="send_category"
+        style="width:100%;font-size:20px;padding:10px;margin-top:10px">Submit</button>
+</form>

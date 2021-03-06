@@ -4,7 +4,7 @@ from django.urls import re_path
 
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-from notifications.consumers import NotificationConsumer, NotificationConsumerQueue
+from notifications.consumers import NotificationConsumer, NotificationConsumerQueue, VstreamConsumer
 # from django.core.asgi import get_asgi_application
 
 application = ProtocolTypeRouter({
@@ -16,6 +16,7 @@ application = ProtocolTypeRouter({
             # path("notifications/", NotificationConsumer.as_asgi(),name="ws_notifications"),
             # re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumer.as_asgi()),
             re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
+            re_path(r'vstream/', VstreamConsumer.as_asgi()),
             
         ]),
 })
