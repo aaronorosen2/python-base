@@ -6,7 +6,7 @@ from neighbormade.models import Neighborhood, Stadium
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from .serializers import NeighborhoodSerializer, StadiumSerializer
 import requests
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 
 # Create your views here.
 def importNeighbours(request):
@@ -56,7 +56,7 @@ def get_cities(request, state):
 @api_view(['GET'])
 def get_hoods(request, state, city):
     # if request.user.is_authenticated:
-    hoods = Neighborhood.objects.filter(state=state, city=city).values_list('name', flat=True).distinct()
+    hoods = Neighborhood.objects.filter(state=state, city=city).values('name', 'id').distinct()
     hoods_serialized = list(hoods)
     return JsonResponse({'hoods':hoods_serialized})
 

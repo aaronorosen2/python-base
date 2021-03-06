@@ -144,18 +144,37 @@ def lesson_read(request,pk):
                 card['braintree_item_price'] = obj_item.price
     return Response(data)
 
-@api_view(['GET'])
+@api_view(['GET','POST','PUT','DELETE'])
 def lesson_all(request):
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'GET':
+        if 'Authorization' in request.headers:
+            les_= Lesson.objects.filter(user=token.user_id)
+            # less_serialized = LessonSerializer(les_,many=True)
+            less_serialized = LessonSerializer(Lesson.objects.all(),many=True)
+            return JsonResponse(less_serialized.data,safe=False)
+        else:
+            return JsonResponse({"message":"Unauthorized"})
+    if request.method == 'PUT':
+        try:
+            lesson = Lesson.objects.get(id=request.data.get('lesson_id'))
+            lesson.lesson_name = request.data.get('lesson_name')
+            lesson.save()
+            return JsonResponse({"success":True},status=status.HTTP_202_ACCEPTED)
 
-    if 'Authorization' in request.headers:
-        les_= Lesson.objects.filter(user=token.user_id)
-        # less_serialized = LessonSerializer(les_,many=True)
-        less_serialized = LessonSerializer(Lesson.objects.all(),many=True)
-        return JsonResponse(less_serialized.data,safe=False)
-    else:
-        return JsonResponse({"message":"Unauthorized"})
+        except:
+            return JsonResponse({"success":False},status=status.HTTP_204_NO_CONTENT)
 
+    if request.method == 'DELETE':
+        try:
+            lesson = Lesson.objects.get(id=request.data.get('lesson_id'))
+            lesson.delete()
+            return JsonResponse({"success":True},status=status.HTTP_200_OK)
+
+        except:
+            return JsonResponse({"success":False},status=status.HTTP_204_NO_CONTENT)
+
+            
 @api_view(['POST'])
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
