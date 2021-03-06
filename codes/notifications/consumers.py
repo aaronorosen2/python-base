@@ -444,13 +444,20 @@ class VstreamConsumer(AsyncWebsocketConsumer):
             'vstream',
             self.channel_name
         )
-        await self.accept()
+
         categories = await self.get_categories()
         message = {
-                'action': 'category',
-                'categories': categories
-            }
-        await self.send(text_data=json.dumps(message))
+            'action': 'category',
+            'categories': categories
+        }
+        await self.channel_layer.group_send(
+            'vstream',
+            {
+                'type': 'send_conference_room_url',
+                'message': message,
+            },
+        )
+        await self.accept()
         # Or accept the connection and specify a chosen subprotocol.
         # A list of subprotocols specified by the connecting client
         # will be available in self.scope['subprotocols']
@@ -466,11 +473,18 @@ class VstreamConsumer(AsyncWebsocketConsumer):
             redisconn.hset(send_data['category'],
                            self.channel_name,
                            "vstream")
+            categories = await self.get_categories()
             message = {
-                'action': 'conference_url',
-                'message': 'https://live.dreampotential.org/'+send_data['category'],
+                'action': 'category',
+                'categories': categories
             }
-            await self.send(text_data=json.dumps(message))
+            await self.channel_layer.group_send(
+                'vstream',
+                {
+                    'type': 'send_conference_room_url',
+                    'message': message,
+                },
+            )
         # await self.send(text_data="Hello world!")
         # Or, to send a binary frame:
         # await self.send(bytes_data="Hello world!")
@@ -482,19 +496,22 @@ class VstreamConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         # Called when the socket closes
         await self.close()
-    
+
     async def send_conference_room_url(self, event):
         await self.send(text_data=json.dumps(event["message"]))
-    
+
     @sync_to_async
     def get_categories(self):
         # print("categoriess...")
         # print(RoomInfo.objects.get(room_name=room_name))
         categories = Categories.objects.all()
         # print(categories)
+        CONFERENCE_HOST = 'https://live.dreampotential.org/'
         if len(categories) != 0:
             category_people_count = [{
-                'category': cat.category, 'count': len(redisconn.hkeys(cat.category))
+                'category': cat.category,
+                'count': len(redisconn.hkeys(cat.category)),
+                'conference_url': CONFERENCE_HOST + cat.category,
             } for cat in categories]
             return category_people_count
         return list(categories)
