@@ -507,11 +507,14 @@ class VstreamConsumer(AsyncWebsocketConsumer):
         categories = Categories.objects.all()
         # print(categories)
         CONFERENCE_HOST = 'https://live.dreampotential.org/'
+        
         if len(categories) != 0:
             category_people_count = [{
                 'category': cat.category,
                 'count': len(redisconn.hkeys(cat.category)),
-                'conference_url': CONFERENCE_HOST + cat.category,
+                'conference_url': CONFERENCE_HOST +
+                 cat.category +
+                 '#config.prejoinPageEnabled=false&vstream=true',
             } for cat in categories]
             return category_people_count
         return list(categories)
