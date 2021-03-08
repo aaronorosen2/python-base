@@ -17,6 +17,7 @@ class item(models.Model):
                             null=True, blank=True)
 
 class userProfile(models.Model):
+    id = models.AutoField(auto_created=True, primary_key=True)
     profileImage = models.TextField()
     description = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -58,3 +59,5 @@ class BrainTreeConfig(models.Model):
     braintree_merchant_ID = models.CharField(max_length=70, blank=False)
     braintree_public_key = models.CharField(max_length=70, blank=False)
     braintree_private_key = models.CharField(max_length=70, blank=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                            null=True, blank=True)

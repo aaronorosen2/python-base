@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import item, order
+from .models import item, order, userProfile
 
 class itemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,3 +25,13 @@ class orderSerializer(serializers.ModelSerializer):
                     'item_ID',
                     'user'
                     )
+
+# class profileSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = userProfile
+#         fields = (  'id',
+#                     'profileImage',
+#                     'description',
+#                     'user',
+#                     'Neighborhood'
+#                     )

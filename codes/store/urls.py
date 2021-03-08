@@ -18,5 +18,8 @@ urlpatterns = [
                 name="userbrainTreeSubscription"),
         path('userOrderList', views.userOrderList, name='userOrderList'),
         path('deleteImage', views.deleteImage, name='deleteImage'),
+        path('userProfile', views.userProfile, name='userProfile'),
+        path('TeacherUIBraintreeConfig', views.TeacherUIBraintreeConfig, name='TeacherUIBraintreeConfig'),
+        path('TeacherUIItemsNeighbourhood', views.TeacherUIItemsNeighbourhood, name='TeacherUIItemsNeighbourhood'),
         
 ]
