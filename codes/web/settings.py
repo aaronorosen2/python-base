@@ -60,7 +60,7 @@ if DEBUG:
                 'channel': '#debug'
             },
             'slack-info': {
-                'level': 'INFO',
+                'level': 'ERROR',
                 'api_key': SLACK_API_KEY,
                 'class': 'slacker_log_handler.SlackerLogHandler',
                 'channel': '#debug'
