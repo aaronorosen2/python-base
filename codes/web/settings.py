@@ -30,7 +30,7 @@ ALLOWED_HOSTS = ['*']
 
 SLACK_API_KEY = "xoxb-790630255906-1844871421842-FFFWwP6KQT2eIsjTBHA8fsUR"
 
-if not DEBUG:
+if DEBUG:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
