@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'audition',
     'facets',
     'messaging',
+    'store_stripe',
 ]
 
 MIDDLEWARE = [
