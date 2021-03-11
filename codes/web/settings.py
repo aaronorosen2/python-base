@@ -28,6 +28,56 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+SLACK_API_KEY = "xoxb-790630255906-1844871421842-FFFWwP6KQT2eIsjTBHA8fsUR"
+
+if DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt': "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        },
+        'handlers': {
+            'console': {
+                        'class': 'logging.StreamHandler',
+                    },
+            'file': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(os.getcwd(), 'logger.log'),
+                'formatter': 'verbose'
+            },
+            'slack-error': {
+                'level': 'ERROR',
+                'api_key': SLACK_API_KEY,
+                'class': 'slacker_log_handler.SlackerLogHandler',
+                'channel': '#debug'
+            },
+            'slack-info': {
+                'level': 'ERROR',
+                'api_key': SLACK_API_KEY,
+                'class': 'slacker_log_handler.SlackerLogHandler',
+                'channel': '#debug'
+            },
+        },
+        'root': {
+                'handlers': ['console', 'file',  'slack-error', "slack-info"],
+                'level': 'INFO',
+            },
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'INFO',
+                'propagate': True,
+            },
+        },
+    }
 
 # Application definition
 
@@ -69,6 +119,8 @@ INSTALLED_APPS = [
     'audition',
     'facets',
     'rest_framework_swagger',
+    'messaging',
+    'store_stripe',
 ]
 
 MIDDLEWARE = [

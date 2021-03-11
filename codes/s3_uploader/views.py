@@ -245,12 +245,14 @@ class UserRegister(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response({
-            "user": UserSerializer(user, context=self.get_serializer_context()).data,
-            "token": AuthToken.objects.create(user)[1]
-        })
-
+        try:
+            user = serializer.save()
+            return Response({
+                "user": UserSerializer(user, context=self.get_serializer_context()).data,
+                "token": AuthToken.objects.create(user)[1]
+            })
+        except:
+            return Response({"msg":f"This email address is already registered with us"},status=status.HTTP_409_CONFLICT)
 
 # Login User -> Returns a token to make requests
 class UserLogin(KnoxLoginView):

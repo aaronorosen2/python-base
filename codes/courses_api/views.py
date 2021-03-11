@@ -46,7 +46,7 @@ def lesson_create(request):
     les_.save()
     for flashcard in request.data["flashcards"]:
         question=""
-        options=""
+        options=[]
         answer=""
         image=""
         braintree_merchant_ID=""
@@ -62,6 +62,8 @@ def lesson_create(request):
             question = flashcard["question"]
 
         if "options" in flashcard:
+            if not isinstance(flashcard["options"],list):
+                return HttpResponseBadRequest(content='options must be a list')
             options = flashcard["options"]
 
         if "answer" in flashcard:
@@ -144,18 +146,37 @@ def lesson_read(request,pk):
                 card['braintree_item_price'] = obj_item.price
     return Response(data)
 
-@api_view(['GET'])
+@api_view(['GET','POST','PUT','DELETE'])
 def lesson_all(request):
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'GET':
+        if 'Authorization' in request.headers:
+            les_= Lesson.objects.filter(user=token.user_id)
+            # less_serialized = LessonSerializer(les_,many=True)
+            less_serialized = LessonSerializer(Lesson.objects.all(),many=True)
+            return JsonResponse(less_serialized.data,safe=False)
+        else:
+            return JsonResponse({"message":"Unauthorized"})
+    if request.method == 'PUT':
+        try:
+            lesson = Lesson.objects.get(id=request.data.get('lesson_id'))
+            lesson.lesson_name = request.data.get('lesson_name')
+            lesson.save()
+            return JsonResponse({"success":True},status=status.HTTP_202_ACCEPTED)
 
-    if 'Authorization' in request.headers:
-        les_= Lesson.objects.filter(user=token.user_id)
-        # less_serialized = LessonSerializer(les_,many=True)
-        less_serialized = LessonSerializer(Lesson.objects.all(),many=True)
-        return JsonResponse(less_serialized.data,safe=False)
-    else:
-        return JsonResponse({"message":"Unauthorized"})
+        except:
+            return JsonResponse({"success":False},status=status.HTTP_204_NO_CONTENT)
 
+    if request.method == 'DELETE':
+        try:
+            lesson = Lesson.objects.get(id=request.data.get('lesson_id'))
+            lesson.delete()
+            return JsonResponse({"success":True},status=status.HTTP_200_OK)
+
+        except:
+            return JsonResponse({"success":False},status=status.HTTP_204_NO_CONTENT)
+
+            
 @api_view(['POST'])
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
@@ -175,7 +196,7 @@ def lesson_update(request,pk):
             fc.delete()
     for flashcard in request.data["flashcards"]:
         question=""
-        options=""
+        options=[]
         answer=""
         image=""
         braintree_merchant_ID=""
@@ -192,6 +213,8 @@ def lesson_update(request,pk):
             question = flashcard["question"]
 
         if "options" in flashcard:
+            if not isinstance(flashcard["options"], list):
+                return HttpResponseBadRequest(content='Flashcard options must be a list')
             options = flashcard["options"]
 
         if "answer" in flashcard:
@@ -287,7 +310,7 @@ def lesson_delete(request,pk):
 @api_view(['POST'])
 def flashcard_create(request,lessonId):
     question=""
-    options=""
+    options=[]
     answer=""
     image=""
     lesson_type = request.data["lesson_type"]
@@ -296,6 +319,8 @@ def flashcard_create(request,lessonId):
         question = request.data["question"]
 
     if "options" in request.data:
+        if not isinstance(request.data["options"], list):
+            return HttpResponseBadRequest(content='options must be a list')
         options = request.data["options"]
 
     if "answer" in request.data:
@@ -329,6 +354,8 @@ def flashcard_update(request,pk):
         question = request.data["question"]
 
     if "options" in request.data:
+        if not isinstance(request.data["options"],list):
+            return HttpResponseBadRequest(content='options must be a list')
         options = request.data["options"]
 
     if "answer" in request.data:

@@ -18,7 +18,7 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from notifications.views import notify
-from notifications.views import notification, admin_monitoring
+from notifications.views import notification, admin_monitoring, vstream_html
 
 from rest_framework_swagger.views import get_swagger_view
 
@@ -28,6 +28,10 @@ urlpatterns = [
     path('', schema_view),
     path('notify/', notify),
     path('admin_monitoring/', admin_monitoring),
+    path('vstream-ui/', vstream_html),
+    path('vconf_api/', include(
+        ('vconf.urls', 'vconf_api'),
+        namespace='vconf_api')),
     path('courses_api/', include("courses_api.urls")),
     path('notification/', notification),
     path('admin/', admin.site.urls),
@@ -68,17 +72,17 @@ urlpatterns = [
         namespace='s3_uploader')),
 
     path('signature_api/', include(
-            ('signature.urls', 'signature_api'),
-            namespace='signature_app')),
-    path('students_list/',include(
-        ('classroom.urls','classroom'),
+        ('signature.urls', 'signature_api'),
+        namespace='signature_app')),
+    path('students_list/', include(
+        ('classroom.urls', 'classroom'),
         namespace='classroom')),
-        
+
     path('dreamreader/', include('dreamreader.urls')),
     path('token/', include('video_call.urls')),
     path('neighbormade/', include('neighbormade.urls')),
-        #  calendar URLS
-# path('calendar' , include('calendar_app.urls'))
-    
+    #  calendar URLS
+    # path('calendar' , include('calendar_app.urls'))
+
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
