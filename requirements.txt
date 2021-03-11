@@ -114,3 +114,4 @@ slacker-log-handler==1.8.0
 knox
 jinja2
 praw
+django-rest-swagger
