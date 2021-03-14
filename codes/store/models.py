@@ -22,6 +22,7 @@ class order(models.Model):
     is_ordered = models.BooleanField(default=False)
     date_ordered = models.DateTimeField(auto_now=True)
     braintreeID = models.CharField(max_length=70, blank=True, null=True)
+    stripeID = models.CharField(max_length=70, blank=True, null=True)
     item_ID = models.ForeignKey(item, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                             null=True, blank=True)
@@ -30,6 +31,8 @@ class order(models.Model):
 class subscription(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True)
     braintreeSubscriptionID = models.CharField(
+        max_length=70, blank=True, null=True)
+    stripeSubscriptionID = models.CharField(
         max_length=70, blank=True, null=True)
     first_name = models.CharField(max_length=70, blank=True)
     last_name = models.CharField(max_length=70, blank=True)

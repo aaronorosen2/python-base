@@ -17,5 +17,10 @@ urlpatterns = [
         path('userbrainTreeSubscription', views.userbrainTreeSubscription,
                 name="userbrainTreeSubscription"),
         path('userOrderList', views.userOrderList, name='userOrderList'),
-        
+        # stripe
+        path('stripePage', views.stripePage, name='stripePage'),
+        path('stripeCharge', views.stripeCharge, name='stripeCharge'),
+        path('StripeCheckout', views.StripeCheckout, name='StripeCheckout'),
+        path("completeStripeSubscription", views.completeStripeSubscription, name="completeStripeSubscription"), #add
+        path('Stripethank', views.Stripethank, name='Stripethank'),
 ]

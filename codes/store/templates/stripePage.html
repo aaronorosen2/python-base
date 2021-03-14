@@ -1,0 +1,10 @@
+<!-- templates/home.html -->
+<h2>Buy {{data.title}} for ${{data.price}}</h2>
+<form action='{% url "store:stripeCharge" %}' method="post">
+    {% csrf_token %}
+    <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+            data-key="{{ PublishableKey }}"
+            data-description={{data.description}}
+            data-amount={{data.price}}00
+            data-locale="auto"></script>
+</form>
