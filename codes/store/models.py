@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from neighbormade.models import Neighborhood
 
 # Create your models here.
 
@@ -9,11 +10,20 @@ class item(models.Model):
     title = models.CharField(max_length=70, blank=False)
     description = models.TextField(null=True, blank=True)
     price = models.IntegerField()
-    images = models.TextField()
+    images = models.TextField(null=True,default="")
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                             null=True, blank=True)
+    Neighborhood = models.ForeignKey(Neighborhood, on_delete=models.CASCADE,
+                            null=True, blank=True)
 
-
+class userProfile(models.Model):
+    id = models.AutoField(auto_created=True, primary_key=True)
+    profileImage = models.TextField()
+    description = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                            null=True, blank=True)
+    Neighborhood = models.ForeignKey(Neighborhood, on_delete=models.CASCADE,
+                            null=True, blank=True)
 class order(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True)
     name = models.CharField(max_length=70, blank=False)
@@ -52,3 +62,5 @@ class BrainTreeConfig(models.Model):
     braintree_merchant_ID = models.CharField(max_length=70, blank=False)
     braintree_public_key = models.CharField(max_length=70, blank=False)
     braintree_private_key = models.CharField(max_length=70, blank=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                            null=True, blank=True)

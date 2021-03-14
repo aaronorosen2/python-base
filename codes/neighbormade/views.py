@@ -6,6 +6,7 @@ from neighbormade.models import Neighborhood, Stadium
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from .serializers import NeighborhoodSerializer, StadiumSerializer
 import requests
+import praw
 # from bs4 import BeautifulSoup
 
 # Create your views here.
@@ -26,7 +27,7 @@ def importNeighbours(request):
                 hoods.append(Neighborhood(
                 name = hood.strip(),
                 state = state,
-                city = city,
+                city = city, 
                 latitude = lat,
                 longitude = longitude)
                 )
@@ -109,3 +110,15 @@ def get_stadiums(request):
 import re
 def process_num(num):
     return float(re.sub(r'[^\w\s.]','',num))
+
+def scrap_reddits(request):
+    reddit = praw.Reddit(client_id='cD81gYCeIEjByA', client_secret='_DF466jhZte3SsUnClhvN2DGtctKrQ', user_agent='scrapper')
+    posts = []
+    hot_posts = reddit.subreddit('all').hot(limit=None)
+    for post in hot_posts:
+        print(post.subreddit)
+        posts.append([post.title, post.score, post.id, post.subreddit, post.url, post.num_comments, post.selftext, post.created])
+    print(len(posts))
+    posts = pd.DataFrame(posts,columns=['title', 'score', 'id', 'subreddit', 'url', 'num_comments', 'body', 'created'])
+    # print(posts)
+    return JsonResponse({'posts':posts.to_dict()})

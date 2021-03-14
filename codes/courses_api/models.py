@@ -2,6 +2,7 @@ from django.db import models
 from store.models import item, BrainTreeConfig
 from knox.auth import get_user_model
 from classroom.models import Student
+from django.contrib.postgres.fields import ArrayField
 
 
 class Lesson(models.Model):
@@ -19,7 +20,7 @@ class FlashCard(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     lesson_type = models.CharField(max_length=250)
     question = models.CharField(max_length=250)
-    options = models.CharField(max_length=250)
+    options = ArrayField(models.CharField(blank=True, max_length=100), default=list, null=True)
     answer = models.TextField(null=True, blank=True)
     image = models.CharField(max_length=250)
     position = models.IntegerField()

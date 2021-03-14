@@ -17,8 +17,9 @@ class Command(BaseCommand):
         client = Client(account_sid, auth_token)
         resps = []
         cprint(f"start --- {datetime.now()}",color='cyan')
-        for call in client.api.calls.stream(page_size=10):
+        for call in client.api.calls.stream(page_size=2, limit=20):  
             print(call.recordings.list())
+            resps.append(call)
             # if call.recordings.list():
             #     url = (
             #         'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
@@ -34,6 +35,7 @@ class Command(BaseCommand):
             #     'from': call.from_,
             #     'to': call.to,
             # })
+        print(len(resps))     
         cprint(f"complete --- {datetime.now()}",color='green')
         # print(resps)
         # for call in client.api.calls.list(from_='+14255785798'):
