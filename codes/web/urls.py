@@ -20,7 +20,12 @@ from django.conf import settings
 from notifications.views import notify
 from notifications.views import notification, admin_monitoring, vstream_html
 
+from rest_framework_swagger.views import get_swagger_view
+
+schema_view = get_swagger_view(title='Pastebin API')
+
 urlpatterns = [
+    path('', schema_view),
     path('notify/', notify),
     path('admin_monitoring/', admin_monitoring),
     path('vstream-ui/', vstream_html),
@@ -76,8 +81,5 @@ urlpatterns = [
     path('dreamreader/', include('dreamreader.urls')),
     path('token/', include('video_call.urls')),
     path('neighbormade/', include('neighbormade.urls')),
-    #  calendar URLS
-    # path('calendar' , include('calendar_app.urls'))
-
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

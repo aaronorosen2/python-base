@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import item, order
+from .models import item, order, userProfile
 
 class itemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,8 +7,10 @@ class itemSerializer(serializers.ModelSerializer):
         fields = (  'id',
                     'title',
                     'description',
-                    'price'
+                    'price',
+                    'images'
                     )
+        extra_kwargs = {"images": {"required": False, "allow_null": True}}
         
 class orderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,3 +25,13 @@ class orderSerializer(serializers.ModelSerializer):
                     'item_ID',
                     'user'
                     )
+
+# class profileSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = userProfile
+#         fields = (  'id',
+#                     'profileImage',
+#                     'description',
+#                     'user',
+#                     'Neighborhood'
+#                     )

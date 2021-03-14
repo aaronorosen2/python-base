@@ -22,3 +22,4 @@ codes/celerybeat.pid
 .idea
 sqlite3.db
 
+logger.log

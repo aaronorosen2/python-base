@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
 from django.http.response import JsonResponse
+from django.db.models import Q
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 
-from .models import item, order, subscription
+from .models import item, order, subscription, userProfile as profile,BrainTreeConfig
+from neighbormade.models import Neighborhood
 from .serializers import itemSerializer, orderSerializer
 from s3_uploader.views import upload_to_s3
 from knox.models import AuthToken
@@ -14,12 +16,15 @@ from .extras import transact, generate_client_token, create_customer, create_sub
 from rest_framework.response import Response
 import requests
 
+from django.core import serializers
+
 import base64
 import six
 import uuid
 import imghdr
 import io
 import json
+import stripe # new
 
 
 # Create your views here.
@@ -29,16 +34,12 @@ import json
 def Item(request):
     # GET list of items, POST a new item, DELETE all items
     if request.method == 'GET':
-        print("done")
         allItems = item.objects.all()
         item_serializer = itemSerializer(allItems, many=True)
-        print(item_serializer.data)
         return JsonResponse(item_serializer.data, safe=False)
         # 'safe=False' for objects serialization
     elif request.method == 'POST':
-        print(request)
         item_data = JSONParser().parse(request)
-        print(item_data)
         item_serializer = itemSerializer(data=item_data)
         if item_serializer.is_valid():
             item_serializer.save()
@@ -57,10 +58,9 @@ def get_file_extension(file_name, decoded_file):
 @api_view(['GET', 'POST', 'DELETE'])
 def userItem(request):
     # GET list of items, POST a new item, DELETE all items
-    print("farrukh enter")
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    
     if request.method == 'GET':
-        print(token)
         allItems = item.objects.filter(user = User.objects.get(id=token.user_id))
         item_serializer = itemSerializer(allItems, many=True)
         return JsonResponse(item_serializer.data, safe=False)
@@ -95,10 +95,17 @@ def userItem(request):
                     print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
             
             user = User.objects.get(id=token.user_id)
-            item_obj = item(title=request.data['title'],description=request.data['description'],
-                            price=request.data['price'],images=img_str,user=user)
+            
+            item_obj = item(title=request.data['title'],
+                            description=request.data['description'],
+                            price=request.data['price'],
+                            images=img_str,
+                            # quality= 1,
+                            # amount=1,
+                            user=User.objects.get(id=token.user_id))
             item_obj.save()
             return JsonResponse({"success":True},status=201)
+            
         except:
             return JsonResponse({"success":False},status=400)
     # elif request.method == 'DELETE':
@@ -135,9 +142,41 @@ def userItemDetail(request, pk):
         itemDataPK = item.objects.get(pk=pk,user = User.objects.get(id=token.user_id))
         if request.method == 'POST':
             try:
+                member = 1
+                img_str = ''
+                count = 0
+                uploaded_file = request.data['images']
+                uploaded_file = json.loads(uploaded_file)
+                if uploaded_file:
+                    # Get unique filename using UUID
+                    for img in uploaded_file:
+                        header, data = img.split(';base64,')
+                        try:
+                            decoded_file = base64.b64decode(data)
+                        except TypeError:
+                            TypeError('invalid_image')
+                        # Generate file name:
+                        file_name = str(uuid.uuid4())[:12]  # 12 characters are more than enough.
+                        # Get the file name extension:
+                        file_extension = get_file_extension(file_name, decoded_file)
+                        complete_file_name = "%s.%s" % (file_name, file_extension,)
+                        s3_key = 'Test/upload/{0}'.format(complete_file_name)
+                        content_type, file_url = upload_to_s3(s3_key, io.BytesIO(decoded_file))
+                        if (len(uploaded_file)-1) > count:
+                            img_str += file_url + ','
+                        else:
+                            img_str += file_url
+                        count += 1
+                        print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
+                
                 itemDataPK.title = request.data['title']
                 itemDataPK.description = request.data['description']
                 itemDataPK.price = request.data['price']
+                temp_images_str = itemDataPK.images
+                if(temp_images_str == ""):
+                    itemDataPK.images=img_str
+                else:
+                    itemDataPK.images=img_str+","+temp_images_str
                 itemDataPK.save()
                 return JsonResponse({"success":True},status=201)
             except:
@@ -154,7 +193,6 @@ def OrderItem(request, pk):
     # GET / PUT / DELETE item by pk (id)
     try:
         itemDataPK = item.objects.get(pk=pk)
-        print(itemDataPK.id)
         client_token = generate_client_token()
         return render(request, 'checkout.html', {"client_token": client_token, "item": itemDataPK})
     except item.DoesNotExist:
@@ -173,7 +211,6 @@ def Checkout(request, **kwargs):
         })
 
         if result.is_success or result.transaction:
-            print(result.transaction.id)
             obj = order(name=request.POST['name'],
                         email=request.POST['email'],
                         phone=request.POST['phone'],
@@ -217,7 +254,6 @@ def UserCheckout(request, **kwargs):
             }
         })
         if result.is_success or result.transaction:
-            print(result.transaction.id)
             obj = order(name=request.data['user-name'],
                         is_ordered=True,
                         braintreeID=result.transaction.id,
@@ -316,7 +352,6 @@ def brainTreeSubscription(request):
 @api_view(['GET', 'POST'])
 def userSubscribe(request):
     # GET / PUT / DELETE item by pk (id)
-    print("enter")
     try:
         client_token = generate_client_token()
         return JsonResponse({"success":True,"client_token": client_token},status=201)
@@ -325,7 +360,6 @@ def userSubscribe(request):
 
 @api_view(['GET', 'POST'])
 def userbrainTreeSubscription(request):
-    print("farrukh check it",request.data)
     custy_result = create_customer( {
         'payment_method_nonce': request.data['payment_method_nonce'],
     })
@@ -368,3 +402,216 @@ def userOrderList(request):
         allOrders = order.objects.filter(user = User.objects.get(id=token.user_id))
         order_serializer = orderSerializer(allOrders, many=True)
         return JsonResponse(order_serializer.data, safe=False)
+    
+@api_view(['GET', 'POST', 'DELETE'])
+def deleteImage(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'POST':
+        id_item = request.data['id']
+        imageURL = request.data['imageURL']
+        Item_obj = item.objects.get(id = id_item)
+        # Item_obj = item.objects.filter(id = id_item)
+        allImagesURL = Item_obj.images
+        image_list = allImagesURL.split(",")
+        image_list.remove(imageURL)
+        if(len(image_list)>0):
+            image_string = ','.join(image_list)
+        else:
+            image_string = ""
+        Item_obj.images = image_string
+        Item_obj.save()
+        return JsonResponse({"success":True},status=201)
+    
+@api_view(['GET', 'POST', 'DELETE'])
+def userProfile(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'POST':
+        try:
+            member = 1
+            img_str = ''
+            count = 0
+            uploaded_file = request.data['images']
+            uploaded_file = json.loads(uploaded_file)
+            if uploaded_file:
+                # Get unique filename using UUID
+                for img in uploaded_file:
+                    header, data = img.split(';base64,')
+                    try:
+                        decoded_file = base64.b64decode(data)
+                    except TypeError:
+                        TypeError('invalid_image')
+                    # Generate file name:
+                    file_name = str(uuid.uuid4())[:12]  # 12 characters are more than enough.
+                    # Get the file name extension:
+                    file_extension = get_file_extension(file_name, decoded_file)
+                    complete_file_name = "%s.%s" % (file_name, file_extension,)
+                    s3_key = 'Test/upload/{0}'.format(complete_file_name)
+                    content_type, file_url = upload_to_s3(s3_key, io.BytesIO(decoded_file))
+                    if (len(uploaded_file)-1) > count:
+                        img_str += file_url + ','
+                    else:
+                        img_str += file_url
+                    count += 1
+                    print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
+            
+            x = requests.get('https://api.dreampotential.org/neighbormade/state/California/city/Berkeley#')
+            x = x.json()
+            id_x = x['hoods'][0]['id']
+            profile_obj_check = profile.objects.filter(user = User.objects.get(id=token.user_id))
+            if(len(profile_obj_check)>0):
+                profile_obj_check = profile_obj_check[0]
+                profile_obj_check.description = request.data['description']
+                profile_obj_check.profileImage=img_str
+                profile_obj_check.save()
+            else:
+                profile_obj = profile (description=request.data['description'],
+                                profileImage=img_str,
+                                user = User.objects.get(id=token.user_id),
+                                Neighborhood = Neighborhood.objects.get(id=id_x))
+                profile_obj.save()
+            return JsonResponse({"success":True},status=201)
+        except:
+            return JsonResponse({"success":False},status=400)
+    
+    return render(request, 'userProfile.html')
+
+
+@api_view(['GET', 'POST', 'DELETE'])
+def TeacherUIBraintreeConfig(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'POST':
+        try:
+            obj_check = BrainTreeConfig.objects.filter(user = User.objects.get(id=token.user_id))
+            if(len(obj_check)>0):
+                obj_check = obj_check[0]
+                obj_check.braintree_merchant_ID = request.data['braintree_merchant_ID']
+                obj_check.braintree_public_key=request.data['braintree_public_key']
+                obj_check.braintree_private_key=request.data['braintree_private_key']
+                obj_check.save()
+            else:
+                braintree_obj = BrainTreeConfig (braintree_merchant_ID = request.data['braintree_merchant_ID'],
+                                braintree_public_key  = request.data['braintree_public_key'],
+                                braintree_private_key = request.data['braintree_private_key'],
+                                user = User.objects.get(id=token.user_id),
+                                )
+                braintree_obj.save()
+            return JsonResponse({"success":True},status=201)
+        except:
+            return JsonResponse({"success":False},status=400)
+        
+@api_view(['GET', 'POST', 'DELETE'])
+def TeacherUIItemsNeighbourhood(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'GET':
+        try:
+            obj = profile.objects.filter(user = User.objects.get(id=token.user_id))
+            if(len(obj)>0):
+                neighbour_ID = obj[0].Neighborhood
+                user_data = profile.objects.filter(Neighborhood = Neighborhood.objects.get(id = neighbour_ID.id))
+                temp_str = None
+                if(len(user_data)>0):
+                    for i in range(len(user_data)):
+                        if(i == 0):
+                            temp_str = Q(user=User.objects.get(id=user_data[i].user.id))
+                        else:
+                            temp_str |= Q(user=User.objects.get(id=user_data[i].user.id))
+                    resolvers = item.objects.filter(temp_str)
+                    data = serializers.serialize('json', resolvers)
+                    return JsonResponse({"success":True,"data":data,"profile":True})
+                else:
+                    return JsonResponse({"success":True,"profile":False},status=201)
+            else:
+                return JsonResponse({"success":True,"profile":False},status=201)
+        except:
+            return JsonResponse({"success":False},status=400)
+
+from django.conf import settings
+
+def stripePage(request):
+    data = item.objects.filter(id = 63)
+    return render(request, 'stripePage.html',{"PublishableKey":settings.STRIPE_TEST_PUBLISHABLE_KEY,"data":data[0]})
+
+def stripeCharge(request):
+    if request.method == 'POST':
+        data = item.objects.filter(id = 63)
+        data = data[0]
+        price = str(data.price) + '00'
+        price = int(price)
+        charge = stripe.Charge.create(
+            amount=price,
+            currency='usd',
+            description=data.description,
+            source=request.POST['stripeToken'],
+            api_key=settings.STRIPE_TEST_SECRET_KEY
+        )
+        if charge.id:
+            obj = order(name=data.title,
+                        is_ordered=True,
+                        stripeID=charge.id,
+                        item_ID=item.objects.get(id=data.id))
+            obj.save()
+            return render(request, 'thankyou.html', {"ID": charge.id})
+        else:
+            obj = order(name=data.title,
+                        is_ordered=False,
+                        stripeID="",
+                        item_ID=item.objects.get(id=data.id))
+            obj.save()
+            return render(request, 'thankyou.html', {"ID": ""})
+        
+        # return render(request, 'stripeCharge.html')
+    
+def StripeCheckout(request):
+    return render(request,"stripeCheckout.html")
+
+def completeStripeSubscription(request):
+    if request.method == 'POST':
+        # Reads application/json and returns a response
+        data = json.loads(request.body)
+        payment_method = data['payment_method']
+
+        stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
+        try:
+            # This creates a new Customer and attaches the PaymentMethod in one API call.
+            customer = stripe.Customer.create(
+                payment_method=payment_method,
+                # email=request.user.email,
+                invoice_settings={
+                    'default_payment_method': payment_method
+                }
+            )
+
+            # Subscribe the user to the subscription created
+            subscriptionStripe = stripe.Subscription.create(
+                customer=customer.id,
+                items=[
+                    {
+                        "price": data["price_id"],
+                    },
+                ],
+                expand=["latest_invoice.payment_intent"]
+            )
+            # print("subscription=",subscriptionStripe.id)
+            plan_ID = 'prod_J6zPaKmYae6qYA'
+            if subscriptionStripe.id:
+                print("Subscription Success!")
+                obj = subscription(stripeSubscriptionID=subscriptionStripe.id,
+                                    is_ordered=True,
+                                    plan_ID=plan_ID)
+                obj.save()
+                return JsonResponse(subscriptionStripe)
+                # return JsonResponse({"success":True,"ID": subscriptionStripe.id},status=201)
+            else:
+                obj = subscriptionStripe(stripeSubscriptionID="",
+                                    is_ordered=False,
+                                    plan_ID=plan_ID)
+                return JsonResponse({"success":True,"ID": ""},status=201)
+            # return JsonResponse(subscription)
+        except Exception as e:
+            print("error",e)
+            return JsonResponse({'error': (e.args[0])}, status =403)
+    else:
+        return JsonResponse('requet method not allowed')
+    
+def Stripethank(request):
+    return render(request, 'stripeCharge.html')

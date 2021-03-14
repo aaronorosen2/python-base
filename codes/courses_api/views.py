@@ -46,7 +46,7 @@ def lesson_create(request):
     les_.save()
     for flashcard in request.data["flashcards"]:
         question=""
-        options=""
+        options=[]
         answer=""
         image=""
         braintree_merchant_ID=""
@@ -62,6 +62,8 @@ def lesson_create(request):
             question = flashcard["question"]
 
         if "options" in flashcard:
+            if not isinstance(flashcard["options"],list):
+                return HttpResponseBadRequest(content='options must be a list')
             options = flashcard["options"]
 
         if "answer" in flashcard:
@@ -194,7 +196,7 @@ def lesson_update(request,pk):
             fc.delete()
     for flashcard in request.data["flashcards"]:
         question=""
-        options=""
+        options=[]
         answer=""
         image=""
         braintree_merchant_ID=""
@@ -211,6 +213,8 @@ def lesson_update(request,pk):
             question = flashcard["question"]
 
         if "options" in flashcard:
+            if not isinstance(flashcard["options"], list):
+                return HttpResponseBadRequest(content='Flashcard options must be a list')
             options = flashcard["options"]
 
         if "answer" in flashcard:
@@ -306,7 +310,7 @@ def lesson_delete(request,pk):
 @api_view(['POST'])
 def flashcard_create(request,lessonId):
     question=""
-    options=""
+    options=[]
     answer=""
     image=""
     lesson_type = request.data["lesson_type"]
@@ -315,6 +319,8 @@ def flashcard_create(request,lessonId):
         question = request.data["question"]
 
     if "options" in request.data:
+        if not isinstance(request.data["options"], list):
+            return HttpResponseBadRequest(content='options must be a list')
         options = request.data["options"]
 
     if "answer" in request.data:
@@ -348,6 +354,8 @@ def flashcard_update(request,pk):
         question = request.data["question"]
 
     if "options" in request.data:
+        if not isinstance(request.data["options"],list):
+            return HttpResponseBadRequest(content='options must be a list')
         options = request.data["options"]
 
     if "answer" in request.data:

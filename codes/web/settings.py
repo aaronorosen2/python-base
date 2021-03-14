@@ -28,6 +28,56 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+SLACK_API_KEY = "xoxb-790630255906-1844871421842-FFFWwP6KQT2eIsjTBHA8fsUR"
+
+if DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+                'datefmt': "%d/%b/%Y %H:%M:%S"
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        },
+        'handlers': {
+            'console': {
+                        'class': 'logging.StreamHandler',
+                    },
+            'file': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(os.getcwd(), 'logger.log'),
+                'formatter': 'verbose'
+            },
+            'slack-error': {
+                'level': 'ERROR',
+                'api_key': SLACK_API_KEY,
+                'class': 'slacker_log_handler.SlackerLogHandler',
+                'channel': '#debug'
+            },
+            'slack-info': {
+                'level': 'ERROR',
+                'api_key': SLACK_API_KEY,
+                'class': 'slacker_log_handler.SlackerLogHandler',
+                'channel': '#debug'
+            },
+        },
+        'root': {
+                'handlers': ['console', 'file',  'slack-error', "slack-info"],
+                'level': 'INFO',
+            },
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'INFO',
+                'propagate': True,
+            },
+        },
+    }
 
 # Application definition
 
@@ -68,7 +118,10 @@ INSTALLED_APPS = [
     'vconf',
     'audition',
     'facets',
+    'rest_framework_swagger',
     'messaging',
+    #stripe
+    'store_stripe',
 ]
 
 MIDDLEWARE = [
@@ -89,12 +142,24 @@ if DEBUG:
     BT_MERCHANT_ID = '26343xxtxwwwgfqs'
     BT_PUBLIC_KEY = 'nj723gtbqz2s6229'
     BT_PRIVATE_KEY = '6998bfeb28304c9b97c59460791f84ed'
+    # stripe
+    # STRIPE_SECRET_KEY = 'sk_test_51ITdUjGOkE0UauzQJwYtyRsqkRYL1M77Fn6QppwqhacQvdLCJOGyc2TdJAhcm8o1tpXgN3Owor4RvAFYGfavG9h6000tqQCYWF'
+    # STRIPE_PUBLISHABLE_KEY = 'pk_test_51ITdUjGOkE0UauzQPEu8J9aFw5RmWOVXwkY3NRIXwvnzDMFo3C5pDwfuYmiSLHNhr6o6lzvBF0552ODdE45BbIch00QTrejIEN'
+    STRIPE_TEST_PUBLISHABLE_KEY = 'pk_test_x97eNoQQtQDTurBY7lrq1yME005Ntt2hOK'
+    STRIPE_TEST_SECRET_KEY = 'sk_test_51GPZU2Gq4mM9DwWGVtsyD1imIC3xNNEfNqYzGuWryfWT8ok25STRDnb4XORmCOv2sqDOYhKRbdowt1SAhjmGyFYT00kNM75J9r'
+    STRIPE_LIVE_MODE = False  # Change to True in production
+    
 else:
     # live keys
-    BT_ENVIRONMENT = ''
-    BT_MERCHANT_ID = ''
-    BT_PUBLIC_KEY = ''
-    BT_PRIVATE_KEY = ''
+    BT_ENVIRONMENT = 'production'
+    BT_MERCHANT_ID = '7xyb7rtshbp9q47d'
+    BT_PUBLIC_KEY = 'yc3ytr786brjsh9v'
+    BT_PRIVATE_KEY = '532eefa88f4f82bce0f12e2ef0adba87'
+    # stripe
+    STRIPE_SECRET_KEY = ''
+    STRIPE_PUBLISHABLE_KEY = ''
+    STRIPE_LIVE_MODE = True
+
 ROOT_URLCONF = 'web.urls'
 
 TWILIO = {
@@ -124,6 +189,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {  
+                    'staticfiles': 'django.templatetags.static',
+                    },
         },
     },
 ]
@@ -183,8 +251,10 @@ REST_FRAMEWORK = {
         # 'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
         'knox.auth.TokenAuthentication',
-    ]
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
+
 # KNOX
 REST_KNOX = {
   'USER_SERIALIZER': 's3_uploader.serializers.UserSerializer',
