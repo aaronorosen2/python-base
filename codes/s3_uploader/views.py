@@ -111,13 +111,13 @@ class UploadRoomLogo(generics.ListCreateAPIView):
             }, status=400)
 
 class EditRoomLogo(APIView):
-    
+
     def put(self,request,*args,**kwargs):
         try:
             room_ = Brand.objects.get(id=request.POST['room_id'])
-            room_logo = request.FILES.get("room_logo",None)
-            room_video = request.FILES.get("video_url",None)
-            
+            room_logo = request.FILES.get("room_logo", None)
+            room_video = request.FILES.get("video_url", None)
+
             video_url = None
             room_logo_url = None
             upload = UploadRoomLogo()
@@ -142,14 +142,14 @@ class EditRoomLogo(APIView):
             return JsonResponse({"message":"Success!"},status=200)
         except:
             return JsonResponse({"message":"Error!"},status=404)
-    
+
     def delete(self,request,*args,**kwargs):
         try:
             room_ = Brand.objects.get(id=request.POST['room_id'])
             room_.delete()
-            return JsonResponse({"message":"Successfully Deleted!"},status=200)
+            return JsonResponse({"message":"Successfully Deleted!"}, status=200)
         except Brand.DoesNotExist:
-            return JsonResponse({"message":"Error!"},status=404)
+            return JsonResponse({"message":"Error!"}, status=404)
 
 
 
@@ -410,8 +410,10 @@ class MakeS3FilePublic(generics.GenericAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class S3Upload(generics.GenericAPIView):
-    # permission_classes = (permissions.AllowAny,)
+
+    permission_classes = (permissions.AllowAny,)
     serializer_class = None
+
     def get_serializer_class(self,request, *args, **kwargs):
         if(self.request.method == 'POST'):
             print("Uploading", request.FILES, request.POST)
@@ -436,8 +438,7 @@ class S3Upload(generics.GenericAPIView):
                 return JsonResponse({'message': 'Success!', 'file_url': file_url, 'content_type': content_type})
             else:
                 return JsonResponse({'message': 'No file provided!'})
-        
-        
+
     # def post(self, request, *args, **kwargs):
         # print("Uploading", request.FILES, request.POST)
 
