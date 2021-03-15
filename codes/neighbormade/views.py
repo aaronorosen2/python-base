@@ -2,11 +2,12 @@ from django.shortcuts import render
 import pandas as pd
 from django.http import JsonResponse, HttpResponse
 from rest_framework.response import Response
-from neighbormade.models import Neighborhood, Stadium
+from neighbormade.models import Neighborhood, Stadium,Reddit
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from .serializers import NeighborhoodSerializer, StadiumSerializer
 import requests
 import praw
+import re
 # from bs4 import BeautifulSoup
 
 # Create your views here.
@@ -107,7 +108,7 @@ def get_stadiums(request):
     std_serialized = StadiumSerializer(std, many=True)
     return JsonResponse({'stadiums': std_serialized.data})
 
-import re
+
 def process_num(num):
     return float(re.sub(r'[^\w\s.]','',num))
 
@@ -116,9 +117,19 @@ def scrap_reddits(request):
     posts = []
     hot_posts = reddit.subreddit('all').hot(limit=None)
     for post in hot_posts:
-        print(post.subreddit)
-        posts.append([post.title, post.score, post.id, post.subreddit, post.url, post.num_comments, post.selftext, post.created])
-    print(len(posts))
-    posts = pd.DataFrame(posts,columns=['title', 'score', 'id', 'subreddit', 'url', 'num_comments', 'body', 'created'])
-    # print(posts)
-    return JsonResponse({'posts':posts.to_dict()})
+        _post = {}
+        _post['title'] = post.title
+        _post['score'] = post.score
+        _post['subreddit'] = str(post.subreddit)
+        _post['url'] = post.url
+        _post['body'] = post.selftext
+        _post['reddit_post_id'] = post.id
+        _post['num_comments'] = post.num_comments
+        _post['created'] = post.created
+        _post['upvote_ratio'] = post.upvote_ratio
+        posts.append(Reddit(**_post))
+        print(_post)
+    # if len(posts):
+    #     Reddit.objects.bulk_create(posts, 100)
+    # posts = pd.DataFrame(posts,columns=['title', 'score', 'id', 'subreddit', 'url', 'num_comments', 'body', 'created', 'upvote_ratio'])
+    return JsonResponse({'posts_fetched':len(posts)})

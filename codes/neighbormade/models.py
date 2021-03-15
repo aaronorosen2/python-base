@@ -23,4 +23,16 @@ class Stadium(models.Model):
     sports = models.CharField(max_length=250)
     image = models.CharField(max_length=1000)
 
+class Reddit(models.Model):
+    reddit_post_id = models.CharField(max_length=250)
+    title = models.TextField()
+    subreddit = models.CharField(max_length=250)
+    url = models.CharField(max_length=250)
+    body = models.TextField()
+    score = models.CharField(max_length=100)
+    upvote_ratio = models.CharField(max_length=100)
+    num_comments = models.CharField(max_length=100)
+    created = models.DateTimeField()
+
+
 
