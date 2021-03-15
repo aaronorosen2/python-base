@@ -120,6 +120,7 @@ INSTALLED_APPS = [
     'facets',
     'rest_framework_swagger',
     'messaging',
+    #stripe
     'store_stripe',
 ]
 
@@ -141,12 +142,24 @@ if DEBUG:
     BT_MERCHANT_ID = '26343xxtxwwwgfqs'
     BT_PUBLIC_KEY = 'nj723gtbqz2s6229'
     BT_PRIVATE_KEY = '6998bfeb28304c9b97c59460791f84ed'
+    # stripe
+    # STRIPE_SECRET_KEY = 'sk_test_51ITdUjGOkE0UauzQJwYtyRsqkRYL1M77Fn6QppwqhacQvdLCJOGyc2TdJAhcm8o1tpXgN3Owor4RvAFYGfavG9h6000tqQCYWF'
+    # STRIPE_PUBLISHABLE_KEY = 'pk_test_51ITdUjGOkE0UauzQPEu8J9aFw5RmWOVXwkY3NRIXwvnzDMFo3C5pDwfuYmiSLHNhr6o6lzvBF0552ODdE45BbIch00QTrejIEN'
+    STRIPE_TEST_PUBLISHABLE_KEY = 'pk_test_x97eNoQQtQDTurBY7lrq1yME005Ntt2hOK'
+    STRIPE_TEST_SECRET_KEY = 'sk_test_51GPZU2Gq4mM9DwWGVtsyD1imIC3xNNEfNqYzGuWryfWT8ok25STRDnb4XORmCOv2sqDOYhKRbdowt1SAhjmGyFYT00kNM75J9r'
+    STRIPE_LIVE_MODE = False  # Change to True in production
+    
 else:
     # live keys
-    BT_ENVIRONMENT = ''
-    BT_MERCHANT_ID = ''
-    BT_PUBLIC_KEY = ''
-    BT_PRIVATE_KEY = ''
+    BT_ENVIRONMENT = 'production'
+    BT_MERCHANT_ID = '7xyb7rtshbp9q47d'
+    BT_PUBLIC_KEY = 'yc3ytr786brjsh9v'
+    BT_PRIVATE_KEY = '532eefa88f4f82bce0f12e2ef0adba87'
+    # stripe
+    STRIPE_SECRET_KEY = ''
+    STRIPE_PUBLISHABLE_KEY = ''
+    STRIPE_LIVE_MODE = True
+
 ROOT_URLCONF = 'web.urls'
 
 TWILIO = {
@@ -195,7 +208,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
         'USER': 'postgres',
-        'HOST': 'sfapp.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com',
+        'HOST': 'python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com',
         'PORT': '5432',
         'PASSWORD': 'EhB4bINnDFmzI0Bg'
     }
@@ -287,18 +300,18 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
-    'schedule_member': {
-        'task': 'web.celery.schedule_member',
-        'schedule': timedelta(minutes=50)  # execute every minute
-    },
-    'room_details': {
-        'task': 'web.celery.room_details',
-        'schedule': timedelta(minutes=1)  # execute every seconds
-    },
-    'send_wait_notification_customer': {
-        'task': 'web.celery.send_wait_notification_customer',
-        'schedule': timedelta(seconds=1)  # execute every seconds
-    }
+    # 'schedule_member': {
+    #     'task': 'web.celery.schedule_member',
+    #     'schedule': timedelta(minutes=50)  # execute every minute
+    # },
+    # 'room_details': {
+    #     'task': 'web.celery.room_details',
+    #     'schedule': timedelta(minutes=1)  # execute every seconds
+    # },
+    # 'send_wait_notification_customer': {
+    #     'task': 'web.celery.send_wait_notification_customer',
+    #     'schedule': timedelta(seconds=1)  # execute every seconds
+    # }
 }
 
 

@@ -24,6 +24,7 @@ import uuid
 import imghdr
 import io
 import json
+import stripe # new
 
 
 # Create your views here.
@@ -58,6 +59,7 @@ def get_file_extension(file_name, decoded_file):
 def userItem(request):
     # GET list of items, POST a new item, DELETE all items
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    
     if request.method == 'GET':
         allItems = item.objects.filter(user = User.objects.get(id=token.user_id))
         item_serializer = itemSerializer(allItems, many=True)
@@ -522,3 +524,94 @@ def TeacherUIItemsNeighbourhood(request):
                 return JsonResponse({"success":True,"profile":False},status=201)
         except:
             return JsonResponse({"success":False},status=400)
+
+from django.conf import settings
+
+def stripePage(request):
+    data = item.objects.filter(id = 63)
+    return render(request, 'stripePage.html',{"PublishableKey":settings.STRIPE_TEST_PUBLISHABLE_KEY,"data":data[0]})
+
+def stripeCharge(request):
+    if request.method == 'POST':
+        data = item.objects.filter(id = 63)
+        data = data[0]
+        price = str(data.price) + '00'
+        price = int(price)
+        charge = stripe.Charge.create(
+            amount=price,
+            currency='usd',
+            description=data.description,
+            source=request.POST['stripeToken'],
+            api_key=settings.STRIPE_TEST_SECRET_KEY
+        )
+        if charge.id:
+            obj = order(name=data.title,
+                        is_ordered=True,
+                        stripeID=charge.id,
+                        item_ID=item.objects.get(id=data.id))
+            obj.save()
+            return render(request, 'thankyou.html', {"ID": charge.id})
+        else:
+            obj = order(name=data.title,
+                        is_ordered=False,
+                        stripeID="",
+                        item_ID=item.objects.get(id=data.id))
+            obj.save()
+            return render(request, 'thankyou.html', {"ID": ""})
+        
+        # return render(request, 'stripeCharge.html')
+    
+def StripeCheckout(request):
+    return render(request,"stripeCheckout.html")
+
+def completeStripeSubscription(request):
+    if request.method == 'POST':
+        # Reads application/json and returns a response
+        data = json.loads(request.body)
+        payment_method = data['payment_method']
+
+        stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
+        try:
+            # This creates a new Customer and attaches the PaymentMethod in one API call.
+            customer = stripe.Customer.create(
+                payment_method=payment_method,
+                # email=request.user.email,
+                invoice_settings={
+                    'default_payment_method': payment_method
+                }
+            )
+
+            # Subscribe the user to the subscription created
+            subscriptionStripe = stripe.Subscription.create(
+                customer=customer.id,
+                items=[
+                    {
+                        "price": data["price_id"],
+                    },
+                ],
+                expand=["latest_invoice.payment_intent"]
+            )
+            # print("subscription=",subscriptionStripe.id)
+            plan_ID = 'prod_J6zPaKmYae6qYA'
+            if subscriptionStripe.id:
+                print("Subscription Success!")
+                obj = subscription(stripeSubscriptionID=subscriptionStripe.id,
+                                    is_ordered=True,
+                                    plan_ID=plan_ID)
+                obj.save()
+                return JsonResponse(subscriptionStripe)
+                # return JsonResponse({"success":True,"ID": subscriptionStripe.id},status=201)
+            else:
+                obj = subscriptionStripe(stripeSubscriptionID="",
+                                    is_ordered=False,
+                                    plan_ID=plan_ID)
+                return JsonResponse({"success":True,"ID": ""},status=201)
+            # return JsonResponse(subscription)
+        except Exception as e:
+            print("error",e)
+            return JsonResponse({'error': (e.args[0])}, status =403)
+    else:
+        return JsonResponse('requet method not allowed')
+    
+def Stripethank(request):
+    return render(request, 'stripeCharge.html')

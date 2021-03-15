@@ -1,10 +1,11 @@
 from django.core.management.base import BaseCommand
 from twilio.rest import Client
 from django.conf import settings
-# from sfapp2.utils import twilio
+from sfapp2.utils import twilio
 from termcolor import cprint
 from datetime import datetime
-# from voip.models import Call_list
+from voip.models import Call_list
+
 class Command(BaseCommand):
     help = 'Fetch Call list from Twilio'
     

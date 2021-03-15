@@ -139,7 +139,7 @@ def lesson_read(request,pk):
                 card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
                 card['braintree_public_key'] = obj_braintree_config.braintree_public_key
                 card['braintree_private_key'] = obj_braintree_config.braintree_private_key
-                
+
             if card['item_store']:
                 obj_item = item.objects.get(id=card['item_store'])
                 card['braintree_item_name'] = obj_item.title
@@ -153,8 +153,9 @@ def lesson_all(request):
         if 'Authorization' in request.headers:
             les_= Lesson.objects.filter(user=token.user_id)
             # less_serialized = LessonSerializer(les_,many=True)
-            less_serialized = LessonSerializer(Lesson.objects.all(),many=True)
-            return JsonResponse(less_serialized.data,safe=False)
+            less_serialized = LessonSerializer(
+                Lesson.objects.filter(user=token.user_id), many=True)
+            return JsonResponse(less_serialized.data, safe=False)
         else:
             return JsonResponse({"message":"Unauthorized"})
     if request.method == 'PUT':
@@ -597,7 +598,7 @@ def invite_text(request):
             return JsonResponse({"sucess":True},status=200)
         else:
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
-    
+
     return JsonResponse({"sucess":True},status=200)
 
 @api_view(['POST'])
@@ -609,13 +610,14 @@ def invite_response(request):
     flashcard = FlashCard.objects.filter(lesson_type = lesson_type).first()
     # flashcard = FlashCard.objects.filter(lesson_type = lesson_type or lesson_id = (lesson.id)).first()
     answer = request.data['answer']
-    student = Student.objects.get(id= Invite.objects.get(params=params).student_id)
-    
+    student = Student.objects.get(
+        id=Invite.objects.get(params=params).student_id)
     invite_response = InviteResponse(
         lesson=lesson,
         student=student,
         flashcard=flashcard,
         answer=answer,
-        )
+    )
+
     invite_response.save()
-    return Response("invite Response Recorded",status=200)
+    return Response("invite Response Recorded", status=200)
