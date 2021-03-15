@@ -241,8 +241,3 @@ def assign_number_(request):
         number = assigned_numbers(phone=number_to_assign , user=user)
         number.save()
         return JsonResponse({'message': 'Success!'})
-    
-    elif request.method == "GET":
-        #  = assigned_numbers.objects.get(user_id=request.data['user_id'])``
-        serializer = Assigned_numbersSerializer(assigned_numbers.objects.all())
-        return JsonResponse(serializer.data,safe=False)
