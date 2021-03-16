@@ -5,9 +5,10 @@ from django.conf import settings
 from twilio.twiml.voice_response import VoiceResponse, Gather, Dial
 from twilio.rest import Client
 import uuid
-from .models import Phone
-from .serializers import TwilioPhoneSerializer
+from .models import Phone, assigned_numbers
+from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer
 from rest_framework.decorators import api_view 
+from django.contrib.auth.models import User
 
 
 # To store session variables
@@ -230,3 +231,31 @@ def join_conference(request):
         message = e.msg if hasattr(e, 'msg') else str(e)
         return JsonResponse({'error': message})
     return JsonResponse({'message': 'Success!'})
+
+
+@api_view(['GET','POST'])
+def assign_number_(request):
+    if request.method == "POST":
+        user = User.objects.get(pk=request.data['user_id'])
+        number_to_assign = request.data['number']
+        number = assigned_numbers(phone=number_to_assign , user=user)
+        number.save()
+        return JsonResponse({'message': 'Success!'})
+
+    elif request.method == "GET":
+        serializer = Assigned_numbersSerializer(assigned_numbers.objects.all(),many=True)
+        return JsonResponse(serializer.data,safe=False)
+
+# @api_view(["post"])
+# def make_call(request):
+#     from_num = request.data['from_num']
+#     to_num = request.data['to_num']
+
+#     client = get_client()
+
+#     call = client.calls.create(
+#                 url='http://demo.twilio.com/docs/voice.xml',
+#                 to = to_num,
+#                 from_ = from_num
+#                 )
+#     return JsonResponse({'message': 'Success!'})

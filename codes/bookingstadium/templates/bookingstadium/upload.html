@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<style type="text/css">
+.bcn { width:210px;list-style:none;float:center;margin:0;padding:0 0 0 10px;color:#F66F23; }
+
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Add a new stadium</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body style="background-color:#DAFF33">
+
+<h2 style="color:#F66F23">Add a new stadium</h2>
+<div class="bcn">
+<form id="fileinfo" enctype="multipart/form-data" name="fileinfo">
+    
+    <label for="name">Enter stadium name:</label><br>
+    <input type="text" name="name" id="name" size="30"/> </br>
+    <label for="capacity">Enter stadium capacity:</label><br>
+    <input type="number" name="capacity" id="capacity"/></br>
+    <label for="city">Enter the city:</label><br>
+    <input type="text" name="city" id="city" size="30"/></br>
+    <label for="country">Enter country name:</label><br>
+    <input type="text" name="country" id="country" size="30"/></br>
+    <label for="region">Enter region name:</label><br>
+    <input type="text" name="region" id="region" size="30"/></br>
+    <label for="team">Enter team name:</label><br>
+    <input type="text" name="team" id="team" size="30"/></br>
+    <label for="sport">Enter the sport branch:</label><br>
+    <input type="text" name="sport" id="sport" size="30"/></br>
+    <label>Select File:</label>
+    <input type="file" name="file" required/></br>
+    <button type="submit" value="Stash the file!">Upload</button>
+   
+</form>
+</div>
+<hr>
+
+<div id="output">
+
+
+</div>
+
+<script>
+// var SERVER = 'https://sfapp-api.dreamstate-4-all.org/'
+var SERVER = 'http://localhost:8000/'
+//var name = document.getElementById("name").value;
+var uploadField = document.forms["fileinfo"].elements["file"];
+uploadField.onchange = function() {
+    if(this.files[0].size > 2097152){
+       alert("File is too big! Max size 2mb");
+       this.value = "";
+    }
+else {
+$(document).ready(function(){
+    console.log("ready");
+
+    $('#fileinfo').submit(function(e) {
+        e.preventDefault();
+        console.log("Submitted");
+
+        swal({
+            title: "0%",
+            text: "File uploading please wait.",
+            icon: "info",
+            buttons: false,
+            closeOnEsc: false,
+            closeOnClickOutside: false,
+        });
+        
+        var form = new FormData(this);
+        var name = document.forms["fileinfo"].elements["name"].value;
+        var capacity = document.forms["fileinfo"].elements["capacity"].value;
+        var city = document.forms["fileinfo"].elements["city"].value;
+        var country = document.forms["fileinfo"].elements["country"].value;
+        var region = document.forms["fileinfo"].elements["region"].value;
+        var team = document.forms["fileinfo"].elements["team"].value;
+        var sport = document.forms["fileinfo"].elements["sport"].value;
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "url": SERVER + 's3_uploader/upload',
+            "method": "POST",
+            "type": "POST",
+            "processData": false,
+            "contentType": false,
+            "mimeType": "multipart/form-data",
+            "data": form,
+            "headers": {
+                "Authorization": localStorage.getItem("token")
+            }
+        };
+
+        console.log(settings);
+        $.ajax(settings).done(function (response) {
+            swal({
+                  title: "Good job!",
+                  text: "File uploaded successfully!",
+                  icon: "success",
+            });
+
+            response = JSON.parse(response);
+            console.log(response);
+            file_url = response['file_url']
+            console.log(file_url);
+            var data = {'name':name,'capacity':capacity,'city':city,'country':country,'region':region,'teams':team,'sports':sport,'image':file_url}
+            axios.post("http://127.0.0.1:8000/bookingstadium/stadium/create", data = data);
+            $('#output').html("<div> Uploaded to S3 Url: "+ file_url + "</div>");
+
+            var img = $('<img>');
+            img.attr('src', file_url);
+            img.appendTo('#output');
+        }).fail(function (response) {
+            swal({
+                  title: "Error!",
+                  text: "File upload failed!",
+                  icon: "warning",
+            });
+        });
+    });
+
+});
+};
+}
+</script>
+<a href="/bookingstadium">Go back to stadiums</a>
+</body>
+</html>

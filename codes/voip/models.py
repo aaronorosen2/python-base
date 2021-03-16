@@ -48,5 +48,5 @@ class Call_list(models.Model):
         ]
 
 class assigned_numbers(models.Model):
-    phone = models.CharField(max_length=20,unique=True)
-    user = models.ForeignKey(User,on_delete=models.CASCADE, unique=True)
+    phone = models.CharField(max_length=20)
+    user = models.ForeignKey(User,on_delete=models.CASCADE)

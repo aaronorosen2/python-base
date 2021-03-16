@@ -122,6 +122,8 @@ INSTALLED_APPS = [
     'messaging',
     #stripe
     'store_stripe',
+    'bookingstadium.apps.BookingstadiumConfig',
+    'bookingsystem.apps.BookingsystemConfig',
 ]
 
 MIDDLEWARE = [
