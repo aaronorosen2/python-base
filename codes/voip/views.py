@@ -241,3 +241,21 @@ def assign_number_(request):
         number = assigned_numbers(phone=number_to_assign , user=user)
         number.save()
         return JsonResponse({'message': 'Success!'})
+
+    elif request.method == "GET":
+        serializer = Assigned_numbersSerializer(assigned_numbers.objects.all(),many=True)
+        return JsonResponse(serializer.data,safe=False)
+
+# @api_view(["post"])
+# def make_call(request):
+#     from_num = request.data['from_num']
+#     to_num = request.data['to_num']
+
+#     client = get_client()
+
+#     call = client.calls.create(
+#                 url='http://demo.twilio.com/docs/voice.xml',
+#                 to = to_num,
+#                 from_ = from_num
+#                 )
+#     return JsonResponse({'message': 'Success!'})
