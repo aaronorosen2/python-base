@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<style type="text/css">
+img {
+    width: 400px,
+    height: 300px
+    }
+</style>
+<h1>Which stadium do you want to book?</h1>
+<a href="{% url 'bookingstadium:upload' %}">Add a stadium</a> 
+<p>
+{% if stadiums %}
+    <form action="/bookingstadium/calendar" method="get">
+      {% for stadium in stadiums %}
+          <label for="{{stadium.name}}"></label><br>
+          <input type="radio" id="{{stadium.name}}" name="stadium" value="{{stadium.id}}">{{stadium.name}}</>
+          <p> </p>
+          <img src="{{stadium.image}}" width="400" height="300"></img>
+          <p>Located in {{stadium.country}},{{stadium.city}}</p>
+          <p style="color:red;font-size:18px;">Capacity:{{stadium.capacity}}</p></br>
+  {% endfor %}
+  <input type="submit" value="Book">
+  </form>
+<p>
+{% else %}
+  <p>There are no stadiums in the database.</p>
+{% endif %}
+</p>
+</html>

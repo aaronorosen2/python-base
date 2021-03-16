@@ -1,0 +1,54 @@
+{% extends 'bookingsystem/layout/base.html' %}
+
+
+{% block content %}
+    
+    {% include 'bookingsystem/event/addevent.html' %} 
+    
+
+
+
+
+<div class="container-fluid">
+    <div class="flex-date">
+        {% if group %}
+        <a   href="{% url 'switch-group' group %}?{{ prev}}">   <span class="material-icons">
+            arrow_left
+            </span></a>
+
+            {% else %}
+            <a   href="{% url 'bookingsystem:calendar' %}?{{ prev}}"> 
+            
+                <span class="material-icons">
+                    arrow_left
+                    </span>
+            </a>
+            {% endif%}
+
+     
+        
+        <div>
+            <h4>
+                
+                {{date }}
+            </h4>
+        </div>
+        {% if group %}
+        <a   href="{% url 'switch-group' group %}?{{ next}}">   <span class="material-icons">
+            arrow_right
+            </span>
+        </a>
+        {% else %}
+        <a   href="{% url 'bookingsystem:calendar'  %}?{{ next}}">   <span class="material-icons">
+            arrow_right
+            </span>
+        </a>
+
+        {% endif %}
+
+    </div>
+  {{calendar}}
+</div>
+<a href="{% url 'bookingsystem:your-bookings' %}">Your bookings</a>
+<a href="{% url 'logout' %}?next=/bookingsystem">Log out</a> 
+{% endblock content %}

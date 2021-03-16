@@ -1,0 +1,68 @@
+{% extends 'bookbikerescue/layout/base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+
+
+<div   >
+    <div class="modal-dialog modal-dialog-centered" role="document" >
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #EB7E4D; color: #fff;" >
+                <a href="{% url 'bookbikerescue:calendar' %}">
+                    <i class="fas fa-arrow-left" style="color: #fff;"></i>
+                </a>
+                <h5 class="modal-title" id="exampleModalLongTitle">Event Details</h5>
+ 
+            </div>
+            <div class="modal-body">
+                <img src="{% static 'calendar.png' %}" class="avatar">
+
+                
+<div>
+     
+</div>
+                <h3 class="display-4">
+
+                    {{event.title}}
+                </h3>
+                <div class="description" style="padding:20px">
+
+                    <h5>{{event.description}}</h4>
+                </div>
+                <div class="event-date">
+                    <span class="material-icons">
+                        date_range
+                    </span>
+                    {{event.date}}
+
+                </div>
+                <hr>
+                <div class="timing" >
+
+                    <span class="material-icons">
+                        access_time
+                    </span>
+                    <span>
+
+                        {{event.start_time}}- 
+                        {{event.end_time}}
+                    </span>
+                </div>
+                <hr>
+
+           
+             </div>
+            
+            <div class="modal-footer">
+               
+              
+                <a href="{% url 'bookbikerescue:event-delete' event.id %}" class="btn btn-danger">delete</a> 
+        
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
