@@ -2,12 +2,13 @@ from django.shortcuts import render
 import pandas as pd
 from django.http import JsonResponse, HttpResponse
 from rest_framework.response import Response
-from neighbormade.models import Neighborhood, Stadium,Reddit
+from neighbormade.models import Neighborhood, Stadium,Subreddit
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from .serializers import NeighborhoodSerializer, StadiumSerializer
+from .serializers import NeighborhoodSerializer, StadiumSerializer, SubredditSerializer
 import requests
 import praw
 import re
+from datetime import datetime
 # from bs4 import BeautifulSoup
 
 # Create your views here.
@@ -118,18 +119,32 @@ def scrap_reddits(request):
     hot_posts = reddit.subreddit('all').hot(limit=None)
     for post in hot_posts:
         _post = {}
-        _post['title'] = post.title
+        _post['title'] = post.title.strip()
         _post['score'] = post.score
         _post['subreddit'] = str(post.subreddit)
         _post['url'] = post.url
-        _post['body'] = post.selftext
+        _post['body'] = post.selftext.strip()
         _post['reddit_post_id'] = post.id
         _post['num_comments'] = post.num_comments
-        _post['created'] = post.created
+        _post['created_at'] = str(datetime.utcfromtimestamp(post.created))
         _post['upvote_ratio'] = post.upvote_ratio
-        posts.append(Reddit(**_post))
-        print(_post)
-    # if len(posts):
-    #     Reddit.objects.bulk_create(posts, 100)
+        # rows = Subreddit.objects.filter(reddit_post_id=post.id).update(**_post)
+        # if rows == 0:
+        posts.append(Subreddit(**_post))
+        print(len(posts))
+        print(str(_post))
+    if len(posts):
+        # Subreddit.objects.all().delete()
+        Subreddit.objects.bulk_create(posts, 100)
     # posts = pd.DataFrame(posts,columns=['title', 'score', 'id', 'subreddit', 'url', 'num_comments', 'body', 'created', 'upvote_ratio'])
-    return JsonResponse({'posts_fetched':len(posts)})
+    return JsonResponse({'success': True,'posts_fetched':len(posts)})
+
+def get_reddit_posts(request):
+    std = Subreddit.objects.all().distinct()
+    std_serialized = SubredditSerializer(std, many=True)
+    return JsonResponse({'posts': std_serialized.data, 'total': len(std_serialized.data)})
+
+def get_subreddits(request):
+    srd = Subreddit.objects.values_list('subreddit', flat=True).distinct()
+    srd_serialized = list(srd)
+    return JsonResponse({'subreddits': srd_serialized, 'total': len(srd_serialized)})
