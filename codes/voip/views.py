@@ -5,10 +5,11 @@ from django.conf import settings
 from twilio.twiml.voice_response import VoiceResponse, Gather, Dial
 from twilio.rest import Client
 import uuid
-from .models import Phone, assigned_numbers
-from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer
+from .models import Phone, assigned_numbers , User_leads
+from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer , User_leads_serializer
 from rest_framework.decorators import api_view 
 from django.contrib.auth.models import User
+from django.core import serializers
 
 
 # To store session variables
@@ -49,7 +50,7 @@ def twilio_inbound_sms(request):
 
 # fatching the all twilio phon numbers
 @api_view(['GET'])
-def twilio_phon_numbers(request):
+def getNumber(request):
 
     serializer = TwilioPhoneSerializer(Phone.objects.all(), many=True)
 
@@ -246,16 +247,33 @@ def assign_number_(request):
         serializer = Assigned_numbersSerializer(assigned_numbers.objects.all(),many=True)
         return JsonResponse(serializer.data,safe=False)
 
-# @api_view(["post"])
-# def make_call(request):
-#     from_num = request.data['from_num']
-#     to_num = request.data['to_num']
+@api_view(["post"])
+def make_call(request):
+    from_num = request.data['from_num']
+    to_num = request.data['to_num']
+    print("from" , from_num , "to " , to_num)
+    client = get_client()
+    # call = client.calls.create(
+    #             from_ = from_num,
+    #             to = to_num,
+    #             url='http://demo.twilio.com/docs/voice.xml',
+    #             )
+    return JsonResponse({'message': 'Success!'})
 
-#     client = get_client()
+@api_view(['post'])
+def send_sms(request):
+    from_num = request.data['from_num']
+    to_num = request.data['to_num']
+    text = request.data['body']
+    client = get_client()
+    # sms = client.messages.create(
+    #                         body = text,
+    #                         from_ = from_num,
+    #                         to = to_num,
+    #                        )
+    # print(sms.sid)
+    return JsonResponse({'message': 'Success!'})
 
-#     call = client.calls.create(
-#                 url='http://demo.twilio.com/docs/voice.xml',
-#                 to = to_num,
-#                 from_ = from_num
-#                 )
-#     return JsonResponse({'message': 'Success!'})
+@api_view(['GET'])
+def get_lead(request):
+    return JsonResponse(serializers.serialize("json",User_leads.objects.all()), safe=False)
