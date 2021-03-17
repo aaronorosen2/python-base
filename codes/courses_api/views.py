@@ -42,7 +42,7 @@ def lesson_create(request):
     user = User.objects.get(id=token.user_id)
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
-    les.meta_attributes = request.data["meta_attributes"]
+    les_.meta_attributes = request.data["meta_attributes"]
     les_.user = user
     les_.save()
     for flashcard in request.data["flashcards"]:
