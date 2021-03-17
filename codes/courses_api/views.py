@@ -183,7 +183,9 @@ def lesson_all(request):
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
     lesson_name = request.data['lesson_name']
+    meta_attributes = request.data['meta_attributes']
     Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
+    Lesson.objects.filter(id=pk).update(meta_attributes=meta_attributes)
     for fc in FlashCard.objects.filter(lesson=lesson):
         toDelete = True
         for flashcard in request.data["flashcards"]:
