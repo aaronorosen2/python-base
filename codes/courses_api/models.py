@@ -11,6 +11,7 @@ class Lesson(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
+    meta_attributes = models.CharField(max_length=100, blank=True, default='')
 
     def __str__(self):
         return self.lesson_name
