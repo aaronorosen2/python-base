@@ -6,11 +6,11 @@ from twilio.twiml.voice_response import VoiceResponse, Gather, Dial
 from twilio.rest import Client
 import uuid
 from .models import Phone, assigned_numbers , User_leads
-from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer , User_leads_serializer
+from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer
 from rest_framework.decorators import api_view 
 from django.contrib.auth.models import User
 from django.core import serializers
-
+from rest_framework import status
 
 # To store session variables
 sessionID_to_callsid = {}
@@ -266,14 +266,37 @@ def send_sms(request):
     to_num = request.data['to_num']
     text = request.data['body']
     client = get_client()
-    # sms = client.messages.create(
-    #                         body = text,
-    #                         from_ = from_num,
-    #                         to = to_num,
-    #                        )
-    # print(sms.sid)
+    sms = client.messages.create(
+                            body = text,
+                            from_ = from_num,
+                            to = to_num,
+                           )
+    print(sms.sid)
     return JsonResponse({'message': 'Success!'})
 
 @api_view(['GET'])
 def get_lead(request):
     return JsonResponse(serializers.serialize("json",User_leads.objects.all()), safe=False)
+
+# @api_view(['POST','PUT'])
+# def call_lead(request):
+#     if request.method == 'POST':
+#         from_num = '(425) 578-5798'
+#         to_num = request.data.get('phone')
+#         # client = get_client()
+#         # call = client.calls.create(
+#         #             from_ = from_num,
+#         #             to = to_num,
+#         #             url='http://demo.twilio.com/docs/voice.xml',
+#         #             )
+#         return JsonResponse({'message': 'Success!'},status=200)
+
+#     elif request.method == 'PUT':
+#         l_id = request.data['id']
+#         note = request.data['note']
+#         status = request.data['status']
+#         lead = User_leads.objects.get(pk=l_id)
+#         lead.notes = note
+#         lead.status = status
+#         lead.save()
+#         return JsonResponse({'message' : 'success'},status=200)
