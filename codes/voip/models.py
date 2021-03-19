@@ -54,12 +54,15 @@ class assigned_numbers(models.Model):
 class User_leads(models.Model):
     status_choices = ( 
         ("-", "-"), 
-        ("Call back later", "Call back later"), 
+        ("Call back later", "Call back later"),
         ("not interested", "not interested"),
     )
     name = models.CharField(max_length=100,blank=True,null=True)
     phone = models.CharField(max_length=100,blank=True,null=True)
+    email = models.EmailField(max_length=200, blank=True,null=True)
+    price = models.CharField(max_length=20, blank=True,null=True)
     state = models.CharField(max_length=20,blank=True,null=True)
     url = models.CharField(max_length=300,blank=True,null=True)
-    notes = models.CharField(max_length=40,blank=True,default="")
-    status = models.CharField(max_length = 20, choices=status_choices, default = '-') 
+    full_notes = models.CharField(max_length=5000,blank=True,default="")        #full description
+    notes = models.CharField(max_length=40,blank=True,default="")               # short note after calling.
+    status = models.CharField(max_length = 20, choices=status_choices, default = '-')
