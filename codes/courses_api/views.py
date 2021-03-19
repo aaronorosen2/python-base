@@ -423,7 +423,6 @@ def flashcard_response(request):
     student = ''
     if params:
         student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
-    signature = request.data['signature']
     flashcard = FlashCard.objects.get(id=flashcard_id)
     
     user_session = UserSession.objects.get(session_id=session_id)
@@ -445,15 +444,13 @@ def flashcard_response(request):
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
                 answer=answer,
-                student= student,
-                signature=signature)
+                student= student)
         else:
             flashcard_response = FlashCardResponse(
                 user_session=user_session,
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
-                answer=answer,
-                signature=signature)
+                answer=answer)
     flashcard_response.save()
     return Response("Response Recorded",status=200)
 
