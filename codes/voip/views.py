@@ -274,14 +274,37 @@ def send_sms(request):
     print(sms.sid)
     return JsonResponse({'message': 'Success!'})
 
-@api_view(['GET'])
+@api_view(['GET','POST','PUT'])
 def get_lead(request):
-    return JsonResponse(serializers.serialize("json",User_leads.objects.all()), safe=False)
+    if request.method == 'GET':
+        return JsonResponse(serializers.serialize("json",User_leads.objects.all()), safe=False)
 
-# @api_view(['POST','PUT'])
+    elif request.method == 'POST':
+        name = request.data.get('name')
+        phone = request.data.get('phone')
+        email = request.data.get('email')
+        state = request.data.get('state')
+        price = request.data.get('price')
+        notes = request.data.get('notes')    #the notes heare is full note or (description) on lead
+        new_url = request.data.get('new_url')
+        lead = User_leads(name= name , phone=phone , email=email , state=state , url=new_url , full_notes=notes ,price=price)
+        lead.save()
+        return JsonResponse({'message' : "sucess !"}, status=200)
+
+    elif request.method == 'PUT':
+        l_id = request.data['id']
+        note = request.data['note']
+        status = request.data['status']
+        lead = User_leads.objects.get(pk=l_id)
+        lead.notes = note
+        lead.status = status
+        lead.save()
+        return JsonResponse({'message' : 'success'},status=200)
+
+# @api_view(['POST'])
 # def call_lead(request):
 #     if request.method == 'POST':
-#         from_num = '(425) 578-5798'
+#         from_num = settings.TWILIO['TWILIO_NUMBER']
 #         to_num = request.data.get('phone')
 #         # client = get_client()
 #         # call = client.calls.create(
@@ -290,13 +313,3 @@ def get_lead(request):
 #         #             url='http://demo.twilio.com/docs/voice.xml',
 #         #             )
 #         return JsonResponse({'message': 'Success!'},status=200)
-
-#     elif request.method == 'PUT':
-#         l_id = request.data['id']
-#         note = request.data['note']
-#         status = request.data['status']
-#         lead = User_leads.objects.get(pk=l_id)
-#         lead.notes = note
-#         lead.status = status
-#         lead.save()
-#         return JsonResponse({'message' : 'success'},status=200)
