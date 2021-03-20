@@ -292,7 +292,7 @@ def get_lead(request):
         return JsonResponse({'message' : "sucess !"}, status=200)
 
     elif request.method == 'PUT':
-        l_id = request.data['id']
+        l_id = request.data['id_pk']
         note = request.data['note']
         status = request.data['status']
         lead = User_leads.objects.get(pk=l_id)
@@ -301,15 +301,15 @@ def get_lead(request):
         lead.save()
         return JsonResponse({'message' : 'success'},status=200)
 
-# @api_view(['POST'])
-# def call_lead(request):
-#     if request.method == 'POST':
-#         from_num = settings.TWILIO['TWILIO_NUMBER']
-#         to_num = request.data.get('phone')
-#         # client = get_client()
-#         # call = client.calls.create(
-#         #             from_ = from_num,
-#         #             to = to_num,
-#         #             url='http://demo.twilio.com/docs/voice.xml',
-#         #             )
-#         return JsonResponse({'message': 'Success!'},status=200)
+@api_view(['POST'])
+def call_lead(request):
+    if request.method == 'POST':
+        from_num = settings.TWILIO['TWILIO_NUMBER']
+        to_num = request.data.get('phone')
+        # client = get_client()
+        # call = client.calls.create(
+        #             from_ = from_num,
+        #             to = to_num,
+        #             url='http://demo.twilio.com/docs/voice.xml',
+        #             )
+        return JsonResponse({'message': 'Success!'},status=200)
