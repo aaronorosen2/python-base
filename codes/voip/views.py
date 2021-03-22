@@ -274,7 +274,7 @@ def send_sms(request):
     print(sms.sid)
     return JsonResponse({'message': 'Success!'})
 
-@api_view(['GET','POST','PUT'])
+@api_view(['GET','POST','PUT','DELETE'])
 def get_lead(request):
     if request.method == 'GET':
         return JsonResponse(serializers.serialize("json",User_leads.objects.all()), safe=False)
@@ -285,22 +285,40 @@ def get_lead(request):
         email = request.data.get('email')
         state = request.data.get('state')
         price = request.data.get('price')
-        notes = request.data.get('notes')    #the notes heare is full note or (description) on lead
+        notes = request.data.get('notes')
         new_url = request.data.get('new_url')
-        lead = User_leads(name= name , phone=phone , email=email , state=state , url=new_url , full_notes=notes ,price=price)
+        lead = User_leads(name= name , phone=phone , email=email , state=state , url=new_url , notes=notes ,price=price)
         lead.save()
         return JsonResponse({'message' : "sucess !"}, status=200)
 
     elif request.method == 'PUT':
-        l_id = request.data['id_pk']
-        note = request.data['note']
-        status = request.data['status']
-        lead = User_leads.objects.get(pk=l_id)
-        lead.notes = note
-        lead.status = status
-        lead.save()
-        return JsonResponse({'message' : 'success'},status=200)
+        if 'name' in request.data:
+            print("full edit is called....")
+            lead = User_leads.objects.get(pk=request.data['pk'])
+            lead.name = request.data.get('name')
+            lead.phone = request.data.get('phone')
+            lead.email = request.data.get('email')
+            lead.state = request.data.get('state')
+            lead.price = request.data.get('price')
+            lead.notes = request.data.get('notes')
+            lead.url = request.data.get('url')
+            lead.status = request.data.get('status')
+            lead.save()
+            return JsonResponse({'message' : 'success'},status=200)
 
+        else:
+            print("edit called.........................")
+            lead = User_leads.objects.get(pk=request.data['pk'])
+            lead.notes = request.data['notes']
+            lead.status = request.data['status']
+            lead.save()
+            return JsonResponse({'message' : 'success'},status=200)
+
+    elif request.method == 'DELETE':
+        lead = User_leads.objects.get(pk = request.data['pk'])
+        lead.delete()
+        return JsonResponse({'message' : 'success'},status=200)
+        
 @api_view(['POST'])
 def call_lead(request):
     if request.method == 'POST':

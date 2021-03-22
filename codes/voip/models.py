@@ -63,6 +63,5 @@ class User_leads(models.Model):
     price = models.CharField(max_length=20, blank=True,null=True)
     state = models.CharField(max_length=20,blank=True,null=True)
     url = models.CharField(max_length=300,blank=True,null=True)
-    full_notes = models.CharField(max_length=5000,blank=True,default="")        #full description
-    notes = models.CharField(max_length=40,blank=True,default="")               # short note after calling.
+    notes = models.TextField(blank=True,default="")
     status = models.CharField(max_length = 20, choices=status_choices, default = '-')
