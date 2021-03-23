@@ -22,7 +22,7 @@ urlpatterns = [
     path("session/list", views.session_list, name="session-list"),
     path("session/update/<int:flashcardId>/<int:pk>/",
          views.session_update, name="session-update"),
-    path("flashcard/response/",
+    path("flashcard/response",
          views.flashcard_response, name="flashcard-response"),
 
     path("lesson/response/get/<str:lesson_id>/<str:session_id>",

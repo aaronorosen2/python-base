@@ -77,9 +77,14 @@ urlpatterns = [
     path('students_list/', include(
         ('classroom.urls', 'classroom'),
         namespace='classroom')),
-
+    path('bookingstadium/', include(
+        ('bookingstadium.urls', 'bookingstadium'),
+        namespace='bookingstadium')),
+    path('bookingsystem/', include(
+        ('bookingsystem.urls', 'bookingsystem'),
+        namespace='bookingsystem')),
     path('dreamreader/', include('dreamreader.urls')),
     path('token/', include('video_call.urls')),
     path('neighbormade/', include('neighbormade.urls')),
-
+    path('accounts/', include("django.contrib.auth.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

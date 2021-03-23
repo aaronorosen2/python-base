@@ -42,6 +42,7 @@ def lesson_create(request):
     user = User.objects.get(id=token.user_id)
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
+    les_.meta_attributes = request.data["meta_attributes"]
     les_.user = user
     les_.save()
     for flashcard in request.data["flashcards"]:
@@ -139,7 +140,7 @@ def lesson_read(request,pk):
                 card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
                 card['braintree_public_key'] = obj_braintree_config.braintree_public_key
                 card['braintree_private_key'] = obj_braintree_config.braintree_private_key
-                
+
             if card['item_store']:
                 obj_item = item.objects.get(id=card['item_store'])
                 card['braintree_item_name'] = obj_item.title
@@ -153,8 +154,9 @@ def lesson_all(request):
         if 'Authorization' in request.headers:
             les_= Lesson.objects.filter(user=token.user_id)
             # less_serialized = LessonSerializer(les_,many=True)
-            less_serialized = LessonSerializer(Lesson.objects.all(),many=True)
-            return JsonResponse(less_serialized.data,safe=False)
+            less_serialized = LessonSerializer(
+                Lesson.objects.filter(user=token.user_id), many=True)
+            return JsonResponse(less_serialized.data, safe=False)
         else:
             return JsonResponse({"message":"Unauthorized"})
     if request.method == 'PUT':
@@ -181,7 +183,9 @@ def lesson_all(request):
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
     lesson_name = request.data['lesson_name']
+    meta_attributes = request.data['meta_attributes']
     Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
+    Lesson.objects.filter(id=pk).update(meta_attributes=meta_attributes)
     for fc in FlashCard.objects.filter(lesson=lesson):
         toDelete = True
         for flashcard in request.data["flashcards"]:
@@ -419,7 +423,6 @@ def flashcard_response(request):
     student = ''
     if params:
         student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
-    signature = request.data['signature']
     flashcard = FlashCard.objects.get(id=flashcard_id)
     
     user_session = UserSession.objects.get(session_id=session_id)
@@ -441,15 +444,13 @@ def flashcard_response(request):
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
                 answer=answer,
-                student= student,
-                signature=signature)
+                student= student)
         else:
             flashcard_response = FlashCardResponse(
                 user_session=user_session,
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
-                answer=answer,
-                signature=signature)
+                answer=answer)
     flashcard_response.save()
     return Response("Response Recorded",status=200)
 
@@ -597,7 +598,7 @@ def invite_text(request):
             return JsonResponse({"sucess":True},status=200)
         else:
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
-    
+
     return JsonResponse({"sucess":True},status=200)
 
 @api_view(['POST'])
@@ -609,13 +610,14 @@ def invite_response(request):
     flashcard = FlashCard.objects.filter(lesson_type = lesson_type).first()
     # flashcard = FlashCard.objects.filter(lesson_type = lesson_type or lesson_id = (lesson.id)).first()
     answer = request.data['answer']
-    student = Student.objects.get(id= Invite.objects.get(params=params).student_id)
-    
+    student = Student.objects.get(
+        id=Invite.objects.get(params=params).student_id)
     invite_response = InviteResponse(
         lesson=lesson,
         student=student,
         flashcard=flashcard,
         answer=answer,
-        )
+    )
+
     invite_response.save()
-    return Response("invite Response Recorded",status=200)
+    return Response("invite Response Recorded", status=200)

@@ -28,6 +28,7 @@ from rest_framework.views import APIView
 from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class Home(View):
     def get(self, request, *args, **kwargs):
@@ -51,7 +52,9 @@ class UserRegister(generics.GenericAPIView):
                 "token": AuthToken.objects.create(user)[1]
             })
         except:
-            return Response({"msg":f"This email address is already registered with us"},status=status.HTTP_409_CONFLICT)
+            return Response({"msg": f"This email address is already registered with us"},
+                            status=status.HTTP_409_CONFLICT)
+
 
 # Login User -> Returns a token to make requests
 class UserLogin(KnoxLoginView):
@@ -127,8 +130,9 @@ class ChangePasswordView(generics.UpdateAPIView):
 
 class S3SignedUrl(generics.GenericAPIView):
     serializer_class = None
+
     def get_serializer_class(self, request, *args, **kwargs):
-        if(self.request.method == 'POST'):
+        if (self.request.method == 'POST'):
             # os.environ['S3_USE_SIGV4'] = 'True'
 
             # TODO: Implement auth here
@@ -153,29 +157,29 @@ class S3SignedUrl(generics.GenericAPIView):
             print(resp)
             return JsonResponse(resp)
     # def post(self, request, *args, **kwargs):
-        # # os.environ['S3_USE_SIGV4'] = 'True'
+    # # os.environ['S3_USE_SIGV4'] = 'True'
 
-        # # TODO: Implement auth here
-        # member = 1
-        # if not member:
-        #     return JsonResponse({'message': 'not logged in'})
+    # # TODO: Implement auth here
+    # member = 1
+    # if not member:
+    #     return JsonResponse({'message': 'not logged in'})
 
-        # # Get form fields
-        # seconds_per_day = 24 * 60 * 60
+    # # Get form fields
+    # seconds_per_day = 24 * 60 * 60
 
-        # # Get unique filename using UUID
-        # file_name = request.POST.get('file_name')
-        # file_name_uuid = uuid_file_path(file_name)
-        # final_file_name = 'uploads/{0}'.format(file_name_uuid)
+    # # Get unique filename using UUID
+    # file_name = request.POST.get('file_name')
+    # file_name_uuid = uuid_file_path(file_name)
+    # final_file_name = 'uploads/{0}'.format(file_name_uuid)
 
-        # # Get pre-signed post url and fields
-        # resp = get_presigned_s3_url(
-        #     object_name=final_file_name, expiration=seconds_per_day)
+    # # Get pre-signed post url and fields
+    # resp = get_presigned_s3_url(
+    #     object_name=final_file_name, expiration=seconds_per_day)
 
-        # # del os.environ['S3_USE_SIGV4']
+    # # del os.environ['S3_USE_SIGV4']
 
-        # print(resp)
-        # return JsonResponse(resp)
+    # print(resp)
+    # return JsonResponse(resp)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -208,37 +212,13 @@ class MakeS3FilePublic(generics.GenericAPIView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class S3Upload(generics.GenericAPIView):
-    # permission_classes = (permissions.AllowAny,)
-    serializer_class = None
-    def get_serializer_class(self,request, *args, **kwargs):
-        if(self.request.method == 'POST'):
-            print("Uploading", request.FILES, request.POST)
+class S3Upload(generics.ListCreateAPIView, generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
 
-            # TODO: Implement auth here
-            member = 1
-            if not member:
-                return JsonResponse({'message': 'not logged in'})
+    # serializer_class = None
 
-            # Get uploaded file
-            print(request.FILES.get('file'))
-            uploaded_file = request.FILES.get('file')
-            if uploaded_file:
-                # Get unique filename using UUID
-                file_name = uploaded_file.name
-                file_name_uuid = uuid_file_path(file_name)
-                s3_key = 'Test/upload/{0}'.format(file_name_uuid)
-
-                content_type, file_url = upload_to_s3(s3_key, uploaded_file)
-                print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
-
-                return JsonResponse({'message': 'Success!', 'file_url': file_url, 'content_type': content_type})
-            else:
-                return JsonResponse({'message': 'No file provided!'})
-        
-        
-    # def post(self, request, *args, **kwargs):
-        # print("Uploading", request.FILES, request.POST)
+    def post(self, request, *args, **kwargs):
+        print("Uploading", request.FILES, request.POST)
 
         # # TODO: Implement auth here
         # member = 1
@@ -246,20 +226,22 @@ class S3Upload(generics.GenericAPIView):
         #     return JsonResponse({'message': 'not logged in'})
 
         # # Get uploaded file
-        # print(request.FILES.get('file'))
-        # uploaded_file = request.FILES.get('file')
-        # if uploaded_file:
-        #     # Get unique filename using UUID
-        #     file_name = uploaded_file.name
-        #     file_name_uuid = uuid_file_path(file_name)
-        #     s3_key = 'Test/upload/{0}'.format(file_name_uuid)
+        print(request.FILES.get('file'))
+        uploaded_file = request.FILES.get('file')
+        if uploaded_file:
+            # Get unique filename using UUID
+            file_name = uploaded_file.name
+            file_name_uuid = uuid_file_path(file_name)
+            s3_key = 'Test/upload/{0}'.format(file_name_uuid)
 
-        #     content_type, file_url = upload_to_s3(s3_key, uploaded_file)
-        #     print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
+            content_type, file_url = upload_to_s3(s3_key, uploaded_file)
+            print(f"Saving file to s3. member: {file_url}")
 
-        #     return JsonResponse({'message': 'Success!', 'file_url': file_url, 'content_type': content_type})
-        # else:
-        #     return JsonResponse({'message': 'No file provided!'})
+            return JsonResponse({'message': 'Success!',
+                                 'file_url': file_url,
+                                 'content_type': content_type})
+        else:
+            return JsonResponse({'message': 'No file provided!'})
 
 
 def upload_to_s3(s3_key, uploaded_file):
@@ -277,7 +259,7 @@ def upload_to_s3(s3_key, uploaded_file):
 
     content_type, _ = mimetypes.guess_type(s3_key)
     s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key,
-                            ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
+                             ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
 
     return content_type, f'https://s3.amazonaws.com/{bucket_name}/{s3_key}'
 
@@ -301,14 +283,14 @@ def get_presigned_s3_url(object_name, expiration=3600):
     # Generate a presigned S3 POST URL
     try:
         response = s3_client.generate_presigned_post(bucket_name,
-                                                        object_name,
-                                                        Fields={"Content-Type": content_type,
-                                                                "acl": "public-read"},
-                                                        Conditions=[
-                                                            {"Content-Type": content_type},
-                                                            {"acl": "public-read"},
-                                                        ],
-                                                        ExpiresIn=expiration)
+                                                     object_name,
+                                                     Fields={"Content-Type": content_type,
+                                                             "acl": "public-read"},
+                                                     Conditions=[
+                                                         {"Content-Type": content_type},
+                                                         {"acl": "public-read"},
+                                                     ],
+                                                     ExpiresIn=expiration)
     except ClientError as e:
         logging.error(e)
         return None

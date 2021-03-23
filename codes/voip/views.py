@@ -5,10 +5,12 @@ from django.conf import settings
 from twilio.twiml.voice_response import VoiceResponse, Gather, Dial
 from twilio.rest import Client
 import uuid
-from .models import Phone
-from .serializers import TwilioPhoneSerializer
+from .models import Phone, assigned_numbers , User_leads
+from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer
 from rest_framework.decorators import api_view 
-
+from django.contrib.auth.models import User
+from django.core import serializers
+from rest_framework import status
 
 # To store session variables
 sessionID_to_callsid = {}
@@ -48,7 +50,7 @@ def twilio_inbound_sms(request):
 
 # fatching the all twilio phon numbers
 @api_view(['GET'])
-def twilio_phon_numbers(request):
+def getNumber(request):
 
     serializer = TwilioPhoneSerializer(Phone.objects.all(), many=True)
 
@@ -230,3 +232,102 @@ def join_conference(request):
         message = e.msg if hasattr(e, 'msg') else str(e)
         return JsonResponse({'error': message})
     return JsonResponse({'message': 'Success!'})
+
+
+@api_view(['GET','POST'])
+def assign_number_(request):
+    if request.method == "POST":
+        user = User.objects.get(pk=request.data['user_id'])
+        number_to_assign = request.data['number']
+        number = assigned_numbers(phone=number_to_assign , user=user)
+        number.save()
+        return JsonResponse({'message': 'Success!'})
+
+    elif request.method == "GET":
+        serializer = Assigned_numbersSerializer(assigned_numbers.objects.all(),many=True)
+        return JsonResponse(serializer.data,safe=False)
+
+@api_view(["post"])
+def make_call(request):
+    from_num = request.data['from_num']
+    to_num = request.data['to_num']
+    print("from" , from_num , "to " , to_num)
+    client = get_client()
+    # call = client.calls.create(
+    #             from_ = from_num,
+    #             to = to_num,
+    #             url='http://demo.twilio.com/docs/voice.xml',
+    #             )
+    return JsonResponse({'message': 'Success!'})
+
+@api_view(['post'])
+def send_sms(request):
+    from_num = request.data['from_num']
+    to_num = request.data['to_num']
+    text = request.data['body']
+    client = get_client()
+    sms = client.messages.create(
+                            body = text,
+                            from_ = from_num,
+                            to = to_num,
+                           )
+    print(sms.sid)
+    return JsonResponse({'message': 'Success!'})
+
+@api_view(['GET','POST','PUT','DELETE'])
+def get_lead(request):
+    if request.method == 'GET':
+        return JsonResponse(serializers.serialize("json",User_leads.objects.all()), safe=False)
+
+    elif request.method == 'POST':
+        name = request.data.get('name')
+        phone = request.data.get('phone')
+        email = request.data.get('email')
+        state = request.data.get('state')
+        price = request.data.get('price')
+        notes = request.data.get('notes')
+        new_url = request.data.get('new_url')
+        lead = User_leads(name= name , phone=phone , email=email , state=state , url=new_url , notes=notes ,price=price)
+        lead.save()
+        return JsonResponse({'message' : "sucess !"}, status=200)
+
+    elif request.method == 'PUT':
+        if 'name' in request.data:
+            print("full edit is called....")
+            lead = User_leads.objects.get(pk=request.data['pk'])
+            lead.name = request.data.get('name')
+            lead.phone = request.data.get('phone')
+            lead.email = request.data.get('email')
+            lead.state = request.data.get('state')
+            lead.price = request.data.get('price')
+            lead.notes = request.data.get('notes')
+            lead.url = request.data.get('url')
+            lead.status = request.data.get('status')
+            lead.save()
+            return JsonResponse({'message' : 'success'},status=200)
+
+        else:
+            print("edit called.........................")
+            lead = User_leads.objects.get(pk=request.data['pk'])
+            lead.notes = request.data['notes']
+            lead.status = request.data['status']
+            lead.save()
+            return JsonResponse({'message' : 'success'},status=200)
+
+    elif request.method == 'DELETE':
+        lead = User_leads.objects.get(pk = request.data['pk'])
+        lead.delete()
+        return JsonResponse({'message' : 'success'},status=200)
+        
+@api_view(['POST'])
+def call_lead(request):
+    if request.method == 'POST':
+        from_num = settings.TWILIO['TWILIO_NUMBER']
+        to_num = request.data.get('phone')
+        # client = get_client()
+        # call = client.calls.create(
+        #             from_ = from_num,
+        #             to = to_num,
+        #             url='http://demo.twilio.com/docs/voice.xml',
+        #             )
+        return JsonResponse({'message': 'Success!'},status=200)

@@ -1,0 +1,16 @@
+<p>Name:{{ item.name }}</p>
+<p>Price: {{item.price}}</p>
+<p>
+<a href="{% url 'bookingsystem:delete-item' item.id %}">Delete Item </a>
+<a href="{% url 'bookingsystem:update-item' item.id %}">  Update Item</a>
+</p>
+<p>
+<a href="{% url 'bookingsystem:items' %}">Go back to list</a>
+</p>
+
+<form action="/bookingsystem/" method="post" id="itemform">
+	{% csrf_token %}
+	<div class="btn-group-vertical w-75">
+	<button type="submit" name="item" value={{item.id}} form="itemform" class="btn btn-primary btn-lg btn-block">Book</button>
+		</div>
+</form>

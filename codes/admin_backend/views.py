@@ -1,4 +1,5 @@
 import json
+import requests
 from sfapp2.models import Member, Question, Choice
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -22,7 +23,7 @@ def parse_question_answers(question_answers):
             'choice_id': answer.id
         })
     return response
-
+    
 
 @csrf_exempt
 @api_view(['GET'])
@@ -82,14 +83,39 @@ def get_members(request):
 
     return JsonResponse(list(members), safe=False)
 
-
 @csrf_exempt
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def list_calls(request):
-    return JsonResponse(serializers.serialize("json",Call_list.objects.all()), safe=False)
+def list_calls(request,pageSize=None,pageNumber=None):
+    headers = {
+            'Authorization': 'Basic QUM4YzM0YjRhOTYxYjYxMWEzNjA2ZjU1YTBlMTgyYWQ3Mjo3Mjg3ZDY0NjBlOTk3YzRjOGRmYzE5NmZlNjIyZmVlMA=='
+        }
 
+    call_list = requests.get(f"https://api.twilio.com/2010-04-01/Accounts/AC8c34b4a961b611a3606f55a0e182ad72/Calls.json?PageSize={pageSize}&Page={pageNumber}",headers=headers).json()
+    
+    call_resp = []
+
+    for call in call_list['calls']:
+        recording_url = ""
+
+        if "subresource_uris" in list(call.keys()):
+            if "recordings" in list(call['subresource_uris'].keys()):
+
+                recording = f"https://api.twilio.com{call['subresource_uris']['recordings']}"
+                recording_data = requests.get(recording,headers=headers).json()
+                if recording_data['recordings']:
+                    recording_url = f"https://api.twilio.com{recording_data['recordings'][0]['uri'].replace('.json','.mp3')}"
+                    
+        call_resp.append({
+            'date_created': call['date_created'],
+            'recording': recording_url,
+            'duration': call['duration'],
+            'from': call['from_formatted'],
+            'to': call['to_formatted'],
+            })
+
+    return JsonResponse({"records":call_resp,"pageToken":call_list['next_page_uri'].split('PageToken=')[-1]}, safe=False)
 
 @csrf_exempt
 def voice(request):

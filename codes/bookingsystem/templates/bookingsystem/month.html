@@ -1,0 +1,37 @@
+{% extends 'bookingsystem/layout/base.html' %}
+
+
+{% block content %}
+<div class="jumbotron text-center">
+    
+    {% include 'models/joinedgroups.html' %}
+
+    
+ 
+    <h2 class="display-4">{{date }}</h2>
+	<a class="btn btn-info right mr-2" href="{% url 'bookingsystem:calendar' %}?{{ next }} "> Next Month >> </a>
+    <a class="btn btn-info right mr-2" href="{% url 'bookingsystem:calendar' %}?{{ prev}}"> << Previous Month </a>
+</div>
+
+
+<div class="container">
+    
+    <div class="row" style="padding:30px;  background-color: #50A3B9;">  
+        {% for day in days %}
+        <div class="col " style="text-align: center; border-left: 1px solid #fff; ">{{day}}</div>
+        {% endfor %}
+    </div>
+    {% for days in pycl %} 
+    <div class="row  ">
+        {% for day in days %}
+        
+        <div class="col rounded-lg " style="width:50px; height: 65px;  background-color: #333; color:#fff; margin:2px; text-align: center; position: absolute; ">{{day}}</div>
+        
+        {% endfor %}
+    </div>
+    {% endfor %}
+    
+</div>
+
+
+{% endblock content %}

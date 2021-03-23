@@ -4,6 +4,8 @@ from django.conf import settings
 from voip.models import Phone,SMS,Call
 from termcolor import cprint
 from datetime import datetime
+import requests
+
 class Command(BaseCommand):
     help = 'Fetch phone number from Twilio'
     
@@ -16,10 +18,33 @@ class Command(BaseCommand):
 
         client = Client(account_sid, auth_token)
         resps = []
-        cprint(f"start --- {datetime.now()}",color='cyan')
+        headers = {
+            'Authorization': 'Basic QUM4YzM0YjRhOTYxYjYxMWEzNjA2ZjU1YTBlMTgyYWQ3Mjo3Mjg3ZDY0NjBlOTk3YzRjOGRmYzE5NmZlNjIyZmVlMA=='
+        }
+        # ?PageSize=3
+        # call_list = requests.get("https://api.twilio.com/2010-04-01/Accounts/AC8c34b4a961b611a3606f55a0e182ad72/Calls?PageSize=3.json",headers=headers).json()
+        # cprint(f"Total call list is : {len(call_list['calls'])}",color='green')
+
+        # for call in call_list['calls']:
+        #     date_created = call['date_created']
+        #     duration = call['duration']
+        #     from_formatted = call['from_formatted']
+        #     to_formatted = call['to_formatted']
+
+        #     # cprint(call,color='yellow')
+        #     if "subresource_uris" in list(call.keys()):
+        #         if "recordings" in list(call['subresource_uris'].keys()):
+
+        #             recording = f"https://api.twilio.com{call['subresource_uris']['recordings']}"
+        #             recording_data = requests.get(recording,headers=headers).json()
+        #             if recording_data['recordings']:
+        #                 recording_url = f"https://api.twilio.com{recording_data['recordings'][0]['uri'].replace('.json','.mp3')}"
+                        # cprint(recording_url,color='cyan')
+
+
         for call in client.api.calls.stream(page_size=2, limit=20):  
             print(call.recordings.list())
-            resps.append(call)
+            # resps.append(call)
             # if call.recordings.list():
             #     url = (
             #         'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
@@ -35,8 +60,8 @@ class Command(BaseCommand):
             #     'from': call.from_,
             #     'to': call.to,
             # })
-        print(len(resps))     
-        cprint(f"complete --- {datetime.now()}",color='green')
+        # print(len(resps))     
+        # cprint(f"complete --- {datetime.now()}",color='green')
         # print(resps)
         # for call in client.api.calls.list(from_='+14255785798'):
         #     print(call.to_formatted)

@@ -1,0 +1,17 @@
+<h1>What do you want to book?</h1>
+<p>
+{% if item_list %}
+    <form action="/bookingsystem/calendar" method="get">
+      {% for item in item_list %}
+          <input type="radio" id="{{item.name}}" name="item" value="{{item.id}}">
+          <img src="{{item.image}}"></img>
+          <label for="{{item.name}}">{{item.name}}</label><br>
+  {% endfor %}
+  <input type="submit" value="Book">
+  </form>
+<p>
+<a href="{% url 'bookingsystem:upload' %}">Create new item</a>
+{% else %}
+  <p>There are no items in the database.</p>
+{% endif %}
+</p>

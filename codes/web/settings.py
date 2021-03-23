@@ -122,6 +122,8 @@ INSTALLED_APPS = [
     'messaging',
     #stripe
     'store_stripe',
+    'bookingstadium.apps.BookingstadiumConfig',
+    'bookingsystem.apps.BookingsystemConfig',
 ]
 
 MIDDLEWARE = [
@@ -208,7 +210,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
         'USER': 'postgres',
-        'HOST': 'sfapp.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com',
+        'HOST': 'python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com',
         'PORT': '5432',
         'PASSWORD': 'EhB4bINnDFmzI0Bg'
     }
