@@ -209,29 +209,36 @@ def join_conference(request):
     dest_number = request.POST.get("dest_number")
     print("Call Request received! source_number:{0}, dest_number:{1}".format(source_number, dest_number))
 
-    if not source_number or not dest_number:
-        msg = "Missing phone number value. Expected params source_number and dest_number"
-        return JsonResponse({'error': msg})
+    twilio_client = get_client()
+    call = twilio_client.calls.create(twiml="<Response><Say voice='alice'> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say>Goodbye</Say></Response>",
+                                    record=True,
+                                    to = dest_number,
+                                    from_ = settings.TWILIO['TWILIO_NUMBER']
+                                    )
+
+    # if not source_number or not dest_number:
+    #     msg = "Missing phone number value. Expected params source_number and dest_number"
+    #     return JsonResponse({'error': msg})
 
 
-    try:
-        twilio_client = get_client()
-        session_id = get_session_id(source_number, dest_number)
+    # try:
+    #     twilio_client = get_client()
+    #     session_id = get_session_id(source_number, dest_number)
 
-        call = twilio_client.calls.create(record=True,
-                                          from_=settings.TWILIO['TWILIO_NUMBER'],
-                                          to='+' + source_number,
-                                          url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
-                                          status_callback_event=['completed'],
-                                          status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id)
-                                          )
-        sessionID_to_callsid[session_id] = call.sid
-        sessionID_to_destNo[session_id] = '+' + dest_number
-        print("Initiated a Source number Call, session_id:", session_id)
-    except Exception as e:
-        message = e.msg if hasattr(e, 'msg') else str(e)
-        return JsonResponse({'error': message})
-    return JsonResponse({'message': 'Success!'})
+    #     call = twilio_client.calls.create(record=True,
+    #                                       from_=settings.TWILIO['TWILIO_NUMBER'],
+    #                                       to='+' + source_number,
+    #                                       url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
+    #                                       status_callback_event=['completed'],
+    #                                       status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id)
+    #                                       )
+    #     sessionID_to_callsid[session_id] = call.sid
+    #     sessionID_to_destNo[session_id] = '+' + dest_number
+    #     print("Initiated a Source number Call, session_id:", session_id)
+    # except Exception as e:
+    #     message = e.msg if hasattr(e, 'msg') else str(e)
+    #     return JsonResponse({'error': message})
+    return JsonResponse({'message': 'Success!'},status=200)
 
 
 @api_view(['GET','POST'])
@@ -251,13 +258,13 @@ def assign_number_(request):
 def make_call(request):
     from_num = request.data['from_num']
     to_num = request.data['to_num']
-    print("from" , from_num , "to " , to_num)
     client = get_client()
-    # call = client.calls.create(
-    #             from_ = from_num,
-    #             to = to_num,
-    #             url='http://demo.twilio.com/docs/voice.xml',
-    #             )
+    call = client.calls.create(
+                record=True,
+                from_ = from_num,
+                to = to_num,
+                url='http://demo.twilio.com/docs/voice.xml',
+                )
     return JsonResponse({'message': 'Success!'})
 
 @api_view(['post'])
@@ -293,7 +300,6 @@ def get_lead(request):
 
     elif request.method == 'PUT':
         if 'name' in request.data:
-            print("full edit is called....")
             lead = User_leads.objects.get(pk=request.data['pk'])
             lead.name = request.data.get('name')
             lead.phone = request.data.get('phone')
@@ -307,7 +313,6 @@ def get_lead(request):
             return JsonResponse({'message' : 'success'},status=200)
 
         else:
-            print("edit called.........................")
             lead = User_leads.objects.get(pk=request.data['pk'])
             lead.notes = request.data['notes']
             lead.status = request.data['status']
@@ -319,15 +324,16 @@ def get_lead(request):
         lead.delete()
         return JsonResponse({'message' : 'success'},status=200)
         
-@api_view(['POST'])
-def call_lead(request):
-    if request.method == 'POST':
-        from_num = settings.TWILIO['TWILIO_NUMBER']
-        to_num = request.data.get('phone')
-        # client = get_client()
-        # call = client.calls.create(
-        #             from_ = from_num,
-        #             to = to_num,
-        #             url='http://demo.twilio.com/docs/voice.xml',
-        #             )
-        return JsonResponse({'message': 'Success!'},status=200)
+# @api_view(['POST'])
+# def call_lead(request):
+#     if request.method == 'POST':
+#         from_num = settings.TWILIO['TWILIO_NUMBER']
+#         to_num = request.data.get('phone')
+#         # client = get_client()
+#         # call = client.calls.create(
+                    #   record=True,
+#         #             from_ = from_num,
+#         #             to = to_num,
+#         #             url='http://demo.twilio.com/docs/voice.xml',
+#         #             )
+#         return JsonResponse({'message': 'Success!'},status=200)
