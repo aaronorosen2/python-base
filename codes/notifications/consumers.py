@@ -5,10 +5,8 @@
 
 
 from asgiref.sync import async_to_sync, sync_to_async
-from queue import Queue
 from vconf.models import RoomInfo, RoomVisitors, Brand, Visitor, Recording, Categories
-from s3_uploader.serializers import RoomInfoSerializer, RoomVisitorsSerializer
-import time
+from vconf.serializers import RoomInfoSerializer, RoomVisitorsSerializer
 import redis
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer

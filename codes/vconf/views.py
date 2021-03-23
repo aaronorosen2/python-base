@@ -53,7 +53,7 @@ class ChannelList(generics.ListAPIView):
         room_list = list(room_list)
         for room in room_list:
             live_users = redisconn.hvals(room + '@live')
-            room_dict = {'room_name': room.split("_")[1],
+            room_dict = {'room_name': room,
                          'members': len(live_users), 'live_users': live_users}
             channel_list.append(room_dict)
         return Response({'channel_list': sorted(channel_list,
