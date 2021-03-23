@@ -1,28 +1,14 @@
 from django.urls import path, include
 from knox import views as knox_views
-
-from .views import UserRegister, PasswordReset, UserCourses, UserLogin, AllCourses, list_courses, list_courses_auth, \
-    ChangePasswordView, Home, S3SignedUrl, S3Upload, MakeS3FilePublic, UploadRoomLogo, RoomInfoView, RoomVisitor, \
-    RecordingUpload, BrandInfo, ChannelList
-
 from .views import UserRegister, PasswordReset, UserCourses, UserLogin, \
                    AllCourses, list_courses, list_courses_auth, \
                    ChangePasswordView, Home, S3SignedUrl, S3Upload, \
-                   MakeS3FilePublic, UploadRoomLogo, EditRoomLogo, RoomInfoView, \
-                   RoomVisitor, RecordingUpload, BrandInfo, ChannelList
+                   MakeS3FilePublic
 
 
 urlpatterns = [
     # User Management and Auth APIs
     path('', Home.as_view(), name='home'),
-    path('room_info/', RoomInfoView.as_view(), name='RoomInfoView'),
-    path('brand_info/<str:pk>', BrandInfo.as_view(), name='BrandInfoView'),
-    path('channel_list/', ChannelList.as_view(), name='ChannelListView'),
-    path('upload/record_video/', RecordingUpload.as_view(),
-         name='RecordingUploadView'),
-    path('upload/room_logo/', UploadRoomLogo.as_view(), name='room_upload'),
-    path('edit/room_logo/', EditRoomLogo.as_view(), name='room_upload'),
-    path('room_visitor/', RoomVisitor.as_view(), name='room_upload'),
     path('user/register/', UserRegister.as_view(), name='register'),
     path('user/login', UserLogin.as_view(), name='login'),
     path('user/logout', knox_views.LogoutView.as_view(), name='logout'),
