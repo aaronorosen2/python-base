@@ -497,12 +497,22 @@ def confirm_phone_number(request):
 def verify_2fa(request):
     code = request.data['code_2fa']
     phone = request.data['phone_number']
-    member = UserSession.objects.filter(phone=phone).first()
+    member = UserSession.objects.filter(phone=phone).last()
     if phone == member.phone and code == member.code_2fa:
         member.has_verified_phone=True
-        member.code_2fa=''
+        member.save()
         return Response({'message': 'success'})
-    return Response({'message': 'error'})
+    return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def Phone_verification_check(request):
+    session_id = request.data['session_id']
+    member = UserSession.objects.filter(session_id=session_id)[0]
+    if member.has_verified_phone:
+        return Response({'message': 'success'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
+
 
 
 @api_view(['POST'])
