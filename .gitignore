@@ -12,10 +12,12 @@ agent_data.csv
 images
 sfenv
 .vscode
+env
 codes/media
 #tmp
 codes/celerybeat-schedule.db
 codes/celerybeat.pid
+codes/staticfiles
 
 
 # PyCharm Dev
