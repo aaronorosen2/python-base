@@ -5,9 +5,9 @@ from django.conf import settings
 from twilio.twiml.voice_response import VoiceResponse, Gather, Dial
 from twilio.rest import Client
 import uuid
-from .models import Phone, assigned_numbers , User_leads
+from .models import Phone, assigned_numbers, User_leads
 from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer
-from rest_framework.decorators import api_view 
+from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 from django.core import serializers
 from rest_framework import status
@@ -54,7 +54,7 @@ def getNumber(request):
 
     serializer = TwilioPhoneSerializer(Phone.objects.all(), many=True)
 
-    return JsonResponse(serializer.data,safe=False)
+    return JsonResponse(serializer.data, safe=False)
 
 
 @csrf_exempt
@@ -120,7 +120,8 @@ def voip_callback(request, session_id):
         gather = Gather(
             num_digits=1,
             action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
-        gather.say('Please Press 1 to connect to destination. Press 2 to end the call.')
+        gather.say(
+            'Please Press 1 to connect to destination. Press 2 to end the call.')
         resp.append(gather)
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
@@ -174,7 +175,8 @@ def leave_conf(request, session_id):
             print("Call ended")
         # ends conference call if original caller leaves before callee picks up
         elif len(participants.list()) == 0 and event == '2':
-            client.calls(sessionID_to_callsid.get(session_id)).update(status='completed')
+            client.calls(sessionID_to_callsid.get(
+                session_id)).update(status='completed')
         print("Call ended")
 
     return HttpResponse('')
@@ -188,12 +190,14 @@ def complete_call(request, session_id):
 
     try:
         client = get_client()
-        participants = client.conferences(sessionID_to_confsid.get(session_id)).participants
+        participants = client.conferences(
+            sessionID_to_confsid.get(session_id)).participants
         print('participants:', participants)
 
         # only does so if 1 participant left in the conference call (i.e. the caller)
         if participants and len(participants.list()) == 1:
-            client.conferences(sessionID_to_confsid.get(session_id)).update(status='completed')
+            client.conferences(sessionID_to_confsid.get(
+                session_id)).update(status='completed')
     finally:
         print("Call ended")
 
@@ -205,9 +209,10 @@ def complete_call(request, session_id):
 def join_conference(request):
     # XXX first call this which creates an inbound call to source_number
     # print(request)
-    source_number =  request.POST.get("source_number")
+    source_number = request.POST.get("source_number")
     dest_number = request.POST.get("dest_number")
-    print("Call Request received! source_number:{0}, dest_number:{1}".format(source_number, dest_number))
+    print("Call Request received! source_number:{0}, dest_number:{1}".format(
+        source_number, dest_number))
 
     twilio_client = get_client()
     call = twilio_client.calls.create(twiml="<Response><Say voice='alice'> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say>Goodbye</Say></Response>",
@@ -219,7 +224,6 @@ def join_conference(request):
     # if not source_number or not dest_number:
     #     msg = "Missing phone number value. Expected params source_number and dest_number"
     #     return JsonResponse({'error': msg})
-
 
     # try:
     #     twilio_client = get_client()
@@ -238,10 +242,10 @@ def join_conference(request):
     # except Exception as e:
     #     message = e.msg if hasattr(e, 'msg') else str(e)
     #     return JsonResponse({'error': message})
-    return JsonResponse({'message': 'Success!'},status=200)
+    return JsonResponse({'message': 'Success!'}, status=200)
 
 
-@api_view(['GET','POST'])
+@api_view(['GET', 'POST'])
 def assign_number_(request):
     if request.method == "POST":
         user = User.objects.get(pk=request.data['user_id'])
@@ -260,12 +264,13 @@ def make_call(request):
     to_num = request.data['to_num']
     client = get_client()
     call = client.calls.create(
-                record=True,
-                from_ = from_num,
-                to = to_num,
-                url='http://demo.twilio.com/docs/voice.xml',
-                )
+        record=True,
+        from_=from_num,
+        to=to_num,
+        url='http://demo.twilio.com/docs/voice.xml',
+    )
     return JsonResponse({'message': 'Success!'})
+
 
 @api_view(['post'])
 def send_sms(request):
@@ -274,10 +279,10 @@ def send_sms(request):
     text = request.data['body']
     client = get_client()
     sms = client.messages.create(
-                            body = text,
-                            from_ = from_num,
-                            to = to_num,
-                           )
+        body = text,
+        from_=from_num,
+        to=to_num,
+    )
     print(sms.sid)
     return JsonResponse({'message': 'Success!'})
 
@@ -294,9 +299,10 @@ def get_lead(request):
         price = request.data.get('price')
         notes = request.data.get('notes')
         new_url = request.data.get('new_url')
-        lead = User_leads(name= name , phone=phone , email=email , state=state , url=new_url , notes=notes ,price=price)
+        lead = User_leads(name=name, phone=phone, email=email,
+                          state=state, url=new_url, notes=notes, price=price)
         lead.save()
-        return JsonResponse({'message' : "sucess !"}, status=200)
+        return JsonResponse({'message': "sucess !"}, status=200)
 
     elif request.method == 'PUT':
         if 'name' in request.data:
@@ -310,30 +316,24 @@ def get_lead(request):
             lead.url = request.data.get('url')
             lead.status = request.data.get('status')
             lead.save()
-            return JsonResponse({'message' : 'success'},status=200)
+            return JsonResponse({'message': 'success'}, status=200)
 
         else:
             lead = User_leads.objects.get(pk=request.data['pk'])
             lead.notes = request.data['notes']
             lead.status = request.data['status']
             lead.save()
-            return JsonResponse({'message' : 'success'},status=200)
+            return JsonResponse({'message': 'success'}, status=200)
 
     elif request.method == 'DELETE':
-        lead = User_leads.objects.get(pk = request.data['pk'])
-        lead.delete()
-        return JsonResponse({'message' : 'success'},status=200)
-        
-# @api_view(['POST'])
-# def call_lead(request):
-#     if request.method == 'POST':
-#         from_num = settings.TWILIO['TWILIO_NUMBER']
-#         to_num = request.data.get('phone')
-#         # client = get_client()
-#         # call = client.calls.create(
-                    #   record=True,
-#         #             from_ = from_num,
-#         #             to = to_num,
-#         #             url='http://demo.twilio.com/docs/voice.xml',
-#         #             )
-#         return JsonResponse({'message': 'Success!'},status=200)
+        if request.data:
+            print(" inside if conditations....##########")
+            lead = User_leads.objects.get(pk = request.data['pk'])
+            lead.delete()
+            return JsonResponse({'message' : 'success'},status=200)
+        else:
+            print("...inside else........delete multiple........................................................")
+            print(request.GET['listPk'].split(","))
+            data = User_leads.objects.filter(id__in=request.GET['listPk'].split(","))
+            data.delete()
+            return JsonResponse({'message': 'success'}, status=200)

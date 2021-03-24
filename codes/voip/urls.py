@@ -18,6 +18,5 @@ urlpatterns = [
     path('api_voip/make_call', views.make_call),
     path('api_voip/send_sms_', views.send_sms),
     path('api_voip/getlead', views.get_lead),
-    # path('api_voip/leadcall', views.call_lead),
 ]
 
