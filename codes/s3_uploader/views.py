@@ -25,6 +25,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
 from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer
 
@@ -212,10 +213,9 @@ class MakeS3FilePublic(generics.GenericAPIView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class S3Upload(generics.ListCreateAPIView, generics.GenericAPIView):
+class S3Upload(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    # serializer_class = None
 
     def post(self, request, *args, **kwargs):
         print("Uploading", request.FILES, request.POST)
