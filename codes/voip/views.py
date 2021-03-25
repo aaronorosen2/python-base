@@ -11,6 +11,7 @@ from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 from django.core import serializers
 from rest_framework import status
+import csv
 
 # To store session variables
 sessionID_to_callsid = {}
@@ -211,15 +212,16 @@ def join_conference(request):
     # print(request)
     source_number = request.POST.get("source_number")
     dest_number = request.POST.get("dest_number")
+    your_number = request.POST.get("your_number")
     print("Call Request received! source_number:{0}, dest_number:{1}".format(
         source_number, dest_number))
 
-    twilio_client = get_client()
-    call = twilio_client.calls.create(twiml="<Response><Say voice='alice'> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say>Goodbye</Say></Response>",
-                                    record=True,
-                                    to = dest_number,
-                                    from_ = settings.TWILIO['TWILIO_NUMBER']
-                                    )
+    # twilio_client = get_client()
+    # call = twilio_client.calls.create(twiml="<Response><Say voice='alice'> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say>Goodbye</Say></Response>",
+    #                                 record=True,
+    #                                 to = dest_number,
+    #                                 from_ = settings.TWILIO['TWILIO_NUMBER']
+    #                                 )
 
     # if not source_number or not dest_number:
     #     msg = "Missing phone number value. Expected params source_number and dest_number"
@@ -327,13 +329,31 @@ def get_lead(request):
 
     elif request.method == 'DELETE':
         if request.data:
-            print(" inside if conditations....##########")
             lead = User_leads.objects.get(pk = request.data['pk'])
             lead.delete()
             return JsonResponse({'message' : 'success'},status=200)
         else:
-            print("...inside else........delete multiple........................................................")
-            print(request.GET['listPk'].split(","))
             data = User_leads.objects.filter(id__in=request.GET['listPk'].split(","))
             data.delete()
             return JsonResponse({'message': 'success'}, status=200)
+
+@api_view(['POST'])
+def csvUploder(request):
+    csvFile = request.data['csvFile']
+    for row in csvFile:
+        data = row.decode('utf-8')
+        if data:
+            line = data.split('","')
+            if 'Zillow url"' in line or '"Name' in line:
+                continue
+            name = line[0].replace('"','')
+            phone = line[1]
+            email = line[2]
+            state = line[3]
+            price = line[4]
+            notes = line[5]
+            url = line[6].replace('"','')
+            lead = User_leads(name = name , phone = phone ,  email = email,
+                                price = price, state = state, notes = notes, url = url)
+            lead.save()
+    return JsonResponse({'message': 'success'}, status=200)
