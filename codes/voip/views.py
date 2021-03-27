@@ -219,7 +219,7 @@ def join_conference(request):
     twilio_client = get_client()
     call = twilio_client.calls.create(
                                     record=True,
-                                    from_ = settings.TWILIO['TWILIO_NUMBER']
+                                    from_ = settings.TWILIO['TWILIO_NUMBER'],
                                     to = dest_number,
                                     )
     # participant = client.conferences('EHb3241593e5c7bfd9687d17831fe2f0bb').participants.create(from_='+14252766495', to = num)
