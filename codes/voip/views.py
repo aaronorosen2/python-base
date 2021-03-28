@@ -210,27 +210,19 @@ def complete_call(request, session_id):
 def join_conference(request):
     # XXX first call this which creates an inbound call to source_number
     # print(request)
-    numberList = []
-    numberList.append(request.POST.get("dest_number"))
-    numberList.append(request.POST.get("your_number"))
     source_number = request.POST.get("source_number")
-    
-    client = get_client()
-    for number in numberList:
-        print(number)
-        conference = client.conferences('EHbbfe82cb9354b08c2acca0ba8a80d1b8').participants.create(
+    dest_number = request.POST.get("dest_number")
+    your_number = request.POST.get("your_number")
+    print("Call Request received! source_number:{0}, dest_number:{1}".format(
+        source_number, dest_number))
+
+    twilio_client = get_client()
+    call = twilio_client.calls.create(
                                     record=True,
-<<<<<<< Updated upstream
                                     from_ = settings.TWILIO['TWILIO_NUMBER'],
                                     to = dest_number,
-=======
-                                    status_callback_event=['completed'],
-                                    from_= source_number, 
-                                    to = number,
->>>>>>> Stashed changes
                                     )
-        print(conference)
-
+    # participant = client.conferences('EHb3241593e5c7bfd9687d17831fe2f0bb').participants.create(from_='+14252766495', to = num)
 
     # if not source_number or not dest_number:
     #     msg = "Missing phone number value. Expected params source_number and dest_number"
