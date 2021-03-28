@@ -1,4 +1,5 @@
 import json
+import requests
 from sfapp2.models import Member, Question, Choice
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -22,7 +23,7 @@ def parse_question_answers(question_answers):
             'choice_id': answer.id
         })
     return response
-
+    
 
 @csrf_exempt
 @api_view(['GET'])
@@ -82,14 +83,12 @@ def get_members(request):
 
     return JsonResponse(list(members), safe=False)
 
-
 @csrf_exempt
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def list_calls(request):
     return JsonResponse(serializers.serialize("json",Call_list.objects.all()), safe=False)
-
 
 @csrf_exempt
 def voice(request):

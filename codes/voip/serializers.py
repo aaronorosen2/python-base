@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Phone, assigned_numbers
+from .models import Phone, assigned_numbers , User_leads
 
 
 class TwilioPhoneSerializer(serializers.ModelSerializer):
