@@ -439,29 +439,29 @@ class S3Upload(generics.GenericAPIView):
             else:
                 return JsonResponse({'message': 'No file provided!'})
 
-    # def post(self, request, *args, **kwargs):
-        # print("Uploading", request.FILES, request.POST)
+    def post(self, request, *args, **kwargs):
+        print("Uploading", request.FILES, request.POST)
 
         # # TODO: Implement auth here
-        # member = 1
+        member = 1
         # if not member:
         #     return JsonResponse({'message': 'not logged in'})
 
         # # Get uploaded file
-        # print(request.FILES.get('file'))
-        # uploaded_file = request.FILES.get('file')
-        # if uploaded_file:
+        print(request.FILES.get('file'))
+        uploaded_file = request.FILES.get('file')
+        if uploaded_file:
         #     # Get unique filename using UUID
-        #     file_name = uploaded_file.name
-        #     file_name_uuid = uuid_file_path(file_name)
-        #     s3_key = 'Test/upload/{0}'.format(file_name_uuid)
+             file_name = uploaded_file.name
+             file_name_uuid = uuid_file_path(file_name)
+             s3_key = 'Test/upload/{0}'.format(file_name_uuid)
 
-        #     content_type, file_url = upload_to_s3(s3_key, uploaded_file)
-        #     print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
+             content_type, file_url = upload_to_s3(s3_key, uploaded_file)
+             print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
 
-        #     return JsonResponse({'message': 'Success!', 'file_url': file_url, 'content_type': content_type})
-        # else:
-        #     return JsonResponse({'message': 'No file provided!'})
+             return JsonResponse({'message': 'Success!', 'file_url': file_url, 'content_type': content_type})
+        else:
+             return JsonResponse({'message': 'No file provided!'})
 
 
 def upload_to_s3(s3_key, uploaded_file):
