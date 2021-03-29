@@ -27,7 +27,7 @@ If you did not make this request then simply ignore this email and no changes wi
 '''
 
     email_utils.send_email(
-        [reset_password_token.user.email],
+        reset_password_token.user.email,
         "Password Reset for {title}".format(title="Website title"),
         email_plaintext_message)
 
