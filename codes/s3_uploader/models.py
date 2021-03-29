@@ -13,10 +13,10 @@ from sfapp2.utils import email_utils
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
     # Link to password reset page
-    SERVER_URL = "https://sfapp.dreamstate-4-all.org"
+    SERVER_URL = "https://teacher.dreampotential.org"
     # SERVER_URL = "http://localhost:8084"
 
-    reset_url = "{}/cardone.html?token={}".format(SERVER_URL, reset_password_token.key)
+    reset_url = "{}/index.html?token={}".format(SERVER_URL, reset_password_token.key)
 
 
     email_plaintext_message = f'''To reset your password, visit the following link: 
