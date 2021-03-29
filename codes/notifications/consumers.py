@@ -275,7 +275,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                     'message': text_data,
                 },
             )
-        elif (send_data['action'] == 'join_room'):
+        elif send_data['action'] == 'join_room':
             message = {
                 'action': 'queue_status',
                 'message': 'go_live'
@@ -305,6 +305,17 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 self.room_name,
                 data,
             )
+        elif send_data['action'] == 'check_connectivity':
+            import time
+            print(time.time())
+            print(time.time()-60*5)
+            # t = time.localtime()
+            # current_time = time.strftime("%H:%M:%S", t)
+            print(send_data)
+            redisconn.hset("connected_users",
+                           self.channel_name,
+                           time.time())
+
 
     async def send_user_list(self):
         listOfLiveUsers = redisconn.hvals(self.room_name+'@live')
