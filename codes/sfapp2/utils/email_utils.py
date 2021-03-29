@@ -49,7 +49,7 @@ def send_raw_email(to_email, reply_to, subject,
     client = boto3.client(
         'ses', aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-        region_name='us-west-2')
+        region_name='us-east-1')
     try:
         print(
             client.send_raw_email(
@@ -83,7 +83,7 @@ def send_email(to_email, subject, message):
     client = boto3.client(
         'ses', aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-        region_name='us-west-2')
+        region_name='us-east-1')
 
     # Try to send the email.
     try:
