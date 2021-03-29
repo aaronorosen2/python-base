@@ -34,6 +34,7 @@ urlpatterns = [
     path("session/get", views.get_user_session, name="get-user-session"),
     path("confirm/phone", views.confirm_phone_number, name="confirm-phone-numer"),
     path("verify/phone", views.verify_2fa, name="verify-2fa"),
+    path("verify/phone-verify",views.Phone_verification_check,name="phone_verfication_check"),
     path("invite/text",views.invite_text,name="invite-text"),
     path("invite/email",views.invite_email,name="invite-email"),
     path("invite/response", views.invite_response, name="invite-response"),
