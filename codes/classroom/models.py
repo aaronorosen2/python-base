@@ -26,12 +26,18 @@ class Teacher(models.Model):
 
 class Class(models.Model):
     class_name = models.CharField(max_length=128, blank=True, null=True)
+    # invite_id = models.CharField(max_length=128, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              null=True, blank=True)
 
     def __str__(self):
         return self.class_name
 
+class InviteClass(models.Model):
+    class_invited = models.ForeignKey(Class, on_delete=models.CASCADE)
+    uuid = models.TextField(null=False, blank=False, unique=True)
+    def __str__(self):
+        return f"{self.class_invited} {self.uuid}"
 
 class ClassEnrolled(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
