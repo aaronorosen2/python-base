@@ -267,12 +267,12 @@ def joinClass(request):
             user = User.objects.get(id=request.user.id)
             student = Student.objects.get_or_create(name=user['name'],email=user['email'],phone=request.data.get('phone'),user=user)
             class_ = Class.objects.get(id=request.POST['class_id'])
-            if class_ is not None
+            if class_ is not None:
                 enroll_exists = ClassEnrolled.objects.get(student=student,class_enrolled=class_)
                 if enroll_exists is not None:
                     return JsonResponse({'message': 'Already enrolled!'},status=409)
                 enroll = ClassEnrolled(student=student,class_enrolled=class_)
                 enroll.save()
-            return JsonResponse({"success":True},status=201)
+                return JsonResponse({"success":True},status=201)
         except:
             return JsonResponse({"success":False},status=400)
