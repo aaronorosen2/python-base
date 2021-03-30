@@ -1,0 +1,9 @@
+<script>
+    var socket = new WebSocket('wss://' + window.location.host + '/notifications/' + document.getElementById("room_name").value + '/');
+    socket.onopen = function open() {
+        console.log('WebSockets connection created.');
+        if (document.getElementById("user_name").value == "") {
+            document.getElementById("user_name").value = "Anonymous";
+        }
+    };
+</script>
