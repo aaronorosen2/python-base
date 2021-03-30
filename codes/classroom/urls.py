@@ -10,6 +10,9 @@ urlpatterns = [
     path('send/text/class/',views.send_text,name='class-text'),
     path('send/text/student/',views.student_text,name='student-text'),
     path('get/teachers',views.teacherapi,name='teachers-data'),
+    path('class/join',views.joinClass,name='join_class'),
+    path('invitation_link',views.get_invitation_link,name='invitation-data'),
+    path('invitation_info',views.get_invitation_info,name='invitation-info'),
 
 ]
     

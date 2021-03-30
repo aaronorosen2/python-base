@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Teacher,Student, Class, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
+from .models import Teacher,Student, Class,InviteClass, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -62,5 +62,11 @@ class StudentSMSSerializer(serializers.ModelSerializer):
     student_id = serializers.IntegerField(write_only=True)
     class Meta:
         model = StudentSMSAlert
+        fields = '__all__'
+        depth = 1
+
+class InviteLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InviteClass
         fields = '__all__'
         depth = 1
