@@ -17,10 +17,17 @@ class Command(BaseCommand):
         auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
 
         client = Client(account_sid, auth_token)
-        resps = []
-        headers = {
-            'Authorization': 'Basic QUM4YzM0YjRhOTYxYjYxMWEzNjA2ZjU1YTBlMTgyYWQ3Mjo3Mjg3ZDY0NjBlOTk3YzRjOGRmYzE5NmZlNjIyZmVlMA=='
-        }
+        # print(len(client.calls.list()))
+        # import logging
+        # logging.basicConfig(filename='./log.txt')
+        # client.http_client.logger.setLevel(logging.INFO)
+        # for call in client.calls.list():
+        #     print(call)
+
+        # resps = []
+        # headers = {
+        #     'Authorization': 'Basic QUM4YzM0YjRhOTYxYjYxMWEzNjA2ZjU1YTBlMTgyYWQ3Mjo3Mjg3ZDY0NjBlOTk3YzRjOGRmYzE5NmZlNjIyZmVlMA=='
+        # }
         # ?PageSize=3
         # call_list = requests.get("https://api.twilio.com/2010-04-01/Accounts/AC8c34b4a961b611a3606f55a0e182ad72/Calls?PageSize=3.json",headers=headers).json()
         # cprint(f"Total call list is : {len(call_list['calls'])}",color='green')
@@ -42,8 +49,8 @@ class Command(BaseCommand):
                         # cprint(recording_url,color='cyan')
 
 
-        for call in client.api.calls.stream(page_size=2, limit=20):  
-            print(call.recordings.list())
+        # for call in client.api.calls.stream(page_size=2, limit=20):  
+        #     print(call.recordings.list())
             # resps.append(call)
             # if call.recordings.list():
             #     url = (

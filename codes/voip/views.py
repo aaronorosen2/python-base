@@ -216,12 +216,13 @@ def join_conference(request):
     print("Call Request received! source_number:{0}, dest_number:{1}".format(
         source_number, dest_number))
 
-    # twilio_client = get_client()
-    # call = twilio_client.calls.create(twiml="<Response><Say voice='alice'> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say> hello sir this is a testing call from twilio </Say><Pause length='1'/><Say>Goodbye</Say></Response>",
-    #                                 record=True,
-    #                                 to = dest_number,
-    #                                 from_ = settings.TWILIO['TWILIO_NUMBER']
-    #                                 )
+    twilio_client = get_client()
+    call = twilio_client.calls.create(
+                                    record=True,
+                                    from_ = settings.TWILIO['TWILIO_NUMBER'],
+                                    to = dest_number,
+                                    )
+    # participant = client.conferences('EHb3241593e5c7bfd9687d17831fe2f0bb').participants.create(from_='+14252766495', to = num)
 
     # if not source_number or not dest_number:
     #     msg = "Missing phone number value. Expected params source_number and dest_number"
@@ -340,10 +341,15 @@ def get_lead(request):
 @api_view(['POST'])
 def csvUploder(request):
     csvFile = request.data['csvFile']
-    for row in csvFile:
+    common_header = ['"Name', 'Phone', 'Email (if available)', 'State', 'Price they want', 'Notes', 'Zillow url"\n']
+    for index,row in enumerate(csvFile):
         data = row.decode('utf-8')
         if data:
             line = data.split('","')
+            if index == 0:
+                print(line)
+                if (line != common_header):
+                    return JsonResponse({"message" : "csv file is not in authorized formate, please do formating and upload again"},safe=False,status=406)
             if 'Zillow url"' in line or '"Name' in line:
                 continue
             name = line[0].replace('"','')
@@ -353,7 +359,8 @@ def csvUploder(request):
             price = line[4]
             notes = line[5]
             url = line[6].replace('"','')
+            print(name , phone , email , state , price , notes , url )
             lead = User_leads(name = name , phone = phone ,  email = email,
                                 price = price, state = state, notes = notes, url = url)
             lead.save()
-    return JsonResponse({'message': 'success'}, status=200)
+    return JsonResponse({'message': 'lead save successfully'}, status=200)
