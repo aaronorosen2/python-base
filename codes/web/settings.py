@@ -303,6 +303,10 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
+    'check_user_connectivity': {
+        'task': 'web.celery.check_user_connectivity',
+        'schedule': timedelta(minutes=1)
+    }
     # 'schedule_member': {
     #     'task': 'web.celery.schedule_member',
     #     'schedule': timedelta(minutes=50)  # execute every minute

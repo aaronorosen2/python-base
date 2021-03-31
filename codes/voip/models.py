@@ -34,7 +34,7 @@ class AdminGroupMember(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
 
-class Call_list(models.Model):
+class CallList(models.Model):
     date = models.DateField()
     from_number = models.CharField(max_length=20,null=True)
     to_number = models.CharField(max_length=20,null=True)
@@ -42,7 +42,7 @@ class Call_list(models.Model):
     duration = models.CharField(max_length=10,null=True)
 
     class Meta:
-        db_table = 'Call_list'
+        db_table = 'CallList'
         constraints = [
             models.UniqueConstraint(fields=['date', 'from_number', "to_number" , "recording_url","duration"], name='unique appversion')
         ]
