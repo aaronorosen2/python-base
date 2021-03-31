@@ -312,9 +312,11 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
             # t = time.localtime()
             # current_time = time.strftime("%H:%M:%S", t)
             print(send_data)
+            print(self.channel_name)
             redisconn.hset("connected_users",
                            self.channel_name,
                            time.time())
+            print(redisconn.hgetall("connected_users"))
 
 
     async def send_user_list(self):

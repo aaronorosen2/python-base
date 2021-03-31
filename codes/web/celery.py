@@ -175,25 +175,52 @@ def check_user_connectivity():
     import time
     print(time.time())
     print(time.time()-60*5)
-    room_list = redisconn.smembers('room_names')
+    room_list = list(redisconn.smembers('room_names'))
     connected_users = redisconn.hgetall("connected_users")
-    for i in range(1, len(connected_users), 2):
-        difference_time = connected_users[i] - time.time()
-        if difference_time <= 11:
-            redisconn.hdel("connected_users", connected_users[i-1])
+    print(connected_users)
+    print(room_list)
+    for k,v in connected_users.items():
+        difference_time = time.time() - float(v)
+        print('/////')
+        print(time.time(), float(v))
+        print(difference_time)
+        print(difference_time/1000)
+        print('/////')
+        if difference_time/1000 >= 6:
+            redisconn.hdel("connected_users", k)
             async_to_sync(channel_layer.group_discard)(
-                "connected_users", connected_users[i-1])
+                "connected_users", k)
             is_exists_live = next(i for i in room_list
                                   if redisconn.hexists(i+'@live',
-                                                       connected_users[i-1]))
+                                                       k))
             if is_exists_live:
                 redisconn.hdel(is_exists_live+'@live',
-                               connected_users[i-1])
+                               k)
                 return
             is_exists_back = next(i for i in room_list
                                   if redisconn.hexists(i+'@back',
-                                                       connected_users[i-1]))
+                                                       k))
             if is_exists_back:
                 redisconn.hdel(is_exists_back+'@live',
-                               connected_users[i-1])
+                               k)
                 return
+    # for i in range(1, len(connected_users), 2):
+    #     difference_time = connected_users[i] - time.time()
+    #     if difference_time <= 11:
+    #         redisconn.hdel("connected_users", connected_users[i-1])
+    #         async_to_sync(channel_layer.group_discard)(
+    #             "connected_users", connected_users[i-1])
+    #         is_exists_live = next(i for i in room_list
+    #                               if redisconn.hexists(i+'@live',
+    #                                                    connected_users[i-1]))
+    #         if is_exists_live:
+    #             redisconn.hdel(is_exists_live+'@live',
+    #                            connected_users[i-1])
+    #             return
+    #         is_exists_back = next(i for i in room_list
+    #                               if redisconn.hexists(i+'@back',
+    #                                                    connected_users[i-1]))
+    #         if is_exists_back:
+    #             redisconn.hdel(is_exists_back+'@live',
+    #                            connected_users[i-1])
+    #             return
