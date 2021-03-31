@@ -5,6 +5,7 @@ from voip.models import Phone,SMS,Call
 from termcolor import cprint
 from datetime import datetime
 import requests
+from voip.models import CallList
 
 class Command(BaseCommand):
     help = 'Fetch phone number from Twilio'
@@ -89,3 +90,26 @@ class Command(BaseCommand):
             #     cprint(f"To - {call.to}", color='magenta')
             #     cprint(f"Duration - {call.duration}", color='blue')
             # break
+
+        calls = client.api.calls.list()
+
+        for call in calls:
+            try:
+                try:
+                    CallList.objects.get(from_number=call.from_, to_number=call.to,duration=call.duration,date=call.date_created)
+                except CallList.MultipleObjectsReturned:
+                    continue
+
+            except CallList.DoesNotExist:
+                if call.recordings.list():
+
+                    url = (
+                        'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+                        (call.recordings.list()[0].account_sid,
+                            call.recordings.list()[0].sid))
+
+                else:
+                    url = ''
+
+                call_data = CallList(from_number=call.from_, to_number=call.to,duration=call.duration , recording_url=url,date=call.date_created)
+                call_data.save()
