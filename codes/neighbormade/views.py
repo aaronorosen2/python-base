@@ -45,8 +45,9 @@ def viewNeighbours(request):
 @api_view(['GET'])
 def get_states(request):
     # if request.user.is_authenticated:
-    states = Neighborhood.objects.values_list('state', flat=True).distinct()
+    states = Neighborhood.objects.values_list('state', flat=True).distinct().order_by('state')
     state_serialized = list(states)
+    # state_serialized.sort()
     return JsonResponse({'states':state_serialized})
 
 @api_view(['GET'])
