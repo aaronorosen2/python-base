@@ -256,4 +256,14 @@ def stadiumcreate(request):
 def getbookings(request):
     bookings = Event.objects.all()
     booking_serializer = EventSerializer(bookings, many=True)
-    return JsonResponse(booking_serializer.data, safe=False)    
+    return JsonResponse(booking_serializer.data, safe=False)
+
+@api_view(['GET'])
+def stadium_detail(request,pk):
+    try:
+        stadium = Stadium.objects.get(pk=pk)
+        stadium_serializer = StadiumSerializer(stadium)
+        return JsonResponse(stadium_serializer.data)
+    except Stadium.DoesNotExist:
+        return JsonResponse({'message': 'Stadium does not exist'}, status=status.HTTP_404_NOT_FOUND)
+

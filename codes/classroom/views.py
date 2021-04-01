@@ -19,6 +19,7 @@ from form_lead.utils.email_util import send_raw_email
 from sfapp2.utils.twilio import send_sms
 import json
 import uuid
+from django.core.validators import validate_email
 
 # teacher api
 @api_view(['GET','POST','DELETE','PUT'])
@@ -259,20 +260,32 @@ def get_invitation_info(request):
 
 @api_view(['POST'])
 @csrf_exempt
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def joinClass(request):
-    if request.POST.get('phone') and request.POST.get('class_id'):
+    if request.POST.get('phone') and request.POST.get('class_id') and request.POST.get('name') and isValidEmail(request.POST.get('email')):
         try:
-            user = User.objects.get(id=request.user.id)
-            student = Student.objects.get_or_create(name=user['name'],email=user['email'],phone=request.data.get('phone'),user=user)
             class_ = Class.objects.get(id=request.POST['class_id'])
             if class_ is not None:
-                enroll_exists = ClassEnrolled.objects.get(student=student,class_enrolled=class_)
+                student = Student.objects.filter(email=request.POST.get('email'),user=class_.user).first()
+                if student is None:
+                    student = Student(name=request.POST.get('name'),email=request.POST.get('email'),phone=request.data.get('phone'),user=class_.user)
+                    student.save()
+                enroll_exists = ClassEnrolled.objects.filter(student=student,class_enrolled=class_).first()
                 if enroll_exists is not None:
-                    return JsonResponse({'message': 'Already enrolled!'},status=409)
+                    return JsonResponse({'success': False,'msg': 'Already enrolled!'},status=409)
                 enroll = ClassEnrolled(student=student,class_enrolled=class_)
                 enroll.save()
                 return JsonResponse({"success":True},status=201)
-        except:
+        except Exception as e:
+            # print(e)
             return JsonResponse({"success":False},status=400)
+    return JsonResponse({"success":False, 'msg': 'Invalid parameters'},status=422)
+
+def isValidEmail(email):
+    try:
+        validate_email(email)
+        return True
+    except Exception as e:
+        print(e)
+        return False
