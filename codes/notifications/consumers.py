@@ -306,18 +306,11 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 data,
             )
         elif send_data['action'] == 'check_connectivity':
-            import time
-            print(time.time())
-            print(time.time()-60*5)
-            # t = time.localtime()
-            # current_time = time.strftime("%H:%M:%S", t)
-            print(send_data)
-            print(self.channel_name)
+            import datetime
+            current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
             redisconn.hset("connected_users",
                            self.channel_name,
-                           time.time())
-            print(redisconn.hgetall("connected_users"))
-
+                           current_time)
 
     async def send_user_list(self):
         listOfLiveUsers = redisconn.hvals(self.room_name+'@live')
@@ -529,14 +522,14 @@ class VstreamConsumer(AsyncWebsocketConsumer):
         categories = Categories.objects.all()
         # print(categories)
         CONFERENCE_HOST = 'https://live.dreampotential.org/'
-        
+
         if len(categories) != 0:
             category_people_count = [{
                 'category': cat.category,
                 'count': len(redisconn.hkeys(cat.category)),
                 'conference_url': CONFERENCE_HOST +
-                 cat.category +
-                 '#config.prejoinPageEnabled=false&vstream=true',
+                cat.category +
+                '#config.prejoinPageEnabled=false&vstream=true',
             } for cat in categories]
             return category_people_count
         return list(categories)
