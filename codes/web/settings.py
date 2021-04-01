@@ -152,7 +152,7 @@ if DEBUG:
 
     # live keys
     BT_ENVIRONMENT = 'production'
-    BT_MERCHANT_ID = '7xyb7rtshbp9q47d'
+    BT_MERCHANT_ID = '7yxb7rtshbp9q47d'
     BT_PUBLIC_KEY = 'yc3ytr786brjsh9v'
     BT_PRIVATE_KEY = '532eefa88f4f82bce0f12e2ef0adba87'
 
@@ -160,9 +160,12 @@ if DEBUG:
 else:
     # live keys
     BT_ENVIRONMENT = 'production'
-    BT_MERCHANT_ID = '7xyb7rtshbp9q47d'
+    BT_MERCHANT_ID = '7yxb7rtshbp9q47d'
     BT_PUBLIC_KEY = 'yc3ytr786brjsh9v'
     BT_PRIVATE_KEY = '532eefa88f4f82bce0f12e2ef0adba87'
+
+
+
     # stripe
     STRIPE_SECRET_KEY = ''
     STRIPE_PUBLISHABLE_KEY = ''
