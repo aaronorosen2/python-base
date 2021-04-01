@@ -42,6 +42,7 @@ def lesson_create(request):
     user = User.objects.get(id=token.user_id)
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
+    les_.meta_attributes = request.data["meta_attributes"]
     les_.user = user
     les_.save()
     for flashcard in request.data["flashcards"]:
@@ -182,7 +183,9 @@ def lesson_all(request):
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
     lesson_name = request.data['lesson_name']
+    meta_attributes = request.data['meta_attributes']
     Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
+    Lesson.objects.filter(id=pk).update(meta_attributes=meta_attributes)
     for fc in FlashCard.objects.filter(lesson=lesson):
         toDelete = True
         for flashcard in request.data["flashcards"]:
@@ -420,7 +423,6 @@ def flashcard_response(request):
     student = ''
     if params:
         student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
-    signature = request.data['signature']
     flashcard = FlashCard.objects.get(id=flashcard_id)
     
     user_session = UserSession.objects.get(session_id=session_id)
@@ -442,15 +444,13 @@ def flashcard_response(request):
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
                 answer=answer,
-                student= student,
-                signature=signature)
+                student= student)
         else:
             flashcard_response = FlashCardResponse(
                 user_session=user_session,
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
-                answer=answer,
-                signature=signature)
+                answer=answer)
     flashcard_response.save()
     return Response("Response Recorded",status=200)
 
@@ -497,12 +497,22 @@ def confirm_phone_number(request):
 def verify_2fa(request):
     code = request.data['code_2fa']
     phone = request.data['phone_number']
-    member = UserSession.objects.filter(phone=phone).first()
+    member = UserSession.objects.filter(phone=phone).last()
     if phone == member.phone and code == member.code_2fa:
         member.has_verified_phone=True
-        member.code_2fa=''
+        member.save()
         return Response({'message': 'success'})
-    return Response({'message': 'error'})
+    return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def Phone_verification_check(request):
+    session_id = request.data['session_id']
+    member = UserSession.objects.filter(session_id=session_id)[0]
+    if member.has_verified_phone:
+        return Response({'message': 'success'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
+
 
 
 @api_view(['POST'])

@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 from datetime import timedelta
 
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -159,13 +158,23 @@ if DEBUG:
     STRIPE_TEST_PUBLISHABLE_KEY = 'pk_test_x97eNoQQtQDTurBY7lrq1yME005Ntt2hOK'
     STRIPE_TEST_SECRET_KEY = 'sk_test_51GPZU2Gq4mM9DwWGVtsyD1imIC3xNNEfNqYzGuWryfWT8ok25STRDnb4XORmCOv2sqDOYhKRbdowt1SAhjmGyFYT00kNM75J9r'
     STRIPE_LIVE_MODE = False  # Change to True in production
-    
+
+    # live keys
+    BT_ENVIRONMENT = 'production'
+    BT_MERCHANT_ID = '7yxb7rtshbp9q47d'
+    BT_PUBLIC_KEY = 'yc3ytr786brjsh9v'
+    BT_PRIVATE_KEY = '532eefa88f4f82bce0f12e2ef0adba87'
+
+
 else:
     # live keys
     BT_ENVIRONMENT = 'production'
-    BT_MERCHANT_ID = '7xyb7rtshbp9q47d'
+    BT_MERCHANT_ID = '7yxb7rtshbp9q47d'
     BT_PUBLIC_KEY = 'yc3ytr786brjsh9v'
     BT_PRIVATE_KEY = '532eefa88f4f82bce0f12e2ef0adba87'
+
+
+
     # stripe
     # STRIPE_SECRET_KEY = ''
     # STRIPE_PUBLISHABLE_KEY = ''
@@ -291,6 +300,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
@@ -311,6 +321,10 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
+    'check_user_connectivity': {
+        'task': 'web.celery.check_user_connectivity',
+        'schedule': timedelta(minutes=5)
+    }
     # 'schedule_member': {
     #     'task': 'web.celery.schedule_member',
     #     'schedule': timedelta(minutes=50)  # execute every minute

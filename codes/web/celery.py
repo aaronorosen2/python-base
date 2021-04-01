@@ -168,3 +168,36 @@ def hello():
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
+
+
+@app.task()
+def check_user_connectivity():
+    import datetime
+    room_list = list(redisconn.smembers('room_names'))
+    connected_users = redisconn.hgetall("connected_users")
+    seconds_in_day = 24 * 60 * 60
+    for k, v in connected_users.items():
+        difference_time = datetime.datetime.now() - datetime.datetime.strptime(v,
+                                                                               '%Y-%m-%d %H:%M:%S.%f')
+
+        print('/////')
+        minutes, seconds = divmod(difference_time.days * seconds_in_day + difference_time.seconds,
+                                  60)
+        print(difference_time)
+        print(minutes, seconds)
+        print('/////')
+        if minutes > 6:
+            redisconn.hdel("connected_users", k)
+            for i in room_list:
+                if redisconn.hexists(i+'@live', k):
+                    redisconn.hdel(i+'@live',
+                                   k)
+                    async_to_sync(channel_layer.group_discard)(
+                        i, k)
+                    return "Available In Live Users List"
+                if redisconn.hexists(i+'@back', k):
+                    redisconn.hdel(i+'@back',
+                                   k)
+                    async_to_sync(channel_layer.group_discard)(
+                        i, k)
+                    return "Available In Back Users List"

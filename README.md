@@ -3,8 +3,9 @@
 ## Run Code project
 
 ```
+pip install virtualenv 
 virtualenv -p python3 venv
-source venv/bin/activate
+source venv/bin/activate (For MACOS / Linux) OR venv\Scripts\activate (For Windows)
 pip install -r requirements.txt
 python codes/manage.py runserver
 

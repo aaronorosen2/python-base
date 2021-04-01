@@ -21,7 +21,7 @@ from django.template.response import TemplateResponse
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework.decorators import api_view
-from .serializers import StadiumSerializer
+from .serializers import StadiumSerializer,EventSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 
@@ -223,6 +223,7 @@ class Bookings(View):
         context={'events':events}
         return render(request,'bookingstadium/bookings.html',context)
 
+
 @api_view(['POST'])  
 def CreateStadium(request):
     stadium_data = JSONParser().parse(request)
@@ -230,9 +231,39 @@ def CreateStadium(request):
     if stadium_serializer.is_valid():
         stadium_serializer.save()
         return JsonResponse(stadium_serializer.data, status=status.HTTP_201_CREATED)
-    else:
-        return JsonResponse(stadium_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class Upload(View):
     def get(self, request, *args, **kwargs):
         return render(request, "bookingstadium/upload.html")
+
+###APIS
+@api_view(['GET'])
+def stadiumlist(request):
+    stadiums = Stadium.objects.all()
+    stadium_serializer = StadiumSerializer(stadiums, many=True)
+    return JsonResponse(stadium_serializer.data, safe=False)
+
+@api_view(['POST'])  
+def stadiumcreate(request):
+    stadium_data = JSONParser().parse(request)
+    stadium_serializer = StadiumSerializer(data=stadium_data)
+    if stadium_serializer.is_valid():
+        stadium_serializer.save()
+        return JsonResponse(stadium_serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return JsonResponse(stadium_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@api_view(['GET'])
+def getbookings(request):
+    bookings = Event.objects.all()
+    booking_serializer = EventSerializer(bookings, many=True)
+    return JsonResponse(booking_serializer.data, safe=False)
+
+@api_view(['GET'])
+def stadium_detail(request,pk):
+    try:
+        stadium = Stadium.objects.get(pk=pk)
+        stadium_serializer = StadiumSerializer(stadium)
+        return JsonResponse(stadium_serializer.data)
+    except Stadium.DoesNotExist:
+        return JsonResponse({'message': 'Stadium does not exist'}, status=status.HTTP_404_NOT_FOUND)
+

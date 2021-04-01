@@ -1,4 +1,5 @@
 import json
+import requests
 from sfapp2.models import Member, Question, Choice
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -6,7 +7,6 @@ from sfapp2.utils import twilio
 from knox.auth import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from voip.models import Call_list
 from django.core import serializers
 
 def parse_question_answers(question_answers):
@@ -22,7 +22,7 @@ def parse_question_answers(question_answers):
             'choice_id': answer.id
         })
     return response
-
+    
 
 @csrf_exempt
 @api_view(['GET'])
@@ -82,14 +82,14 @@ def get_members(request):
 
     return JsonResponse(list(members), safe=False)
 
-
 @csrf_exempt
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def list_calls(request):
-    return JsonResponse(serializers.serialize("json",Call_list.objects.all()), safe=False)
-
+    records = twilio.list_calls()
+    return JsonResponse(records,safe=False)
+    # return JsonResponse(serializers.serialize("json",CallList.objects.all()), safe=False)
 
 @csrf_exempt
 def voice(request):

@@ -18,7 +18,7 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from notifications.views import notify
-from notifications.views import notification, admin_monitoring, vstream_html
+from notifications.views import notification, admin_monitoring, vstream_html, disconnect_html
 
 from rest_framework_swagger.views import get_swagger_view
 
@@ -29,6 +29,7 @@ urlpatterns = [
     path('notify/', notify),
     path('admin_monitoring/', admin_monitoring),
     path('vstream-ui/', vstream_html),
+    path('disconnect-ui/', disconnect_html),
     path('vconf_api/', include(
         ('vconf.urls', 'vconf_api'),
         namespace='vconf_api')),
