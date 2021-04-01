@@ -59,7 +59,7 @@ def get_file_extension(file_name, decoded_file):
 def userItem(request):
     # GET list of items, POST a new item, DELETE all items
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
-    
+
     if request.method == 'GET':
         allItems = item.objects.filter(user = User.objects.get(id=token.user_id))
         item_serializer = itemSerializer(allItems, many=True)
@@ -93,9 +93,8 @@ def userItem(request):
                         img_str += file_url
                     count += 1
                     print(f"Saving file to s3. member: {member}, s3_key: {s3_key}")
-            
+
             user = User.objects.get(id=token.user_id)
-            
             item_obj = item(title=request.data['title'],
                             description=request.data['description'],
                             price=request.data['price'],
@@ -105,7 +104,7 @@ def userItem(request):
                             user=User.objects.get(id=token.user_id))
             item_obj.save()
             return JsonResponse({"success":True},status=201)
-            
+
         except:
             return JsonResponse({"success":False},status=400)
     # elif request.method == 'DELETE':
