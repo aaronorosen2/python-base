@@ -4,7 +4,7 @@ from django.db.models import Q
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 
-from .models import item, order, subscription, userProfile as profile,BrainTreeConfig
+from .models import item, order, subscription, userProfile as profile,BrainTreeConfig, StripeConfig
 from neighbormade.models import Neighborhood
 from .serializers import itemSerializer, orderSerializer
 from s3_uploader.views import upload_to_s3
@@ -12,7 +12,7 @@ from knox.models import AuthToken
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view
 # from card_scanner.cardInfo import extractInfo
-from .extras import transact, generate_client_token, create_customer, create_subscription
+from .extras import transact, generate_client_token, create_customer, create_subscription, unsubscribe
 from rest_framework.response import Response
 import requests
 
@@ -25,6 +25,7 @@ import imghdr
 import io
 import json
 import stripe # new
+from fcm_django.models import FCMDevice
 
 
 # Create your views here.
@@ -351,7 +352,6 @@ def brainTreeSubscription(request):
 
 @api_view(['GET', 'POST'])
 def userSubscribe(request):
-    # GET / PUT / DELETE item by pk (id)
     try:
         client_token = generate_client_token()
         return JsonResponse({"success":True,"client_token": client_token},status=201)
@@ -376,10 +376,12 @@ def userbrainTreeSubscription(request):
         "plan_id": request.data['subscription_plan_ID']
     })
     print(sub_result.subscription.id)
+    print(request.data['session_id'])
     if sub_result.is_success:
         print("Subscription Success!")
         obj = subscription(braintreeSubscriptionID=sub_result.subscription.id,
                             is_ordered=True,
+                            source = request.data['session_id'],
                             plan_ID=request.data['subscription_plan_ID'])
         obj.save()
         return JsonResponse({"success":True,"ID": sub_result.subscription.id},status=201)
@@ -389,10 +391,19 @@ def userbrainTreeSubscription(request):
             print(error.message)
         obj = subscription(braintreeSubscriptionID="",
                             is_ordered=False,
+                            source = request.data['session_id'],
                             plan_ID=request.data['subscription_plan_ID'])
         obj.save()
         return JsonResponse({"success":True,"ID": ""},status=201)
     
+@api_view(['GET', 'POST', 'DELETE'])
+def userbrainTreeUnsubscription(request):
+    the_subscription_id = subscription.objects.get(source=request.data['session_id']).braintreeSubscriptionID
+    result = unsubscribe(the_subscription_id)
+    if(result):
+        return JsonResponse({"success":True,"status":"OKAY"},status=201)
+    else:
+        return JsonResponse({"success":False,"status":"NOT OKAY"},status=201)
 
 @api_view(['GET', 'POST', 'DELETE'])
 def userOrderList(request):
@@ -615,3 +626,86 @@ def completeStripeSubscription(request):
     
 def Stripethank(request):
     return render(request, 'stripeCharge.html')
+
+
+@api_view(['GET', 'POST', 'DELETE'])
+def StripeConfiguration(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'POST':
+        print("insode ")
+        print(token.user_id)
+        # try:
+            
+        obj_check = StripeConfig.objects.filter(user = User.objects.get(id=token.user_id))
+        print(len(obj_check))
+        if(len(obj_check)>0):
+            obj_check = obj_check[0]
+            obj_check.STRIPE_SECRET_KEY = request.data['STRIPE_SECRET_KEY']
+            obj_check.STRIPE_PUBLISHABLE_KEY=request.data['STRIPE_PUBLISHABLE_KEY']
+            obj_check.save()
+        else:
+            stripe_obj = StripeConfig(STRIPE_SECRET_KEY = request.data['STRIPE_SECRET_KEY'],
+                            STRIPE_PUBLISHABLE_KEY  = request.data['STRIPE_PUBLISHABLE_KEY'],
+                            user = User.objects.get(id=token.user_id),
+                            )
+            stripe_obj.save()
+        return JsonResponse({"success":True},status=201)
+        
+        
+def FCMDeviceTest(request):
+    # Send to single device.
+    from pyfcm import FCMNotification
+
+    push_service = FCMNotification(api_key="<api-key>")
+
+    # OR initialize with proxies
+
+    proxy_dict = {
+            "http"  : "http://127.0.0.1",
+            "https" : "http://127.0.0.1",
+            }
+    push_service = FCMNotification(api_key="<api-key>", proxy_dict=proxy_dict)
+
+    # Your api-key can be gotten from:  https://console.firebase.google.com/project/<project-name>/settings/cloudmessaging
+
+    registration_id = "<device registration_id>"
+    message_title = "Uber update"
+    message_body = "Hi john, your customized news for today is ready"
+    result = push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body)
+
+    # Send to multiple devices by passing a list of ids.
+    registration_ids = ["<device registration_id 1>", "<device registration_id 2>", ...]
+    message_title = "Uber update"
+    message_body = "Hope you're having fun this weekend, don't forget to check today's news"
+    result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_title=message_title, message_body=message_body)
+
+    # print result
+    return render(request, 'thankyou.html', {"ID": 0}) 
+
+@api_view(['GET'])
+def ItemsAndMember(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'GET':
+        try:
+            items_count = 0
+            member_count = 0
+            obj = profile.objects.filter(user = User.objects.get(id=token.user_id))
+            if(len(obj)>0):
+                neighbour_ID = obj[0].Neighborhood
+                user_data = profile.objects.filter(Neighborhood = Neighborhood.objects.get(id = neighbour_ID.id))
+                temp_str = None
+                member_count = len(user_data)
+                if(len(user_data)>0):
+                    for i in range(len(user_data)):
+                        if(i == 0):
+                            temp_str = Q(user=User.objects.get(id=user_data[i].user.id))
+                        else:
+                            temp_str |= Q(user=User.objects.get(id=user_data[i].user.id))
+                    item_obj = item.objects.filter(temp_str)
+                    items_count = len(item_obj)
+                
+                return JsonResponse({"success":True,"items_count":items_count,"member_count":member_count})
+            else:
+                return JsonResponse({"success":True,"status":"No profile with this user"},status=201)
+        except:
+            return JsonResponse({"success":False},status=400)

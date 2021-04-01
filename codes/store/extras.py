@@ -29,3 +29,6 @@ def create_customer(options):
 
 def create_subscription(options):
     return gateway.subscription.create(options)
+
+def unsubscribe(id):
+    return gateway.subscription.cancel(id)

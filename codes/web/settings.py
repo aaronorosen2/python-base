@@ -124,7 +124,12 @@ INSTALLED_APPS = [
     'store_stripe',
     'bookingstadium.apps.BookingstadiumConfig',
     'bookingsystem.apps.BookingsystemConfig',
+    "fcm_django",
 ]
+
+FCM_DJANGO_SETTINGS = {
+        "FCM_SERVER_KEY": "AAAA7AcXkTE:APA91bG9YiD2cgEw-lzLJhjxAp0Liw_O3v0nq_BG3gVe_CVUjk2wx4i2u6nkTF6TyjunzwFootO1bZc5TQE0XEf9f1lsJp8CuxKiWQD8PO1H0dnQWW1xmfO4BqqWWBxe6L85AybontQE"
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -140,10 +145,14 @@ MIDDLEWARE = [
 
 if DEBUG:
     # test keys
-    BT_ENVIRONMENT = 'sandbox'
-    BT_MERCHANT_ID = '26343xxtxwwwgfqs'
-    BT_PUBLIC_KEY = 'nj723gtbqz2s6229'
-    BT_PRIVATE_KEY = '6998bfeb28304c9b97c59460791f84ed'
+    # BT_ENVIRONMENT = 'sandbox'
+    # BT_MERCHANT_ID = '26343xxtxwwwgfqs'
+    # BT_PUBLIC_KEY = 'nj723gtbqz2s6229'
+    # BT_PRIVATE_KEY = '6998bfeb28304c9b97c59460791f84ed'
+    BT_ENVIRONMENT = 'production'
+    BT_MERCHANT_ID = '7yxb7rtshbp9q47d'
+    BT_PUBLIC_KEY = 'yc3ytr786brjsh9v'
+    BT_PRIVATE_KEY = '532eefa88f4f82bce0f12e2ef0adba87'
     # stripe
     # STRIPE_SECRET_KEY = 'sk_test_51ITdUjGOkE0UauzQJwYtyRsqkRYL1M77Fn6QppwqhacQvdLCJOGyc2TdJAhcm8o1tpXgN3Owor4RvAFYGfavG9h6000tqQCYWF'
     # STRIPE_PUBLISHABLE_KEY = 'pk_test_51ITdUjGOkE0UauzQPEu8J9aFw5RmWOVXwkY3NRIXwvnzDMFo3C5pDwfuYmiSLHNhr6o6lzvBF0552ODdE45BbIch00QTrejIEN'
@@ -158,9 +167,9 @@ else:
     BT_PUBLIC_KEY = 'yc3ytr786brjsh9v'
     BT_PRIVATE_KEY = '532eefa88f4f82bce0f12e2ef0adba87'
     # stripe
-    STRIPE_SECRET_KEY = ''
-    STRIPE_PUBLISHABLE_KEY = ''
-    STRIPE_LIVE_MODE = True
+    # STRIPE_SECRET_KEY = ''
+    # STRIPE_PUBLISHABLE_KEY = ''
+    # STRIPE_LIVE_MODE = True
 
 ROOT_URLCONF = 'web.urls'
 
