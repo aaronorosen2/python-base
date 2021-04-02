@@ -208,20 +208,36 @@ def complete_call(request, session_id):
 
 @csrf_exempt
 def join_conference(request):
+    numberList = []
+    numberList.append(request.POST.get("dest_number"))
+    numberList.append(request.POST.get("your_number"))
+    source_number = request.POST.get("source_number")
+    client = get_client()
+    
+    for number in numberList:
+        conference = client.conferences('EHbbfe82cb9354b08c2acca0ba8a80d1b8').participants.create(
+            record=True,
+            from_ = source_number,
+            to = number,
+            status_callback_event=['completed']
+           
+        )
+
     # XXX first call this which creates an inbound call to source_number
     # print(request)
-    source_number = request.POST.get("source_number")
-    dest_number = request.POST.get("dest_number")
-    your_number = request.POST.get("your_number")
-    print("Call Request received! source_number:{0}, dest_number:{1}".format(
-        source_number, dest_number))
+    # source_number = request.POST.get("source_number")
 
-    twilio_client = get_client()
-    call = twilio_client.calls.create(
-                                    record=True,
-                                    from_ = settings.TWILIO['TWILIO_NUMBER'],
-                                    to = dest_number,
-                                    )
+    # dest_number = request.POST.get("dest_number")
+    # your_number = request.POST.get("your_number")
+    # print("Call Request received! source_number:{0}, dest_number:{1}".format(
+    #     source_number, dest_number))
+
+    # twilio_client = get_client()
+    # call = twilio_client.calls.create(
+    #                                 record=True,
+    #                                 from_ = settings.TWILIO['TWILIO_NUMBER'],
+    #                                 to = dest_number,
+    #                             )
     # participant = client.conferences('EHb3241593e5c7bfd9687d17831fe2f0bb').participants.create(from_='+14252766495', to = num)
 
     # if not source_number or not dest_number:
@@ -303,7 +319,8 @@ def get_lead(request):
         notes = request.data.get('notes')
         new_url = request.data.get('new_url')
         lead = User_leads(name=name, phone=phone, email=email,
-                          state=state, url=new_url, notes=notes, price=price)
+                          state=state, url=new_url, notes=notes, price=price)  
+
         lead.save()
         return JsonResponse({'message': "sucess !"}, status=200)
 
@@ -347,7 +364,6 @@ def csvUploder(request):
         if data:
             line = data.split('","')
             if index == 0:
-                print(line)
                 if (line != common_header):
                     return JsonResponse({"message" : "csv file is not in authorized formate, please do formating and upload again"},safe=False,status=406)
             if 'Zillow url"' in line or '"Name' in line:
@@ -359,7 +375,6 @@ def csvUploder(request):
             price = line[4]
             notes = line[5]
             url = line[6].replace('"','')
-            print(name , phone , email , state , price , notes , url )
             lead = User_leads(name = name , phone = phone ,  email = email,
                                 price = price, state = state, notes = notes, url = url)
             lead.save()
