@@ -255,8 +255,21 @@ def stadiumcreate(request):
 @api_view(['GET'])
 def getbookings(request):
     bookings = Event.objects.all()
-    booking_serializer = EventSerializer(bookings, many=True)
-    return JsonResponse(booking_serializer.data, safe=False)
+    all_bookings=[]
+    for i in bookings:
+        booking={}
+        booking['id']=i.id
+        booking['name']=i.name
+        booking['email']=i.email
+        booking['phone']=i.phone
+        booking['date']=i.date
+        booking['start_time']=i.start_time
+        booking['end_time']=i.end_time
+        booking['frequency']=i.frequency
+        booking['created_date']=i.created_date
+        booking['stadium']=i.stadium.name
+        all_bookings.append(booking)
+    return JsonResponse(all_bookings, safe=False)
 
 @api_view(['GET'])
 def stadium_detail(request,pk):
