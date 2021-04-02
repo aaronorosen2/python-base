@@ -397,7 +397,8 @@ def userbrainTreeSubscription(request):
     
 @api_view(['GET', 'POST', 'DELETE'])
 def userbrainTreeUnsubscription(request):
-    the_subscription_id = subscription.objects.get(source=request.data['session_id']).braintreeSubscriptionID
+    the_subscription = subscription.objects.filter(source=request.data['session_id'])
+    the_subscription_id = the_subscription[len(the_subscription)-1].braintreeSubscriptionID
     result = unsubscribe(the_subscription_id)
     if(result):
         return JsonResponse({"success":True,"status":"OKAY"},status=201)
