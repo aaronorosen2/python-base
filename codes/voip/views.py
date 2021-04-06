@@ -280,7 +280,7 @@ def assign_number_(request):
         serializer = Assigned_numbersSerializer(
             assigned_numbers.objects.all(), many=True
         )
-        return JsonResponse(serializer.data,safe=False)
+        return JsonResponse(serializer.data, safe=False)
 
 
 @api_view(["post"])
