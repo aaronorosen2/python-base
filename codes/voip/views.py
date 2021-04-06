@@ -104,7 +104,8 @@ def voip_callback(request, session_id):
         if choice == '1':
             resp.say('Adding destination number to the conference!')
             resp.redirect(
-                'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/add_user/' + session_id)
+                'https://api.dreampotential.org/voip/api_voip/add_user/'
+                + session_id)
             print(str(resp))
             return HttpResponse(resp)
         elif choice == '2':
@@ -120,14 +121,15 @@ def voip_callback(request, session_id):
         # Get user input
         gather = Gather(
             num_digits=1,
-            action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
+            action='https://api.dreampotential.org/voip/api_voip/voip_callback/'
+                    + session_id)
         gather.say(
             'Please Press 1 to connect to destination. Press 2 to end the call.')
         resp.append(gather)
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
     resp.redirect(
-        'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
+        'https://api.dreampotential.org/voip/api_voip/voip_callback/' + session_id)
 
     print(str(resp))
     return HttpResponse(resp)
@@ -205,7 +207,6 @@ def complete_call(request, session_id):
     return HttpResponse('')
 
 
-
 @csrf_exempt
 def join_conference(request):
     numberList = []
@@ -213,14 +214,16 @@ def join_conference(request):
     numberList.append(request.POST.get("your_number"))
     source_number = request.POST.get("source_number")
     client = get_client()
-    
+
     for number in numberList:
-        conference = client.conferences('EHbbfe82cb9354b08c2acca0ba8a80d1b8').participants.create(
+        # XXX What is this number? Should we move to settings file??
+        conference = client.conferences(
+            'EHbbfe82cb9354b08c2acca0ba8a80d1b8'
+        ).participants.create(
             record=True,
-            from_ = source_number,
-            to = number,
+            from_ =source_number,
+            to=number,
             status_callback_event=['completed']
-           
         )
 
     # XXX first call this which creates an inbound call to source_number
@@ -269,13 +272,16 @@ def assign_number_(request):
     if request.method == "POST":
         user = User.objects.get(pk=request.data['user_id'])
         number_to_assign = request.data['number']
-        number = assigned_numbers(phone=number_to_assign , user=user)
+        number = assigned_numbers(phone=number_to_assign, user=user)
         number.save()
         return JsonResponse({'message': 'Success!'})
 
     elif request.method == "GET":
-        serializer = Assigned_numbersSerializer(assigned_numbers.objects.all(),many=True)
+        serializer = Assigned_numbersSerializer(
+            assigned_numbers.objects.all(), many=True
+        )
         return JsonResponse(serializer.data,safe=False)
+
 
 @api_view(["post"])
 def make_call(request):
@@ -298,17 +304,20 @@ def send_sms(request):
     text = request.data['body']
     client = get_client()
     sms = client.messages.create(
-        body = text,
+        body=text,
         from_=from_num,
         to=to_num,
     )
     print(sms.sid)
     return JsonResponse({'message': 'Success!'})
 
-@api_view(['GET','POST','PUT','DELETE'])
+
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def get_lead(request):
     if request.method == 'GET':
-        return JsonResponse(serializers.serialize("json",User_leads.objects.all()), safe=False)
+        return JsonResponse(
+            serializers.serialize("json", User_leads.objects.all()),
+            safe=False)
 
     elif request.method == 'POST':
         name = request.data.get('name')
@@ -319,7 +328,7 @@ def get_lead(request):
         notes = request.data.get('notes')
         new_url = request.data.get('new_url')
         lead = User_leads(name=name, phone=phone, email=email,
-                          state=state, url=new_url, notes=notes, price=price)  
+                          state=state, url=new_url, notes=notes, price=price)
 
         lead.save()
         return JsonResponse({'message': "sucess !"}, status=200)
@@ -347,35 +356,43 @@ def get_lead(request):
 
     elif request.method == 'DELETE':
         if request.data:
-            lead = User_leads.objects.get(pk = request.data['pk'])
+            lead = User_leads.objects.get(pk=request.data['pk'])
             lead.delete()
-            return JsonResponse({'message' : 'success'},status=200)
+            return JsonResponse({'message': 'success'}, status=200)
         else:
-            data = User_leads.objects.filter(id__in=request.GET['listPk'].split(","))
+            data = User_leads.objects.filter(
+                id__in=request.GET['listPk'].split(",")
+            )
             data.delete()
             return JsonResponse({'message': 'success'}, status=200)
+
 
 @api_view(['POST'])
 def csvUploder(request):
     csvFile = request.data['csvFile']
-    common_header = ['"Name', 'Phone', 'Email (if available)', 'State', 'Price they want', 'Notes', 'Zillow url"\n']
-    for index,row in enumerate(csvFile):
+    common_header = ['Name', 'Phone', 'Email',
+                     'State', 'Ask',
+                     'Notes', 'Url']
+    for index, row in enumerate(csvFile):
         data = row.decode('utf-8')
         if data:
             line = data.split('","')
             if index == 0:
                 if (line != common_header):
-                    return JsonResponse({"message" : "csv file is not in authorized formate, please do formating and upload again"},safe=False,status=406)
-            if 'Zillow url"' in line or '"Name' in line:
-                continue
-            name = line[0].replace('"','')
+                    return JsonResponse({
+                        "message": "error csv format"}, safe=False, status=406)
+
+            # if 'Zillow url"' in line or '"Name' in line:
+            #    continue
+            name = line[0].replace('"', '')
             phone = line[1]
             email = line[2]
             state = line[3]
             price = line[4]
             notes = line[5]
-            url = line[6].replace('"','')
-            lead = User_leads(name = name , phone = phone ,  email = email,
-                                price = price, state = state, notes = notes, url = url)
+            url = line[6].replace('"', '')
+            lead = User_leads(name=name, phone=phone,  email=email,
+                              price=price, state=state, notes=notes,
+                              url=url)
             lead.save()
     return JsonResponse({'message': 'lead save successfully'}, status=200)
