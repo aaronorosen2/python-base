@@ -35,7 +35,7 @@ class AdminGroupMember(models.Model):
     is_admin = models.BooleanField(default=False)
 
 class CallList(models.Model):
-    date = models.DateField()
+    date = models.DateTimeField()
     from_number = models.CharField(max_length=20,null=True)
     to_number = models.CharField(max_length=20,null=True)
     recording_url = models.CharField(max_length=500,null=True)
