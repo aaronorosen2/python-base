@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.core import serializers
 from rest_framework import status
 import csv
-
+import re
 # To store session variables
 sessionID_to_callsid = {}
 sessionID_to_confsid = {}
@@ -23,9 +23,10 @@ sessionID_to_destNo = {}
 def get_session_id(source_number, destination_number):
     return (
         'Conf' + source_number +
-        '-To-' + destination_number + '-' + uuid.uuid4().hex
+        '-To-' + destination_number
     )
-
+    # + '-' + uuid.uuid4().hex
+    # return source_number,destination_number
 
 def get_client():
     try:
@@ -83,15 +84,23 @@ def list_sms_api(request):
 @csrf_exempt
 def twilio_call_status(request):
     print(request.POST)
-    return HttpResponse('')
+    return JsonResponse({"success":True})
 
 
 @csrf_exempt
 def voip_callback(request, session_id):
     # print(request.POST)
-    print("## Conference session id:{0} Making a conference call".format(
+    print("## void callback Conference session id:{0} Making a conference call".format(
         session_id))
-
+    # resp = VoiceResponse()
+    # dial = Dial()
+    # session_id = "confernce"
+    # dial.conference('https://api.dreampotential.org/voip/api_voip/add_user_to_conf/' + session_id,
+  
+    #                 conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id,
+    #                 conference_status_callback_event="leave")
+    # resp.append(dial)
+    # return str(resp)
     resp = VoiceResponse()
 
     # If Twilio's request to our app included already
@@ -139,6 +148,8 @@ def voip_callback(request, session_id):
 def add_user_to_conf(request, session_id):
     # print(request.POST)
     print("# Add user request received, session id:{}", session_id)
+    print("add user session",session_id)
+
     destination_number = sessionID_to_destNo.get(session_id)
     print("Attemtping to add phone number to call: " + destination_number)
 
@@ -223,18 +234,19 @@ def join_conference(request):
             record=True,
             from_ =source_number,
             to=number,
-            status_callback_event=['completed']
+            status_callback_event=['completed'],
+            end_conference_on_exit=True
         )
-
+        print(conference)
     # XXX first call this which creates an inbound call to source_number
     # print(request)
-    # source_number = request.POST.get("source_number")
+    source_number = request.POST.get("source_number")
 
-    # dest_number = request.POST.get("dest_number")
-    # your_number = request.POST.get("your_number")
-    # print("Call Request received! source_number:{0}, dest_number:{1}".format(
-    #     source_number, dest_number))
-
+    dest_number = request.POST.get("dest_number")
+    your_number = request.POST.get("your_number")
+    print("Call Request received! source_number:{0}, dest_number:{1}".format(
+        source_number, dest_number))
+    print("yn", type(your_number))
     # twilio_client = get_client()
     # call = twilio_client.calls.create(
     #                                 record=True,
@@ -243,27 +255,30 @@ def join_conference(request):
     #                             )
     # participant = client.conferences('EHb3241593e5c7bfd9687d17831fe2f0bb').participants.create(from_='+14252766495', to = num)
 
-    # if not source_number or not dest_number:
-    #     msg = "Missing phone number value. Expected params source_number and dest_number"
-    #     return JsonResponse({'error': msg})
+    if not source_number or not dest_number:
+        msg = "Missing phone number value. Expected params source_number and dest_number"
+        return JsonResponse({'error': msg})
 
-    # try:
-    #     twilio_client = get_client()
-    #     session_id = get_session_id(source_number, dest_number)
-
-    #     call = twilio_client.calls.create(record=True,
-    #                                       from_=settings.TWILIO['TWILIO_NUMBER'],
-    #                                       to='+' + source_number,
-    #                                       url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
-    #                                       status_callback_event=['completed'],
-    #                                       status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id)
-    #                                       )
-    #     sessionID_to_callsid[session_id] = call.sid
-    #     sessionID_to_destNo[session_id] = '+' + dest_number
-    #     print("Initiated a Source number Call, session_id:", session_id)
-    # except Exception as e:
-    #     message = e.msg if hasattr(e, 'msg') else str(e)
-    #     return JsonResponse({'error': message})
+    try:
+    
+        twilio_client = get_client()
+        # session_id = get_session_id(source_number, dest_number)
+        session_id = "confernce"
+        call = twilio_client.calls.create(record=True,
+                                          from_= source_number,
+                                          to = your_number,
+                                          url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id,
+                                          status_callback_event=['completed'],
+                                          status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id)
+                                          )
+        
+        sessionID_to_callsid[session_id] = call.sid
+        sessionID_to_destNo[session_id] = dest_number
+        print("Initiated a Source number Call, session_id:", session_id)
+        print("join dest_number",sessionID_to_destNo[session_id])
+    except Exception as e:
+        # message = e.msg if hasattr(e, 'msg') else str(e)
+        return JsonResponse({'error': "fail"})
     return JsonResponse({'message': 'Success!'}, status=200)
 
 
@@ -324,11 +339,11 @@ def get_lead(request):
         phone = request.data.get('phone')
         email = request.data.get('email')
         state = request.data.get('state')
-        price = request.data.get('price')
+        ask = request.data.get('ask')
         notes = request.data.get('notes')
         new_url = request.data.get('new_url')
         lead = User_leads(name=name, phone=phone, email=email,
-                          state=state, url=new_url, notes=notes, price=price)
+                          state=state, url=new_url, notes=notes, ask=ask)
 
         lead.save()
         return JsonResponse({'message': "sucess !"}, status=200)
@@ -340,7 +355,7 @@ def get_lead(request):
             lead.phone = request.data.get('phone')
             lead.email = request.data.get('email')
             lead.state = request.data.get('state')
-            lead.price = request.data.get('price')
+            lead.ask = request.data.get('ask')
             lead.notes = request.data.get('notes')
             lead.url = request.data.get('url')
             lead.status = request.data.get('status')
@@ -369,30 +384,30 @@ def get_lead(request):
 
 @api_view(['POST'])
 def csvUploder(request):
-    csvFile = request.data['csvFile']
+    csv_file = request.data['csvFile']
     common_header = ['Name', 'Phone', 'Email',
                      'State', 'Ask',
                      'Notes', 'Url']
-    for index, row in enumerate(csvFile):
+    for index, row in enumerate(csv_file):
         data = row.decode('utf-8')
         if data:
             line = data.split('","')
             if index == 0:
-                if (line != common_header):
+                if common_header != [re.sub(r"\r\n","",column.replace('"',"")) for column in line]:
                     return JsonResponse({
                         "message": "error csv format"}, safe=False, status=406)
-
-            # if 'Zillow url"' in line or '"Name' in line:
-            #    continue
-            name = line[0].replace('"', '')
+                continue
+            
+            line = [re.sub(r"\r\n","",column.replace('"',"")) for column in line]
+            name = line[0]
             phone = line[1]
             email = line[2]
             state = line[3]
-            price = line[4]
+            ask = line[4]
             notes = line[5]
-            url = line[6].replace('"', '')
+            url = line[6]
             lead = User_leads(name=name, phone=phone,  email=email,
-                              price=price, state=state, notes=notes,
+                              ask=ask, state=state, notes=notes,
                               url=url)
             lead.save()
     return JsonResponse({'message': 'lead save successfully'}, status=200)
