@@ -2,7 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('load_neighbor',views.importNeighbours,name='load_neighbor'),
+    # path('load_neighbor',views.importNeighbours,name='load_neighbor'),
+    # path('load_neighbor_zip',views.importNbrWithZip,name='load_neighbor_withzip'),
     path('view_neighbor',views.viewNeighbours,name='view_neighbor'),
     path('fetch_stadiums',views.scrap_stadium,name='scrap_stadium'),
     path('stadiums',views.get_stadiums,name='get_stadiums'),
