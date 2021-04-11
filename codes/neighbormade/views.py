@@ -9,7 +9,7 @@ import requests
 import praw
 import re
 from datetime import datetime
-from uszipcode.search import SearchEngine
+# from uszipcode.search import SearchEngine
 
 # from bs4 import BeautifulSoup
 
@@ -41,6 +41,7 @@ def importNeighbours(request):
 
 
 def importNbrWithZip(request):
+    from uszipcode.search import SearchEngine
     search = SearchEngine()
     states = ["Alabama", "Arkansas", "California", "Colorado", "Florida", "Georgia", "Illinois", "Indiana", "Iowa", "Kentucky", "Louisiana", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Missouri", "Nebraska", "New York", "North Carolina", "North Dakota", "Ohio", "Oregon", "Pennsylvania", "Tennessee", "Texas", "Utah", "Virginia", "Washington", "Washington State", "Wisconsin","Alaska","Hawaii","Arizona","New Jersey","Montana","Maine","Nevada","Connecticut","New Maxico","Mississippi","South Carolina","Kansas","Delaware","Wyoming","Idaho","Rhode Island","Vermont","West Virginia","South Dakota","New Hampshire","Oklahoma"]
     totalImported = 0
