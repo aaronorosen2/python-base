@@ -89,24 +89,13 @@ def twilio_call_status(request):
 
 @csrf_exempt
 def voip_callback(request, session_id):
-    # print(request.POST)
-    print("## void callback Conference session id:{0} Making a conference call".format(
-        session_id))
-    # resp = VoiceResponse()
-    # dial = Dial()
-    # session_id = "confernce"
-    # dial.conference('https://api.dreampotential.org/voip/api_voip/add_user_to_conf/' + session_id,
-  
-    #                 conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id,
-    #                 conference_status_callback_event="leave")
-    # resp.append(dial)
-    # return str(resp)
+    
     resp = VoiceResponse()
 
     # If Twilio's request to our app included already
     # gathered digits, process them
     if 'Digits' in request.POST:
-        # Get which digit the caller chose
+        # Get which digit the caller chose`
         choice = request.POST.get('Digits')
 
         # Say a different message depending on the caller's choice
@@ -121,7 +110,6 @@ def voip_callback(request, session_id):
             resp.say('Thank you for calling, have a nice day!')
             # End the call with <Hangup>
             resp.hangup()
-            print(str(resp))
             return HttpResponse(resp)
         else:
             # If the caller didn't choose 1 or 2, apologize and ask them again
@@ -130,7 +118,7 @@ def voip_callback(request, session_id):
         # Get user input
         gather = Gather(
             num_digits=1,
-            action='https://api.dreampotential.org/voip/api_voip/voip_callback/'
+            action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/'
                     + session_id)
         gather.say(
             'Please Press 1 to connect to destination. Press 2 to end the call.')
@@ -138,17 +126,14 @@ def voip_callback(request, session_id):
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
     resp.redirect(
-        'https://api.dreampotential.org/voip/api_voip/voip_callback/' + session_id)
+        'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
 
     print(str(resp))
     return HttpResponse(resp)
 
-
 @csrf_exempt
 def add_user_to_conf(request, session_id):
     # print(request.POST)
-    print("# Add user request received, session id:{}", session_id)
-    print("add user session",session_id)
 
     destination_number = sessionID_to_destNo.get(session_id)
     print("Attemtping to add phone number to call: " + destination_number)
@@ -166,7 +151,6 @@ def add_user_to_conf(request, session_id):
         conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id,
         conference_status_callback_event="leave")
 
-    print(participant)
     return HttpResponse(str(resp))
 
 
@@ -220,33 +204,12 @@ def complete_call(request, session_id):
 
 @csrf_exempt
 def join_conference(request):
-    numberList = []
-    numberList.append(request.POST.get("dest_number"))
-    numberList.append(request.POST.get("your_number"))
-    source_number = request.POST.get("source_number")
-    client = get_client()
 
-    for number in numberList:
-        # XXX What is this number? Should we move to settings file??
-        conference = client.conferences(
-            'EHbbfe82cb9354b08c2acca0ba8a80d1b8'
-        ).participants.create(
-            record=True,
-            from_ =source_number,
-            to=number,
-            status_callback_event=['completed'],
-            end_conference_on_exit=True
-        )
-        print(conference)
-    # XXX first call this which creates an inbound call to source_number
-    # print(request)
+    global sessionID_to_destNo
     source_number = request.POST.get("source_number")
-
     dest_number = request.POST.get("dest_number")
     your_number = request.POST.get("your_number")
-    print("Call Request received! source_number:{0}, dest_number:{1}".format(
-        source_number, dest_number))
-    print("yn", type(your_number))
+
     # twilio_client = get_client()
     # call = twilio_client.calls.create(
     #                                 record=True,
@@ -255,27 +218,25 @@ def join_conference(request):
     #                             )
     # participant = client.conferences('EHb3241593e5c7bfd9687d17831fe2f0bb').participants.create(from_='+14252766495', to = num)
 
-    if not source_number or not dest_number:
-        msg = "Missing phone number value. Expected params source_number and dest_number"
-        return JsonResponse({'error': msg})
+    # if not source_number or not dest_number:
+    #     msg = "Missing phone number value. Expected params source_number and dest_number"
+    #     return JsonResponse({'error': msg})
 
     try:
-    
         twilio_client = get_client()
         # session_id = get_session_id(source_number, dest_number)
         session_id = "confernce"
+        sessionID_to_destNo[session_id] = dest_number
         call = twilio_client.calls.create(record=True,
-                                          from_= source_number,
+                                          from_= settings.TWILIO['TWILIO_NUMBER'],
                                           to = your_number,
-                                          url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id,
+                                          url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
                                           status_callback_event=['completed'],
                                           status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id)
-                                          )
-        
+                                        )
+
+        global sessionID_to_callsid    
         sessionID_to_callsid[session_id] = call.sid
-        sessionID_to_destNo[session_id] = dest_number
-        print("Initiated a Source number Call, session_id:", session_id)
-        print("join dest_number",sessionID_to_destNo[session_id])
     except Exception as e:
         # message = e.msg if hasattr(e, 'msg') else str(e)
         return JsonResponse({'error': "fail"})
