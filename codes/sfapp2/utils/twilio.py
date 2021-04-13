@@ -68,26 +68,26 @@ def list_calls():
         try:
             try:
                 record = CallList.objects.get(from_number=call.from_,to_number=call.to,duration=call.duration,date=call.date_created)
-                
+
                 resps.append({
-                'date_created': record.date,
-                'recording': record.recording_url,
-                'duration': record.duration,
-                'from': record.from_number,
-                'to': record.to_number,
-                })
-            
-            except CallList.MultipleObjectsReturned:
-
-                records = CallList.objects.filter(from_number=call.from_,to_number=call.to,duration=call.duration,date=call.date_created)
-
-                for record in records:
-                    resps.append({
                     'date_created': record.date,
                     'recording': record.recording_url,
                     'duration': record.duration,
                     'from': record.from_number,
                     'to': record.to_number,
+                })
+
+            except CallList.MultipleObjectsReturned:
+
+                records = CallList.objects.filter(
+                    from_number=call.from_, to_number=call.to, duration=call.duration, date=call.date_created)
+                for record in records:
+                    resps.append({
+                        'date_created': record.date,
+                        'recording': record.recording_url,
+                        'duration': record.duration,
+                        'from': record.from_number,
+                        'to': record.to_number,
                     })
 
         except CallList.DoesNotExist:
@@ -95,12 +95,13 @@ def list_calls():
             if call.recordings.list():
                 url = (
                     'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
-                        (call.recordings.list()[0].account_sid,
-                        call.recordings.list()[0].sid))
+                    (call.recordings.list()[0].account_sid,
+                     call.recordings.list()[0].sid))
             else:
                 url = ''
-            
-            record = CallList(from_number=call.from_,to_number=call.to,duration=call.duration,date=call.date_created,recording_url=url)
+
+            record = CallList(from_number=call.from_, to_number=call.to,
+                              duration=call.duration, date=call.date_created, recording_url=url)
             record.save()
             resps.append({
                 'date_created': call.date_created,
