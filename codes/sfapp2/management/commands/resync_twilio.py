@@ -91,7 +91,21 @@ class Command(BaseCommand):
             #     cprint(f"Duration - {call.duration}", color='blue')
             # break
 
-        calls = client.api.calls.list()
+#  finding URL for destination number ( conference call )
+        calls = client.api.calls.list(from_='(425) 578-5798',
+                                    to ='+919904924290',
+                                    limit=1
+                                )
+        
+        print(calls[0].date_created)
+        print(calls[0].recordings.list())
+        if calls[0].recordings.list():
+            url = ('https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+                        (calls[0].recordings.list()[0].account_sid,
+                        calls[0].recordings.list()[0].sid))
+            print("url...:-",url)
+        print("nothing...")
+
 
         # for call in calls:
         #     try:

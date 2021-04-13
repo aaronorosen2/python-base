@@ -171,7 +171,8 @@ def lesson_all(request):
 
     if request.method == 'DELETE':
         try:
-            lesson = Lesson.objects.get(id=request.data.get('lesson_id'))
+            # lesson = Lesson.objects.get(id=request.data.get('lesson_id'))
+            lesson = Lesson.objects.get(id=request.GET['lesson_id'])
             lesson.delete()
             return JsonResponse({"success":True},status=status.HTTP_200_OK)
 

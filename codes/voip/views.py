@@ -111,6 +111,8 @@ def voip_callback(request, session_id):
             # End the call with <Hangup>
             resp.hangup()
             return HttpResponse(resp)
+        elif choice == '3':
+            resp.play("https://s3-ca-central-1.amazonaws.com/tunepocket-public/TunePocket-Pulse-Intro-Preview.mp3")
         else:
             # If the caller didn't choose 1 or 2, apologize and ask them again
             resp.say("Sorry, I don't understand that choice.")
@@ -120,13 +122,16 @@ def voip_callback(request, session_id):
             num_digits=1,
             action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/'
                     + session_id)
+            # action='https://32a012da3a6f.ngrok.io/voip/api_voip/voip_callback/'
+            #     + session_id)
         gather.say(
-            'Please Press 1 to connect to destination. Press 2 to end the call.')
+            'Please Press 1 to connect to destination. Press 2 to end the call. Press 3 to play music.')
         resp.append(gather)
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
     resp.redirect(
         'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
+        # 'https://32a012da3a6f.ngrok.io/voip/api_voip/voip_callback/' + session_id)
 
     print(str(resp))
     return HttpResponse(resp)
@@ -146,6 +151,7 @@ def add_user_to_conf(request, session_id):
     resp.append(dial)
 
     participant = client.conferences(destination_number).participants.create(
+        record=True,
         from_=settings.TWILIO['TWILIO_NUMBER'],
         to=destination_number,
         conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id,
@@ -231,6 +237,7 @@ def join_conference(request):
                                           from_= settings.TWILIO['TWILIO_NUMBER'],
                                           to = your_number,
                                           url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
+                                        #   url='https://32a012da3a6f.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
                                           status_callback_event=['completed'],
                                           status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id)
                                         )
