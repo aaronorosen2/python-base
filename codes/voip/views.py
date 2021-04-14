@@ -2,7 +2,7 @@ from sfapp2.utils.twilio import send_sms, list_sms, send_sms_file
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
-from twilio.twiml.voice_response import VoiceResponse, Gather, Dial
+from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause
 from twilio.rest import Client
 import uuid
 from .models import Phone, assigned_numbers, User_leads
@@ -113,6 +113,21 @@ def voip_callback(request, session_id):
             return HttpResponse(resp)
         elif choice == '3':
             resp.play("https://s3-ca-central-1.amazonaws.com/tunepocket-public/TunePocket-Pulse-Intro-Preview.mp3")
+            if choice == '9':
+                resp.pause(url="https://s3-ca-central-1.amazonaws.com/tunepocket-public/TunePocket-Pulse-Intro-Preview.mp3",length=10)
+        elif choice == '4':
+            resp.play("https://www2.cs.uic.edu/~i101/SoundFiles/ImperialMarch60.wav") 
+        elif choice == '5':
+            resp.play("https://www2.cs.uic.edu/~i101/SoundFiles/StarWars60.wav") 
+        elif choice == '6':
+            resp.play("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")  
+        elif choice == '7':
+            resp.play("https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav")  
+        elif choice == '8':
+            resp.play("https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3")                
+        elif choice == '9':
+            resp.say('You can pause the music for 10 seconds starting now!')
+            resp.pause(length=10)
         else:
             # If the caller didn't choose 1 or 2, apologize and ask them again
             resp.say("Sorry, I don't understand that choice.")
@@ -125,7 +140,7 @@ def voip_callback(request, session_id):
             # action='https://32a012da3a6f.ngrok.io/voip/api_voip/voip_callback/'
             #     + session_id)
         gather.say(
-            'Please Press 1 to connect to destination. Press 2 to end the call. Press 3 to play music.')
+            'Please Press 1 to connect to destination. Press 2 to end the call. Press 3 to play music. Press 4 to play music. Press 5 to play music. Press 6 to play music. Press 7 to play music. Press 8 to play music. Press 9 to pause music')
         resp.append(gather)
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message

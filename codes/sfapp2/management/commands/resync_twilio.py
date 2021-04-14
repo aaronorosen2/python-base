@@ -92,13 +92,13 @@ class Command(BaseCommand):
             # break
 
 #  finding URL for destination number ( conference call )
-        calls = client.api.calls.list(from_='(425) 578-5798',
-                                    to ='+919904924290',
+        calls = client.api.calls.list(from_='+14255785798',
+                                    to ='+919712735468',
                                     limit=1
                                 )
         
-        print(calls[0].date_created)
-        print(calls[0].recordings.list())
+        cprint(calls[0].date_created,color='cyan')
+        cprint(calls[0].recordings.list(),color='green')
         if calls[0].recordings.list():
             url = ('https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
                         (calls[0].recordings.list()[0].account_sid,
