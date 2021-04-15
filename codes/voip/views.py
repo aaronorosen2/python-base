@@ -112,19 +112,17 @@ def voip_callback(request, session_id):
             resp.hangup()
             return HttpResponse(resp)
         elif choice == '3':
-            resp.play("https://s3-ca-central-1.amazonaws.com/tunepocket-public/TunePocket-Pulse-Intro-Preview.mp3")
-            if choice == '9':
-                resp.pause(url="https://s3-ca-central-1.amazonaws.com/tunepocket-public/TunePocket-Pulse-Intro-Preview.mp3",length=10)
+            resp.play("https://assets.mixkit.co/sfx/preview/mixkit-small-birds-in-the-nest-29.mp3")
         elif choice == '4':
-            resp.play("https://www2.cs.uic.edu/~i101/SoundFiles/ImperialMarch60.wav") 
+            resp.play("https://www.fesliyanstudios.com/soundeffects/5-31-19FinalExports/NoAlternatesWithStereo/St/Ambient-Birds-Singing-A1-www.fesliyanstudios.com.mp3") 
         elif choice == '5':
-            resp.play("https://www2.cs.uic.edu/~i101/SoundFiles/StarWars60.wav") 
+            resp.play("http://seh-audio.s3.amazonaws.com/peacock_sounds_long.wav") 
         elif choice == '6':
-            resp.play("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")  
+            resp.play("https://nf1f8200-a.akamaihd.net/downloads/ringtones/files/mp3/beautiful-koyal-real-sound-mp3-good-morning-songsindia-net-9993.mp3")  
         elif choice == '7':
-            resp.play("https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav")  
+            resp.play("https://audio-previews.elements.envatousercontent.com/files/237106115/preview.mp3")  
         elif choice == '8':
-            resp.play("https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3")                
+            resp.play("https://assets.mixkit.co/sfx/preview/mixkit-little-birds-singing-in-the-trees-17.mp3")       
         elif choice == '9':
             resp.say('You can pause the music for 10 seconds starting now!')
             resp.pause(length=10)
@@ -137,8 +135,8 @@ def voip_callback(request, session_id):
             num_digits=1,
             action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/'
                     + session_id)
-            # action='https://32a012da3a6f.ngrok.io/voip/api_voip/voip_callback/'
-            #     + session_id)
+            # action='https://a6529f9ebc05.ngrok.io/voip/api_voip/voip_callback/'
+                # + session_id)
         gather.say(
             'Please Press 1 to connect to destination. Press 2 to end the call. Press 3 to play music. Press 4 to play music. Press 5 to play music. Press 6 to play music. Press 7 to play music. Press 8 to play music. Press 9 to pause music')
         resp.append(gather)
@@ -146,7 +144,7 @@ def voip_callback(request, session_id):
     # If the user didn't choose 1 or 2 (or anything), repeat the message
     resp.redirect(
         'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
-        # 'https://32a012da3a6f.ngrok.io/voip/api_voip/voip_callback/' + session_id)
+        # 'https://a6529f9ebc05.ngrok.io/voip/api_voip/voip_callback/' + session_id)
 
     print(str(resp))
     return HttpResponse(resp)
@@ -252,7 +250,7 @@ def join_conference(request):
                                           from_= settings.TWILIO['TWILIO_NUMBER'],
                                           to = your_number,
                                           url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
-                                        #   url='https://32a012da3a6f.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
+                                        #   url='https://a6529f9ebc05.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
                                           status_callback_event=['completed'],
                                           status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id)
                                         )
