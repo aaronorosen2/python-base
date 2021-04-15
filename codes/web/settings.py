@@ -66,7 +66,8 @@ if DEBUG:
             },
         },
         'root': {
-                'handlers': ['console', 'file',  'slack-error', "slack-info"],
+                'handlers': ['console', 'file', # 'slack-error', "slack-info"
+                            ],
                 'level': 'INFO',
             },
         'loggers': {
