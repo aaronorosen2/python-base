@@ -5,7 +5,7 @@ from .models import subscription
 
 
 class AdminSubscription(admin.ModelAdmin):
-    list_display = ('source', 'plan_ID', 'BraintreeSubscriptionID')
+    list_display = ('source', 'plan_ID', 'BraintreeSubscriptionID', )
 
 
 admin.site.register(subscription, AdminSubscription)
