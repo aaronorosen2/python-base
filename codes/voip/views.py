@@ -220,14 +220,9 @@ def join_conference(request):
         print(number)
         conference = client.conferences('EHbbfe82cb9354b08c2acca0ba8a80d1b8').participants.create(
                                     record=True,
-<<<<<<< Updated upstream
-                                    from_ = settings.TWILIO['TWILIO_NUMBER'],
-                                    to = dest_number,
-=======
                                     status_callback_event=['completed'],
                                     from_= source_number, 
                                     to = number,
->>>>>>> Stashed changes
                                     )
         print(conference)
 
