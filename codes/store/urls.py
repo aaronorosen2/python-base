@@ -16,6 +16,8 @@ urlpatterns = [
         path('userSubscribe', views.userSubscribe, name="userSubscribe"),
         path('userbrainTreeSubscription', views.userbrainTreeSubscription,
                 name="userbrainTreeSubscription"),
+        path('userbrainTreeUnsubscription', views.userbrainTreeUnsubscription,
+                name="userbrainTreeUnsubscription"),
         path('userOrderList', views.userOrderList, name='userOrderList'),
         path('deleteImage', views.deleteImage, name='deleteImage'),
         path('userProfile', views.userProfile, name='userProfile'),
@@ -28,4 +30,9 @@ urlpatterns = [
         path('StripeCheckout', views.StripeCheckout, name='StripeCheckout'),
         path("completeStripeSubscription", views.completeStripeSubscription, name="completeStripeSubscription"), #add
         path('Stripethank', views.Stripethank, name='Stripethank'),
+        path('StripeConfiguration', views.StripeConfiguration, name='StripeConfiguration'),
+        path('FCMDeviceTest', views.FCMDeviceTest, name='FCMDeviceTest'),
+        # count member in neighborhood and items 
+        path('ItemsAndMember', views.ItemsAndMember, name='ItemsAndMember'),
+        
 ]

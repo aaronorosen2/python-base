@@ -5,6 +5,8 @@ from voip.models import Phone,SMS,Call
 from termcolor import cprint
 from datetime import datetime
 import requests
+from voip.models import CallList
+from voip.models import User_leads
 
 class Command(BaseCommand):
     help = 'Fetch phone number from Twilio'
@@ -89,3 +91,53 @@ class Command(BaseCommand):
             #     cprint(f"To - {call.to}", color='magenta')
             #     cprint(f"Duration - {call.duration}", color='blue')
             # break
+
+        # finding URL for leads destination number & call date.
+        leads = User_leads.objects.all()
+        for lead in leads:
+            print(lead.phone)    
+            calls = client.api.calls.list(from_='+14255785798',
+                                        to =lead.phone,
+                                        limit=1
+                                    )
+            print("working..",calls)
+            try:
+                cprint("try", color='green')
+                last_call = calls[0].date_created
+                cprint(last_call,color='cyan')
+                cprint(calls[0].recordings.list(),color='green')
+                if calls[0].recordings.list():
+                    url = ('https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+                                (calls[0].recordings.list()[0].account_sid,
+                                calls[0].recordings.list()[0].sid))
+                    cprint(url, color='green')
+                else:
+                    cprint('url else..',color='blue')
+                    url=''
+                lead.last_call = last_call
+                lead.url = url
+                lead.save()
+            except:
+                cprint("not called.",color='red')
+
+
+        # for call in calls:
+        #     try:
+        #         try:
+        #             CallList.objects.get(from_number=call.from_, to_number=call.to,duration=call.duration,date=call.date_created)
+        #         except CallList.MultipleObjectsReturned:
+        #             continue
+
+        #     except CallList.DoesNotExist:
+        #         if call.recordings.list():
+
+        #             url = (
+        #                 'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+        #                 (call.recordings.list()[0].account_sid,
+        #                     call.recordings.list()[0].sid))
+
+        #         else:
+        #             url = ''
+
+        #         call_data = CallList(from_number=call.from_, to_number=call.to,duration=call.duration , recording_url=url,date=call.date_created)
+        #         call_data.save()

@@ -275,7 +275,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                     'message': text_data,
                 },
             )
-        elif (send_data['action'] == 'join_room'):
+        elif send_data['action'] == 'join_room':
             message = {
                 'action': 'queue_status',
                 'message': 'go_live'
@@ -305,6 +305,12 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
                 self.room_name,
                 data,
             )
+        elif send_data['action'] == 'check_connectivity':
+            import datetime
+            current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+            redisconn.hset("connected_users",
+                           self.channel_name,
+                           current_time)
 
     async def send_user_list(self):
         listOfLiveUsers = redisconn.hvals(self.room_name+'@live')
@@ -516,14 +522,14 @@ class VstreamConsumer(AsyncWebsocketConsumer):
         categories = Categories.objects.all()
         # print(categories)
         CONFERENCE_HOST = 'https://live.dreampotential.org/'
-        
+
         if len(categories) != 0:
             category_people_count = [{
                 'category': cat.category,
                 'count': len(redisconn.hkeys(cat.category)),
                 'conference_url': CONFERENCE_HOST +
-                 cat.category +
-                 '#config.prejoinPageEnabled=false&vstream=true',
+                cat.category +
+                '#config.prejoinPageEnabled=false&vstream=true',
             } for cat in categories]
             return category_people_count
         return list(categories)

@@ -1,0 +1,35 @@
+<script>
+    var socket;
+    var dictJoinRoom = {
+        action: "check_connectivity",
+        message: "Hello.."
+    }
+    function alertFunc() {
+        console.log("this is alert")
+        socket.send(JSON.stringify(dictJoinRoom));
+    }
+    function init() {
+        socket = new WebSocket('ws://' + window.location.host + '/notifications/' + 'room1' + '/');
+        socket.onopen = function open() {
+            console.log('WebSockets connection created.');
+            var dict = {
+                action: "store_user_name",
+                user_name: 'hammad',
+                email: 'hammad@gmail.com',
+                phone_number: '1234567890',
+                meeting_url: "https://localhost:8080/room1" + "#config.prejoinPageEnabled=false",
+                roomVisitor: true
+            }
+            // socket.send(document.getElementById("message").value);
+            socket.send(JSON.stringify(dict));
+            alertFunc();
+        };
+        socket.onmessage = function (event) {
+            web_socket_data = JSON.parse(event.data);
+            console.log(web_socket_data);
+        }
+        setInterval(alertFunc, 60000 * 5);
+    }
+
+    window.addEventListener("DOMContentLoaded", init, false);
+</script>

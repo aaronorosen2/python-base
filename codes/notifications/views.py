@@ -11,3 +11,6 @@ def admin_monitoring(request):
 
 def vstream_html(request):
     return render(request, "vstream.html")
+
+def disconnect_html(request):
+    return render(request, "disconnect-users.html")

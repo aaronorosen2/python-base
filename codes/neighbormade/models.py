@@ -2,9 +2,10 @@ from django.db import models
 from knox.auth import get_user_model
 
 class Neighborhood(models.Model):
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, null=True)
     state = models.CharField(max_length=250)
     city = models.CharField(max_length=250)
+    zipcode = models.CharField(max_length=25, blank=True, null=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6,
                                    blank=True, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6,

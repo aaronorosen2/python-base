@@ -56,11 +56,23 @@ class subscription(models.Model):
     is_ordered = models.BooleanField(default=False)
     date_ordered = models.DateTimeField(auto_now=True)
     plan_ID = models.CharField(max_length=70, blank=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                            null=True, blank=True)
+    source = models.CharField(max_length=250, blank=True)
 
 class BrainTreeConfig(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True)
     braintree_merchant_ID = models.CharField(max_length=70, blank=False)
     braintree_public_key = models.CharField(max_length=70, blank=False)
     braintree_private_key = models.CharField(max_length=70, blank=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                            null=True, blank=True)
+    
+class StripeConfig(models.Model):
+    id = models.AutoField(auto_created=True, primary_key=True)
+    STRIPE_SECRET_KEY = models.CharField(max_length=70, blank=False)
+    STRIPE_PUBLISHABLE_KEY = models.CharField(max_length=70, blank=False)
+    STRIPE_LIVE_MODE = models.BooleanField(default=True)
+    STRIPE_date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                             null=True, blank=True)

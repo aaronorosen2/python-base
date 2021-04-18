@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect
-from .models import Teacher,Student, Class, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
+from .models import Teacher,Student, Class, InviteClass, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
 from django.contrib.auth.models import User
 from django.http.response import JsonResponse,HttpResponseRedirect
 from django.http import QueryDict
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
-from .serializers import TeacherSerializer,StudentSerializer,UserSerializer, ClassSerializer, ClassEnrolledSerializer, ClassEmailSerializer, ClassSMSSerializer, StudentEmailSerializer, StudentSMSSerializer
-from rest_framework.decorators import api_view
+from .serializers import TeacherSerializer,StudentSerializer,UserSerializer, ClassSerializer, ClassEnrolledSerializer, ClassEmailSerializer, ClassSMSSerializer, StudentEmailSerializer, StudentSMSSerializer, InviteLinkSerializer
+from knox.auth import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,7 +18,8 @@ from django.views.decorators.csrf import csrf_exempt
 from form_lead.utils.email_util import send_raw_email
 from sfapp2.utils.twilio import send_sms
 import json
-
+import uuid
+from django.core.validators import validate_email
 
 # teacher api
 @api_view(['GET','POST','DELETE','PUT'])
@@ -136,11 +139,12 @@ def classapi(request):
         return JsonResponse(data={"result":False,"error":"Please include class id like ?id=1"},status=400)
 
 @api_view(['GET','POST','DELETE','PUT'])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def classenrolledapi(request):
 
     if request.method == 'GET':
-
-        serializer = ClassEnrolledSerializer(ClassEnrolled.objects.all(),many=True)
+        serializer = ClassEnrolledSerializer(ClassEnrolled.objects.filter(class_enrolled__in=Class.objects.filter(user=request.user)),many=True)
         
         return JsonResponse(serializer.data,safe=False)
 
@@ -230,3 +234,58 @@ def send_text(request):
 def student_text(request):
     serializer = StudentSMSSerializer(StudentSMSAlert.objects.all(),many=True)
     return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+@csrf_exempt
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_invitation_link(request):
+    invite = InviteClass.objects.get(class_invited_id=Class.objects.get(id=request.GET.get('class_id')))
+    if invite and invite is not None:
+        invite = InviteLinkSerializer(invite).data
+        return JsonResponse({'uuid': invite['uuid'], 'class_id': invite['class_invited']['id']}, safe=False)
+    else:
+        invite = InviteClass(class_invited_id=request.GET.get('class_id'), uuid= str(uuid.uuid4()))
+        invite.save()
+        invite = InviteLinkSerializer(invite).data
+        return JsonResponse({'uuid': invite['uuid'], 'class_id': invite['class_invited']['id']})
+
+@csrf_exempt
+def get_invitation_info(request):
+    invite = InviteClass.objects.filter(class_invited_id=Class.objects.get(id=request.GET.get('class_id'))).first()
+    if invite and invite is not None:
+        invite = InviteLinkSerializer(invite).data
+        return JsonResponse(invite, safe=False)
+
+@api_view(['POST'])
+@csrf_exempt
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+def joinClass(request):
+    if request.POST.get('phone') and request.POST.get('class_id') and request.POST.get('name') and isValidEmail(request.POST.get('email')):
+        try:
+            class_ = Class.objects.get(id=request.POST['class_id'])
+            if class_ is not None:
+                student = Student.objects.filter(email=request.POST.get('email'),user=class_.user).first()
+                if student is None:
+                    student = Student(name=request.POST.get('name'),email=request.POST.get('email'),phone=request.data.get('phone'),user=class_.user)
+                    student.save()
+                enroll_exists = ClassEnrolled.objects.filter(student=student,class_enrolled=class_).first()
+                if enroll_exists is not None:
+                    return JsonResponse({'success': False,'msg': 'Already enrolled!'},status=409)
+                enroll = ClassEnrolled(student=student,class_enrolled=class_)
+                enroll.save()
+                return JsonResponse({"success":True},status=201)
+        except Exception as e:
+            # print(e)
+            return JsonResponse({"success":False},status=400)
+    return JsonResponse({"success":False, 'msg': 'Invalid parameters'},status=422)
+
+def isValidEmail(email):
+    try:
+        validate_email(email)
+        return True
+    except Exception as e:
+        print(e)
+        return False

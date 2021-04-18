@@ -9,6 +9,8 @@ import requests
 import praw
 import re
 from datetime import datetime
+# from uszipcode.search import SearchEngine
+
 # from bs4 import BeautifulSoup
 
 # Create your views here.
@@ -37,6 +39,35 @@ def importNeighbours(request):
         Neighborhood.objects.bulk_create(hoods, 100)
     return JsonResponse({'success': True, 'hoodsAdded': len(hoods)})
 
+
+def importNbrWithZip(request):
+    from uszipcode.search import SearchEngine
+    search = SearchEngine()
+    states = ["Alabama", "Arkansas", "California", "Colorado", "Florida", "Georgia", "Illinois", "Indiana", "Iowa", "Kentucky", "Louisiana", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Missouri", "Nebraska", "New York", "North Carolina", "North Dakota", "Ohio", "Oregon", "Pennsylvania", "Tennessee", "Texas", "Utah", "Virginia", "Washington", "Washington State", "Wisconsin","Alaska","Hawaii","Arizona","New Jersey","Montana","Maine","Nevada","Connecticut","New Maxico","Mississippi","South Carolina","Kansas","Delaware","Wyoming","Idaho","Rhode Island","Vermont","West Virginia","South Dakota","New Hampshire","Oklahoma"]
+    totalImported = 0
+    states = list(set(states))
+    for state in states:
+        hoodsInState = []
+        stateData = search.by_state(state, zipcode_type='Standard', sort_by='zipcode', ascending=True, returns=50000)
+        for zipcode in stateData:
+            hoodsInState.append(Neighborhood(
+                zipcode = zipcode.zipcode,
+                state = state,
+                city = zipcode.major_city, 
+                latitude = zipcode.lat,
+                longitude = zipcode.lng)
+                )
+        if len(hoodsInState):
+            print(state)
+            try:
+                Neighborhood.objects.bulk_create(hoodsInState, 100)
+            except Exception as e:
+                print(e)            
+            totalImported += len(hoodsInState)
+            print('imported ', len(hoodsInState), 'zipcodes from -', state)
+        print('total imported:', totalImported)
+    return JsonResponse({'Total zipcodes imported': totalImported})
+
 def viewNeighbours(request):
     nbr = Neighborhood.objects.all()
     nbr_serialized = NeighborhoodSerializer(nbr, many=True)
@@ -45,8 +76,9 @@ def viewNeighbours(request):
 @api_view(['GET'])
 def get_states(request):
     # if request.user.is_authenticated:
-    states = Neighborhood.objects.values_list('state', flat=True).distinct()
+    states = Neighborhood.objects.values_list('state', flat=True).distinct().order_by('state')
     state_serialized = list(states)
+    # state_serialized.sort()
     return JsonResponse({'states':state_serialized})
 
 @api_view(['GET'])
