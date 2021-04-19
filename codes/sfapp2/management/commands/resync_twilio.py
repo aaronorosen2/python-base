@@ -18,7 +18,7 @@ class Command(BaseCommand):
         account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
         auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
 
-        client = Client(account_sid, auth_token)
+        # client = Client(account_sid, auth_token)
         # print(len(client.calls.list()))
         # import logging
         # logging.basicConfig(filename='./log.txt')
@@ -93,10 +93,13 @@ class Command(BaseCommand):
             # break
 
         # finding URL for leads destination number & call date.
+
+        client = Client('AC2d1ed367f376eda8265873443d929b4c', 'b7c99cd1325c714acddbe4997e80bf87')
+
         leads = User_leads.objects.all()
         for lead in leads:
             print(lead.phone)    
-            calls = client.api.calls.list(from_='+14255785798',
+            calls = client.api.calls.list(from_='(425) 276-6495',
                                         to =lead.phone,
                                         limit=1
                                     )
@@ -111,11 +114,11 @@ class Command(BaseCommand):
                                 (calls[0].recordings.list()[0].account_sid,
                                 calls[0].recordings.list()[0].sid))
                     cprint(url, color='green')
+                    lead.url = url
                 else:
                     cprint('url else..',color='blue')
                     url=''
                 lead.last_call = last_call
-                lead.url = url
                 lead.save()
             except:
                 cprint("not called.",color='red')

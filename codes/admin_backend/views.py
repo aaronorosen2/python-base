@@ -95,10 +95,11 @@ def list_calls(request):
 
 @csrf_exempt
 def voice(request):
+    # +18434259777 Aaron number
     resp = (
         '<Response>'
             '<Dial record="record-from-ringing-dual">'
-                '<Number>+18434259777</Number>'
+                '<Number>+918141923027</Number>'
             '</Dial>'
         '</Response>')
     return HttpResponse(resp)
