@@ -32,9 +32,9 @@ def get_session_id(source_number, destination_number):
 
 def get_client():
     try:
-        # twilio_client = Client(settings.TWILIO['TWILIO_ACCOUNT_SID'],
-        #                        settings.TWILIO['TWILIO_AUTH_TOKEN'])
-        twilio_client = Client('AC2d1ed367f376eda8265873443d929b4c','b7c99cd1325c714acddbe4997e80bf87')  # gajanan twilio for testing.
+        twilio_client = Client(settings.TWILIO['TWILIO_ACCOUNT_SID'],
+                               settings.TWILIO['TWILIO_AUTH_TOKEN'])
+        # twilio_client = Client('AC2d1ed367f376eda8265873443d929b4c','b7c99cd1325c714acddbe4997e80bf87')  # gajanan twilio for testing.
         return twilio_client
     except Exception as e:
         msg = "Missing configuration variable: {}".format(e)
@@ -93,8 +93,6 @@ def twilio_call_status(request):
 @csrf_exempt
 def voip_callback(request, session_id):
 
-    cprint("voip call back.....",color='red')
-    cprint(request.POST,color='cyan')
     resp = VoiceResponse()
 
     # If Twilio's request to our app included already
@@ -107,8 +105,8 @@ def voip_callback(request, session_id):
         if choice == '1':
             resp.say('Adding destination number to the conference!')
             resp.redirect(
-                # 'https://api.dreampotential.org/voip/api_voip/add_user/'
-                'https://237b51ab36d2.ngrok.io/voip/api_voip/add_user/'
+                'https://api.dreampotential.org/voip/api_voip/add_user/'
+                # 'https://237b51ab36d2.ngrok.io/voip/api_voip/add_user/'
                 + session_id)
             print(str(resp))
             return HttpResponse(resp)
@@ -118,25 +116,13 @@ def voip_callback(request, session_id):
             resp.hangup()
             return HttpResponse(resp)
         elif choice == '3':
-            cprint("choice_3",color='green')
             resp.play("https://assets.mixkit.co/sfx/preview/mixkit-small-birds-in-the-nest-29.mp3")
-            if 'Digits' in request.POST:
-                if choice == '9':
-                    cprint("choice_3_9",color='red')
-                    resp.say('You can pause the music for 10 seconds starting now!')
-                    resp.redirect(
-                        'https://237b51ab36d2.ngrok.io/voip/api_voip/voip_callback/' + session_id)
-                # resp.pause(length=10)
         elif choice == '4':
             resp.play("https://orangefreesounds.com/wp-content/uploads/2021/04/Bird-tweeting-sound-effect.mp3") 
         elif choice == '5':
             resp.play("http://seh-audio.s3.amazonaws.com/peacock_sounds_long.wav") 
         elif choice == '6':
-            resp.play("https://nf1f8200-a.akamaihd.net/downloads/ringtones/files/mp3/beautiful-koyal-real-sound-mp3-good-morning-songsindia-net-9993.mp3")  
-            if choice == '9':
-                resp.say('You can pause the music for 10 seconds starting now!')
-                resp.redirect(
-                    'https://237b51ab36d2.ngrok.io/voip/api_voip/voip_callback/' + session_id)
+            resp.play("https://nf1f8200-a.akamaihd.net/downloads/ringtones/files/mp3/beautiful-koyal-real-sound-mp3-good-morning-songsindia-net-9993.mp3")
         elif choice == '7':
             resp.play("https://audio-previews.elements.envatousercontent.com/files/237106115/preview.mp3")  
         elif choice == '8':
@@ -144,8 +130,7 @@ def voip_callback(request, session_id):
         elif choice == '9':
             resp.say('You can pause the music for 10 seconds starting now!')
             resp.pause(length=10)
-            # resp.push(play)
-            # resp.say('You can pause the music for 10 seconds starting now!')
+
         else:
             # If the caller didn't choose 1 or 2, apologize and ask them again
             resp.say("Sorry, I don't understand that choice.")
@@ -153,18 +138,18 @@ def voip_callback(request, session_id):
         # Get user input
         gather = Gather(
             num_digits=1,
-            # action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/'
-            #         + session_id)
-            action='https://237b51ab36d2.ngrok.io/voip/api_voip/voip_callback/'
-                + session_id)
+            action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/'
+                    + session_id)
+            # action='https://237b51ab36d2.ngrok.io/voip/api_voip/voip_callback/'
+                # + session_id)
         gather.say(
             'Please Press 1 to connect to destination. Press 2 to terminate the call. Press 3 to play music. Press 4 to play music. Press 5 to play music. Press 6 to play music. Press 7 to play music. Press 8 to play music. Press 9 to pause music')
         resp.append(gather)
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
     resp.redirect(
-        # 'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
-        'https://237b51ab36d2.ngrok.io/voip/api_voip/voip_callback/' + session_id)
+        'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
+        # 'https://237b51ab36d2.ngrok.io/voip/api_voip/voip_callback/' + session_id)
 
     print(str(resp))
     return HttpResponse(resp)
@@ -172,7 +157,6 @@ def voip_callback(request, session_id):
 @csrf_exempt
 def add_user_to_conf(request, session_id):
     # print(request.POST)
-    cprint('add user to conf.',color='green')
     destination_number = sessionID_to_destNo.get(session_id)
     print("Attemtping to add phone number to call: " + destination_number)
 
@@ -188,8 +172,8 @@ def add_user_to_conf(request, session_id):
         # from_=settings.TWILIO['TWILIO_NUMBER'],
         from_='(425) 276-6495',
         to=destination_number,
-        # conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id,
-        conference_status_callback='https://237b51ab36d2.ngrok.io/voip/api_voip/leave_conf/' + session_id,
+        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id,
+        # conference_status_callback='https://237b51ab36d2.ngrok.io/voip/api_voip/leave_conf/' + session_id,
         conference_status_callback_event="leave")
 
     return HttpResponse(str(resp))
@@ -219,41 +203,40 @@ def leave_conf(request, session_id):
                 session_id)).update(status='completed')
         print("Call ended")
 
-        calls = client.api.calls.list(from_='(425) 276-6495',
-                                    to =8141923027,
-                                    limit=1
-                                    )
-        print("working..",calls)
+        # calls = client.api.calls.list(from_='(425) 276-6495',
+        #                             to =8141923027,
+        #                             limit=1
+        #                             )
+        # print("working..",calls)
 
 
 
-        try:
-            cprint("try", color='green')
-            last_call = calls[0].date_created
-            cprint(last_call,color='cyan')
-            cprint(calls[0].recordings.list(),color='green')
-            if calls[0].recordings.list():
-                url = ('https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
-                            (calls[0].recordings.list()[0].account_sid,
-                            calls[0].recordings.list()[0].sid))
-                cprint(url, color='green')
-                # lead.url = url
-            else:
-                cprint('url else..',color='blue')
-                url=''
-            lead = User_leads.objects.get(phone=8141923027)
-            lead.url = url
-            lead.last_call = last_call
-            lead.save()
-        except:
-            cprint("not called.",color='red')
+        # try:
+        #     cprint("try", color='green')
+        #     last_call = calls[0].date_created
+        #     cprint(last_call,color='cyan')
+        #     cprint(calls[0].recordings.list(),color='green')
+        #     if calls[0].recordings.list():
+        #         url = ('https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+        #                     (calls[0].recordings.list()[0].account_sid,
+        #                     calls[0].recordings.list()[0].sid))
+        #         cprint(url, color='green')
+        #         # lead.url = url
+        #     else:
+        #         cprint('url else..',color='blue')
+        #         url=''
+        #     lead = User_leads.objects.get(phone=8141923027)
+        #     lead.url = url
+        #     lead.last_call = last_call
+        #     lead.save()
+        # except:
+        #     cprint("not called.",color='red')
 
     return HttpResponse('')
 
 
 @csrf_exempt
 def complete_call(request, session_id):
-    cprint("call complited...",color='red')
     # print(request.POST)
     print("## Ending conference call, callee rejected call")
     global sessionID_to_confsid
@@ -269,17 +252,13 @@ def complete_call(request, session_id):
             client.conferences(sessionID_to_confsid.get(
                 session_id)).update(status='completed')
     finally:
-        cprint("Call complited finally",color='yellow')
+        print("Call ended")
 
     return HttpResponse('')
 
 
 @csrf_exempt
 def join_conference(request):
-    return JsonResponse({'message': 'Success!'}, status=200)
-
-
-    cprint("join conference.....",color='cyan')
     global sessionID_to_destNo
     source_number = request.POST.get("source_number")
     dest_number = request.POST.get("dest_number")
@@ -303,16 +282,14 @@ def join_conference(request):
         session_id = "confernce"
         sessionID_to_destNo[session_id] = dest_number
         call = twilio_client.calls.create(record=True,
-                                        #   from_= settings.TWILIO['TWILIO_NUMBER'],
-                                          from_='(425) 276-6495',
+                                          from_= settings.TWILIO['TWILIO_NUMBER'],
                                           to = your_number,
-                                        #   url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
-                                          url='https://237b51ab36d2.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
+                                          url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
+                                        #   url='https://237b51ab36d2.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
                                           status_callback_event=['completed'],
-                                        #   status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id),
-                                          status_callback='https://237b51ab36d2.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
+                                          status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id),
+                                        #   status_callback='https://237b51ab36d2.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
                                         )
-        cprint("call done with lead.....", color='green')
 
         global sessionID_to_callsid    
         sessionID_to_callsid[session_id] = call.sid
