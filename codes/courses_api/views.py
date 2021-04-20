@@ -44,6 +44,7 @@ def lesson_create(request):
     les_.lesson_name = request.data["lesson_name"]
     les_.meta_attributes = request.data["meta_attributes"]
     les_.user = user
+    les_.lesson_is_public = request.data["lesson_is_public"]
     les_.save()
     for flashcard in request.data["flashcards"]:
         question=""
@@ -129,23 +130,43 @@ def lesson_create(request):
     return Response(LessonSerializer(les_).data)
 
 @api_view(['GET'])
-def lesson_read(request,pk):
+def lesson_read(request, pk):
     les_= Lesson.objects.get(id=pk)
     less_serialized = LessonSerializer(les_)
     data = less_serialized.data
-    for card in data["flashcards"]:
-        if (card['lesson_type'] == "BrainTree"):
-            if card['braintree_config']:
-                obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
-                card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
-                card['braintree_public_key'] = obj_braintree_config.braintree_public_key
-                card['braintree_private_key'] = obj_braintree_config.braintree_private_key
+    try:
+        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = User.objects.get(id=token.user_id)
+        for card in data["flashcards"]:
+            if (card['lesson_type'] == "BrainTree"):
+                if card['braintree_config']:
+                    obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
+                    card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
+                    card['braintree_public_key'] = obj_braintree_config.braintree_public_key
+                    card['braintree_private_key'] = obj_braintree_config.braintree_private_key
 
-            if card['item_store']:
-                obj_item = item.objects.get(id=card['item_store'])
-                card['braintree_item_name'] = obj_item.title
-                card['braintree_item_price'] = obj_item.price
-    return Response(data)
+                if card['item_store']:
+                    obj_item = item.objects.get(id=card['item_store'])
+                    card['braintree_item_name'] = obj_item.title
+                    card['braintree_item_price'] = obj_item.price
+        return Response(data)
+    except:
+        if data['lesson_is_public'] == True:
+            for card in data["flashcards"]:
+                if (card['lesson_type'] == "BrainTree"):
+                    if card['braintree_config']:
+                        obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
+                        card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
+                        card['braintree_public_key'] = obj_braintree_config.braintree_public_key
+                        card['braintree_private_key'] = obj_braintree_config.braintree_private_key
+
+                    if card['item_store']:
+                        obj_item = item.objects.get(id=card['item_store'])
+                        card['braintree_item_name'] = obj_item.title
+                        card['braintree_item_price'] = obj_item.price
+            return Response(data)
+        else:
+            return Response({'msg':"you do not has access to view this lesson"},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET','POST','PUT','DELETE'])
 def lesson_all(request):
@@ -184,9 +205,12 @@ def lesson_all(request):
 def lesson_update(request,pk):
     lesson = Lesson.objects.get(id=pk)
     lesson_name = request.data['lesson_name']
+    lesson_is_public = request.data['lesson_is_public']
     meta_attributes = request.data['meta_attributes']
     Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
     Lesson.objects.filter(id=pk).update(meta_attributes=meta_attributes)
+    Lesson.objects.filter(id=pk).update(lesson_is_public=lesson_is_public)
+
     for fc in FlashCard.objects.filter(lesson=lesson):
         toDelete = True
         for flashcard in request.data["flashcards"]:

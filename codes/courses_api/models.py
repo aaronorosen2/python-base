@@ -12,7 +12,8 @@ class Lesson(models.Model):
                              null=True, blank=True,
                              default=None)
     meta_attributes = models.CharField(max_length=100, blank=True, default='')
-
+    lesson_is_public = models.BooleanField(default=False)
+    
     def __str__(self):
         return self.lesson_name
 

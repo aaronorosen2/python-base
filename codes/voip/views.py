@@ -261,8 +261,22 @@ def complete_call(request, session_id):
 def join_conference(request):
     global sessionID_to_destNo
     source_number = request.POST.get("source_number")
+
+    
+    client = get_client()
+    for number in numberList:
+        print(number)
+        conference = client.conferences('EHbbfe82cb9354b08c2acca0ba8a80d1b8').participants.create(
+                                    record=True,
+                                    status_callback_event=['completed'],
+                                    from_= source_number, 
+                                    to = number,
+                                    )
+        print(conference)
+
     dest_number = request.POST.get("dest_number")
     your_number = request.POST.get("your_number")
+
 
     # twilio_client = get_client()
     # call = twilio_client.calls.create(
