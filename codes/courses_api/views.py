@@ -44,21 +44,21 @@ def lesson_create(request):
     les_.lesson_name = request.data["lesson_name"]
     les_.meta_attributes = request.data["meta_attributes"]
     les_.user = user
-    # XXX default created should be false.
-    les_.lesson_is_public = request.data.get("lesson_is_public", True)
+    les_.lesson_is_public = request.data["lesson_is_public"]
     les_.save()
     for flashcard in request.data["flashcards"]:
-        question = ""
-        options = []
-        answer = ""
-        image = ""
-        braintree_merchant_ID = ""
-        braintree_public_key = ""
-        braintree_private_key = ""
-        braintree_item_name = ""
-        braintree_item_price = ""
+        question=""
+        options=[]
+        answer=""
+        image=""
+        braintree_merchant_ID=""
+        braintree_public_key=""
+        braintree_private_key=""
+        braintree_item_name=""
+        braintree_item_price=""
+        
         lesson_type = flashcard["lesson_type"]
-        position = flashcard["position"]
+        position =flashcard["position"]
 
         if "question" in flashcard:
             question = flashcard["question"]
@@ -588,7 +588,7 @@ def invite_email(request):
                             subject=subject,
                             message_text=f"{body}&params={unique_id}",
                             message_html=None)
-            return JsonResponse({"sucess":True}, status=200)
+            return JsonResponse({"sucess":True},status=200)
         else:
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
     
@@ -622,19 +622,14 @@ def invite_text(request):
                 unique_id = ''
                 params = str(uuid.uuid4())
 
-                invited = Invite.objects.filter(
-                    lesson_id =request.data.get('lesson'),
-                    student_id=std.student.id,
-                    invite_type=invite_type)
+                invited = Invite.objects.filter(lesson_id =request.data.get('lesson'),student_id=std.student.id,invite_type=invite_type)
                 if invited:
                     unique_id = invited.get().params
                 else:
-                    invite = Invite(lesson=lesson, student=student,
-                                    params=params,invite_type=invite_type)
+                    invite = Invite(lesson=lesson,student=student,params=params,invite_type=invite_type)
                     invite.save()
                     unique_id = invite.params
-                send_sms(to_number=std.student.phone,
-                         body=subject +"\n\n"+ f"{body}&params={unique_id}")
+                send_sms(to_number=std.student.phone,body=subject +"\n\n"+ f"{body}&params={unique_id}")
             return JsonResponse({"sucess":True},status=200)
         else:
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
