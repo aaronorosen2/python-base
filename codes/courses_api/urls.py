@@ -9,6 +9,7 @@ urlpatterns = [
     path("lesson/read/<int:pk>", views.lesson_read, name="lesson-read"),
     path("lesson/update/<int:pk>/", views.lesson_update, name="lesson-update"),
     path("lesson/delete/<int:pk>/", views.lesson_delete, name="lesson-delete"),
+    path("slide/read/<int:pk>", views.slide_read, name="slide-read"),
     path("flashcard/create/<str:lessonId>",
          views.flashcard_create, name="flashcard-create"),
     path("flashcard/read/<int:pk>/",
