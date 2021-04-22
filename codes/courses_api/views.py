@@ -501,6 +501,20 @@ def get_user_session(response):
     return Response({'message': 'success',
     'session_id': user_session.session_id})
 
+
+@api_view(['POST'])
+def user_session_event(request,flashcard_id,session_id):
+    created_at = UserSession.objects.get(session_id=session_id).created_at
+    session_event_oject = UserSessionEvent(
+                            flash_card = FlashCard.objects.get(pk=flashcard_id),
+                            user_session = UserSession.objects.get(session_id=session_id),
+                            ip_address = request.data['ip_address'],
+                            user_device = request.data['user_device'],
+                            create_at = created_at,
+                            )
+    session_event_oject.save()
+    return Response({'message': 'success'})
+
 @api_view(['POST'])
 def confirm_phone_number(request):
     phone_number = request.data['phone_number']
