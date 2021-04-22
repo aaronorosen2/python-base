@@ -141,3 +141,19 @@ class Command(BaseCommand):
 
         #         call_data = CallList(from_number=call.from_, to_number=call.to,duration=call.duration , recording_url=url,date=call.date_created)
         #         call_data.save()
+
+
+
+        for call in calls:
+            if not CallList.objects.filter(from_number=call.from_,to_number=call.to,duration=call.duration,date=call.date_created).exists():
+                print('not exist ----------------------------------------------------------------->>>>>>>>>>>>>>>>..')
+                if call.recordings.list():
+                    url = (
+                        'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+                            (call.recordings.list()[0].account_sid,
+                            call.recordings.list()[0].sid))
+                else:
+                    url = ''
+                
+                record = CallList(from_number=call.from_,to_number=call.to,duration=call.duration,date=call.date_created,recording_url=url)
+                record.save()

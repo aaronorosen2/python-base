@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+
     path("", views.apiOverview),
     path("lesson/create", views.lesson_create, name="lesson-create"),
     path("lesson/all", views.lesson_all, name="lesson-all"),
@@ -26,18 +27,25 @@ urlpatterns = [
     path("flashcard/response",
          views.flashcard_response, name="flashcard-response"),
 
-    path("lesson/response/get/<str:lesson_id>/<str:session_id>",
-         views.lesson_flashcard_responses, name="get-lesson-response"),
+     path("session/create/<int:flashcardId>/",
+          views.session_create, name="session-create"),
+     path("session/list", views.session_list, name="session-list"),
+     path("session/update/<int:flashcardId>/<int:pk>/",
+          views.session_update, name="session-update"),
+     path("session/get", views.get_user_session, name="get-user-session"),
+     path("session/event/<str:flashcard_id>/<str:session_id>",
+          views.user_session_event, name="session_event"),
 
-    path("lesson/response/get/<str:lesson_id>/",
-         views.overall_flashcard_responses, name="get-lesson-response"),
-         
-    path("session/get", views.get_user_session, name="get-user-session"),
-    path("confirm/phone", views.confirm_phone_number, name="confirm-phone-numer"),
-    path("verify/phone", views.verify_2fa, name="verify-2fa"),
-    path("verify/phone-verify",views.Phone_verification_check,name="phone_verfication_check"),
-    path("invite/text",views.invite_text,name="invite-text"),
-    path("invite/email",views.invite_email,name="invite-email"),
-    path("invite/response", views.invite_response, name="invite-response"),
+     path("lesson/response/get/<str:lesson_id>/<str:session_id>",
+          views.lesson_flashcard_responses, name="get-lesson-response"),
+     path("lesson/response/get/<str:lesson_id>/",
+          views.overall_flashcard_responses, name="get-lesson-response"),
+
+     path("confirm/phone", views.confirm_phone_number, name="confirm-phone-numer"),
+     path("verify/phone", views.verify_2fa, name="verify-2fa"),
+     path("verify/phone-verify",views.Phone_verification_check,name="phone_verfication_check"),
+     path("invite/text",views.invite_text,name="invite-text"),
+     path("invite/email",views.invite_email,name="invite-email"),
+     path("invite/response", views.invite_response, name="invite-response"),
 
 ]

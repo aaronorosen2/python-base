@@ -115,3 +115,4 @@ xhtml2pdf==0.2.5
 zipp==3.4.0
 zope.interface==5.2.0
 fcm-django
+termcolor
