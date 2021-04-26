@@ -276,9 +276,11 @@ def Subscribe(request):
     # GET / PUT / DELETE item by pk (id)
     try:
         client_token = generate_client_token()
-        return render(request, 'subscription.html', {"client_token": client_token})
+        return render(request, 'subscription.html',
+                      {"client_token": client_token})
     except item.DoesNotExist:
-        return JsonResponse({'message': 'subscription does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'message': 'subscription does not exist'},
+                             status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET', 'POST'])
@@ -703,9 +705,8 @@ def ItemsAndMember(request):
                             temp_str |= Q(user=User.objects.get(id=user_data[i].user.id))
                     item_obj = item.objects.filter(temp_str)
                     items_count = len(item_obj)
-                
-                return JsonResponse({"success":True,"items_count":items_count,"member_count":member_count})
+                return JsonResponse({"success":True, "items_count":items_count,"member_count":member_count})
             else:
-                return JsonResponse({"success":True,"status":"No profile with this user"},status=201)
+                return JsonResponse({"success":True, "status":"No profile with this user"},status=201)
         except:
-            return JsonResponse({"success":False},status=400)
+            return JsonResponse({"success":False}, status=400)
