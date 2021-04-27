@@ -207,13 +207,14 @@ def lesson_all(request):
 def lesson_update(request, pk):
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-        lesson = Lesson.objects.get_object_or_404(user=token.user_id, id=pk)
+        user = User.objects.get(id=token.user_id)
+        lesson = Lesson.objects.get(user=user,id=pk)
         lesson_name = request.data['lesson_name']
         lesson_is_public = request.data['lesson_is_public']
         meta_attributes = request.data['meta_attributes']
-        Lesson.objects.filter(user=token.user_id, id=pk).update(lesson_name=lesson_name)
-        Lesson.objects.filter(user=token.user_id, id=pk).update(meta_attributes=meta_attributes)
-        Lesson.objects.filter(user=token.user_id, id=pk).update(lesson_is_public=lesson_is_public)
+        Lesson.objects.filter(user=user,id=pk).update(lesson_name=lesson_name)
+        Lesson.objects.filter(user=user,id=pk).update(meta_attributes=meta_attributes)
+        Lesson.objects.filter(user=user,id=pk).update(lesson_is_public=lesson_is_public)
 
         for fc in FlashCard.objects.filter(lesson=lesson):
             toDelete = True
