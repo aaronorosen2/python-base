@@ -19,11 +19,6 @@ urlpatterns = [
          views.flashcard_update, name="flashcard-update"),
     path("flashcard/delete/<int:pk>/",
          views.flashcard_delete, name="flashcard-delete"),
-    path("session/create/<int:flashcardId>/",
-         views.session_create, name="session-create"),
-    path("session/list", views.session_list, name="session-list"),
-    path("session/update/<int:flashcardId>/<int:pk>/",
-         views.session_update, name="session-update"),
     path("flashcard/response",
          views.flashcard_response, name="flashcard-response"),
 
@@ -40,7 +35,8 @@ urlpatterns = [
           views.lesson_flashcard_responses, name="get-lesson-response"),
      path("lesson/response/get/<str:lesson_id>/",
           views.overall_flashcard_responses, name="get-lesson-response"),
-
+     path("user/response/get/<str:lesson_id>/",
+          views.user_responses, name="get-lesson-response"),     
      path("confirm/phone", views.confirm_phone_number, name="confirm-phone-numer"),
      path("verify/phone", views.verify_2fa, name="verify-2fa"),
      path("verify/phone-verify",views.Phone_verification_check,name="phone_verfication_check"),

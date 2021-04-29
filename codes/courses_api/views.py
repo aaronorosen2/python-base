@@ -6,7 +6,7 @@ from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer
-from .serializers import UserSessionEventSerializer
+from .serializers import UserSessionEventSerializer,UserSessionSerializer
 from .serializers import FlashcardResponseSerializer
 from .models import Lesson
 from .models import FlashCard
@@ -202,7 +202,8 @@ def lesson_all(request):
         except:
             return JsonResponse({"success":False},status=status.HTTP_204_NO_CONTENT)
 
-            
+from termcolor import cprint
+
 @api_view(['POST'])
 def lesson_update(request, pk):
     try:
@@ -217,8 +218,10 @@ def lesson_update(request, pk):
         Lesson.objects.filter(user=user,id=pk).update(lesson_is_public=lesson_is_public)
 
         for fc in FlashCard.objects.filter(lesson=lesson):
+            cprint(fc,color='cyan')
             toDelete = True
             for flashcard in request.data["flashcards"]:
+                cprint(flashcard,color="yellow")
                 if "id" in flashcard:
                     if fc.id == flashcard["id"]:
                         toDelete = False
@@ -334,6 +337,7 @@ def lesson_update(request, pk):
                 
         return Response(LessonSerializer(lesson).data)
     except:
+        cprint("except block", "red")
         return Response({"msg":"you cannot update this lesson"},status=status.HTTP_401_UNAUTHORIZED)
         
 
@@ -519,12 +523,27 @@ def lesson_flashcard_responses(request,lesson_id,session_id):
 
 @api_view(['GET'])
 def overall_flashcard_responses(request,lesson_id):
+    print("userrr",request.user.is_authenticated)
     lesson = Lesson.objects.get(id=lesson_id)
     flashcard_responses = FlashCardResponse.objects.filter(lesson=lesson)
     return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
 
 @api_view(['GET'])
-def get_user_session(response):
+def user_responses(request,session_id):
+    # lesson = Lesson.objects.get(id=lesson_id)
+    user_session_res = UserSession.objects.get(session_id=session_id)
+    return Response(UserSessionSerializer(user_session_res,many=True).data)
+
+
+
+
+@api_view(['GET'])
+def logged_user(request):
+    print("reuest token")
+
+
+@api_view(['GET'])
+def get_user_session(request):
     user_session = UserSession()
     user_session.session_id = str(uuid.uuid4())
     user_session.save()
@@ -544,7 +563,25 @@ def user_session_event(request,flashcard_id,session_id):
                             create_at = created_at,
                             )
     session_event_oject.save()
+    # try:
+    #     user_session = UserSession.objects.get(session_id=session_id)
+    #     print(flashcard_id, session_id,user_session.id)
+    #     session_event_oject = UserSessionEvent.objects.get(flash_card=flashcard_id, user_session = user_session)
+    #     print(session_event_oject.start_time )
+    #     session_event_oject.save()
+    # except:
+        # created_at = UserSession.objects.get(session_id=session_id).created_at
+        # session_event_oject = UserSessionEvent(
+        #                         flash_card = FlashCard.objects.get(pk=flashcard_id),
+        #                         user_session = UserSession.objects.get(session_id=session_id),
+        #                         ip_address = request.data['ip_address'],
+        #                         user_device = request.data['user_device'],
+        #                         create_at = created_at,
+        #                         )
+        # session_event_oject.save()
     return Response({'message': 'success'})
+
+
 
 @api_view(['POST'])
 def confirm_phone_number(request):
