@@ -218,7 +218,6 @@ def lesson_update(request, pk):
         Lesson.objects.filter(user=user,id=pk).update(lesson_is_public=lesson_is_public)
 
         for fc in FlashCard.objects.filter(lesson=lesson):
-            cprint(fc,color='cyan')
             toDelete = True
             for flashcard in request.data["flashcards"]:
                 cprint(flashcard,color="yellow")
@@ -337,7 +336,6 @@ def lesson_update(request, pk):
                 
         return Response(LessonSerializer(lesson).data)
     except:
-        cprint("except block", "red")
         return Response({"msg":"you cannot update this lesson"},status=status.HTTP_401_UNAUTHORIZED)
         
 
@@ -350,7 +348,6 @@ def lesson_delete(request,pk):
 
 @api_view(["GET"])
 def slide_read(request, pk):
-    print(pk)
     les_= Lesson.objects.get(id=pk)
     less_serialized = LessonSerializer(les_)
     data = less_serialized.data
@@ -480,6 +477,8 @@ def flashcard_response(request):
     session_id = request.data['session_id']
     answer = request.data['answer']
     params = request.data.get('params',None)
+    latitude = float(request.data,get('latitude',0))
+    longitude = float(request.data.get('longitude',0))
     student = ''
     if params:
         student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
@@ -504,13 +503,17 @@ def flashcard_response(request):
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
                 answer=answer,
-                student= student)
+                student= student,
+                latitude=latitude,
+                longitude=longitude)
         else:
             flashcard_response = FlashCardResponse(
                 user_session=user_session,
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
-                answer=answer)
+                answer=answer,
+                latitude=latitude,
+                longitude=longitude)
     flashcard_response.save()
     return Response("Response Recorded",status=200)
 
@@ -523,16 +526,21 @@ def lesson_flashcard_responses(request,lesson_id,session_id):
 
 @api_view(['GET'])
 def overall_flashcard_responses(request,lesson_id):
-    print("userrr",request.user.is_authenticated)
-    lesson = Lesson.objects.get(id=lesson_id)
-    flashcard_responses = FlashCardResponse.objects.filter(lesson=lesson)
-    return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
+    flashcard_ID = FlashCardResponse.objects.filter(lesson=lesson_id)
+    for i in flashcard_ID:
+        user_sess = UserSessionEvent.objects.filter(flash_card=i.id)
+        data = UserSessionEventSerializer(user_sess,many=True)
+    return Response(data.data)
 
 @api_view(['GET'])
-def user_responses(request,session_id):
-    # lesson = Lesson.objects.get(id=lesson_id)
-    user_session_res = UserSession.objects.get(session_id=session_id)
-    return Response(UserSessionSerializer(user_session_res,many=True).data)
+def user_responses(request,lesson_id):
+    flash_card = FlashCard.objects.filter(lesson=lesson_id)
+    for i in flash_card:
+        user_session_res = UserSessionEvent.objects.filter(flash_card=i.id)
+        for j in user_session_res:
+            usid = UserSession.objects.filter(id=j.id)
+            data = UserSessionSerializer(usid,many=True)
+    return Response(data.data)
 
 
 
