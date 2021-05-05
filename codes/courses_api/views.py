@@ -26,8 +26,8 @@ from form_lead.utils.email_util import send_raw_email
 from classroom.models import Student, Class, ClassEnrolled
 from django.contrib.auth.models import User
 from django.shortcuts import get_list_or_404, get_object_or_404
-
-
+from django.core import serializers
+from django.views.decorators.csrf import csrf_exempt
 from knox.auth import get_user_model, AuthToken
 from knox.views import user_logged_in
 from knox.serializers import UserSerializer
@@ -477,8 +477,14 @@ def flashcard_response(request):
     session_id = request.data['session_id']
     answer = request.data['answer']
     params = request.data.get('params',None)
-    latitude = float(request.data,get('latitude',0))
-    longitude = float(request.data.get('longitude',0))
+    if 'latitude' in request.data:
+        latitude = request.data['latitude']
+    else:
+        latitude = 0
+    if 'longitude' in request.data:
+        longitude = request.data['longitude']
+    else:
+        longitude = 0
     student = ''
     if params:
         student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
@@ -525,23 +531,26 @@ def lesson_flashcard_responses(request,lesson_id,session_id):
     return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
 
 @api_view(['GET'])
+@csrf_exempt
 def overall_flashcard_responses(request,lesson_id):
-    flashcard_ID = FlashCardResponse.objects.filter(lesson=lesson_id)
-    for i in flashcard_ID:
-        user_sess = UserSessionEvent.objects.filter(flash_card=i.id)
-        data = UserSessionEventSerializer(user_sess,many=True)
-    return Response(data.data)
+    try:
+        lesson = Lesson.objects.get(id=lesson_id)
+        flash_obj = FlashCardResponse.objects.filter(lesson=lesson.id)
+        data = FlashcardResponseSerializer(flash_obj,many=True)
+        return Response(data.data)
+    except:
+        return Response("error")
+
 
 @api_view(['GET'])
+@csrf_exempt
 def user_responses(request,lesson_id):
-    flash_card = FlashCard.objects.filter(lesson=lesson_id)
-    for i in flash_card:
-        user_session_res = UserSessionEvent.objects.filter(flash_card=i.id)
-        for j in user_session_res:
-            usid = UserSession.objects.filter(id=j.id)
-            data = UserSessionSerializer(usid,many=True)
-    return Response(data.data)
-
+    try:
+        flash_obj = FlashCardResponse.objects.filter(lesson=lesson_id)
+        serializer = FlashcardResponseSerializer(flash_obj,many=True)
+        return Response(serializer.data)
+    except:
+        return Response("error")
 
 
 
