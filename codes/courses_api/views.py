@@ -26,8 +26,8 @@ from form_lead.utils.email_util import send_raw_email
 from classroom.models import Student, Class, ClassEnrolled
 from django.contrib.auth.models import User
 from django.shortcuts import get_list_or_404, get_object_or_404
-
-
+from django.core import serializers
+from django.views.decorators.csrf import csrf_exempt
 from knox.auth import get_user_model, AuthToken
 from knox.views import user_logged_in
 from knox.serializers import UserSerializer
@@ -209,19 +209,17 @@ def lesson_update(request, pk):
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
-        lesson = Lesson.objects.get(user=user,id=pk)
+        lesson = Lesson.objects.get(id=pk)
         lesson_name = request.data['lesson_name']
         lesson_is_public = request.data['lesson_is_public']
         meta_attributes = request.data['meta_attributes']
-        Lesson.objects.filter(user=user,id=pk).update(lesson_name=lesson_name)
-        Lesson.objects.filter(user=user,id=pk).update(meta_attributes=meta_attributes)
-        Lesson.objects.filter(user=user,id=pk).update(lesson_is_public=lesson_is_public)
+        Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
+        Lesson.objects.filter(id=pk).update(meta_attributes=meta_attributes)
+        Lesson.objects.filter(id=pk).update(lesson_is_public=lesson_is_public)
 
         for fc in FlashCard.objects.filter(lesson=lesson):
-            cprint(fc,color='cyan')
             toDelete = True
             for flashcard in request.data["flashcards"]:
-                cprint(flashcard,color="yellow")
                 if "id" in flashcard:
                     if fc.id == flashcard["id"]:
                         toDelete = False
@@ -337,7 +335,6 @@ def lesson_update(request, pk):
                 
         return Response(LessonSerializer(lesson).data)
     except:
-        cprint("except block", "red")
         return Response({"msg":"you cannot update this lesson"},status=status.HTTP_401_UNAUTHORIZED)
         
 
@@ -350,7 +347,6 @@ def lesson_delete(request,pk):
 
 @api_view(["GET"])
 def slide_read(request, pk):
-    print(pk)
     les_= Lesson.objects.get(id=pk)
     less_serialized = LessonSerializer(les_)
     data = less_serialized.data
@@ -480,6 +476,14 @@ def flashcard_response(request):
     session_id = request.data['session_id']
     answer = request.data['answer']
     params = request.data.get('params',None)
+    if 'latitude' in request.data:
+        latitude = request.data['latitude']
+    else:
+        latitude = 0
+    if 'longitude' in request.data:
+        longitude = request.data['longitude']
+    else:
+        longitude = 0
     student = ''
     if params:
         student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
@@ -504,13 +508,17 @@ def flashcard_response(request):
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
                 answer=answer,
-                student= student)
+                student= student,
+                latitude=latitude,
+                longitude=longitude)
         else:
             flashcard_response = FlashCardResponse(
                 user_session=user_session,
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
-                answer=answer)
+                answer=answer,
+                latitude=latitude,
+                longitude=longitude)
     flashcard_response.save()
     return Response("Response Recorded",status=200)
 
@@ -523,17 +531,22 @@ def lesson_flashcard_responses(request,lesson_id,session_id):
 
 @api_view(['GET'])
 def overall_flashcard_responses(request,lesson_id):
-    print("userrr",request.user.is_authenticated)
-    lesson = Lesson.objects.get(id=lesson_id)
-    flashcard_responses = FlashCardResponse.objects.filter(lesson=lesson)
-    return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
+    try:
+        flash_obj = FlashCardResponse.objects.filter(lesson=lesson_id)
+        data = FlashcardResponseSerializer(flash_obj,many=True)
+        return Response(data.data)
+    except Exception as e:
+        return Response("error")
+
 
 @api_view(['GET'])
-def user_responses(request,session_id):
-    # lesson = Lesson.objects.get(id=lesson_id)
-    user_session_res = UserSession.objects.get(session_id=session_id)
-    return Response(UserSessionSerializer(user_session_res,many=True).data)
-
+def user_responses(request,lesson_id):
+    try:
+        flash_obj = FlashCardResponse.objects.filter(lesson=lesson_id)
+        serializer = FlashcardResponseSerializer(flash_obj,many=True)
+        return Response(serializer.data)
+    except:
+        return Response("error")
 
 
 

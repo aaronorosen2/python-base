@@ -21,7 +21,7 @@ class FlashCardSerializer(serializers.ModelSerializer):
 
 
 class UserSessionEventSerializer(serializers.ModelSerializer):
-
+    duration = serializers.ReadOnlyField()
     class Meta:
         model = UserSessionEvent
         fields = '__all__'

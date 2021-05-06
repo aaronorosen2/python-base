@@ -70,7 +70,8 @@ class FlashCardResponse(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE,
                                null=True, blank=True)
     answer = models.TextField(null=True, blank=True)
-
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
 class Invite(models.Model):
 

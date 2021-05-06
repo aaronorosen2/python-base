@@ -2,7 +2,7 @@ from sfapp2.utils.twilio import send_sms, list_sms, send_sms_file
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
-from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause
+from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause, Number,Record,Say
 from twilio.rest import Client
 import uuid
 from .models import Phone, assigned_numbers, User_leads
@@ -407,3 +407,102 @@ def csvUploder(request):
                               url=url)
             lead.save()
     return JsonResponse({'message': 'lead save successfully'}, status=200)
+
+def voice(request):
+    resp = VoiceResponse()
+    resp.play('https://api.twilio.com/cowbell.mp3', loop=10)
+    return str(resp)
+
+
+def status_callback(request):
+    response = VoiceResponse()
+    dial = Dial()
+    dial.number(
+        '+12349013030',
+        status_callback_event='initiated ringing answered completed',
+        status_callback='https://myapp.com/calls/events',
+        status_callback_method='POST'
+    )
+    response.append(dial)
+
+    return response
+
+def record(request):
+    response = VoiceResponse()
+    response.record(timeout=10, transcribe=True)
+
+    return response
+
+def voicemail(request):
+
+    response = VoiceResponse()
+    response.say(
+        'Please leave a message at the beep.\nPress the star key when finished.'
+    )
+    response.record(
+        action='http://foo.edu/handleRecording.php',
+        method='GET',
+        max_length=20,
+        finish_on_key='*'
+    )
+    # for post req
+    # response.record(transcribe=True, transcribe_callback='/handle_transcribe.php')
+
+    response.say('I did not receive a recording')
+
+    return response
+
+def recording_status_callback(request):
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID'],
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+
+    recording = client.calls('CAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') \
+        .recordings \
+        .create(
+            recording_status_callback='https://myapp.com/recording-events',
+            recording_status_callback_event=['in-progress completed'],
+            recording_channels='dual'
+        )
+
+    return recording
+
+def call(request):
+    # Get phone number we need to call
+    phone_number = request.POST.get('phoneNumber', None)
+
+    if not phone_number:
+        msg = 'Missing phone number value'
+        return JsonResponse({'error': msg})
+
+    try:
+        twilio_client = Client(settings.TWILIO['TWILIO_ACCOUNT_SID'],
+                               settings.TWILIO['TWILIO_AUTH_TOKEN'])
+    except Exception as e:
+        return JsonResponse({'error': e})
+
+    try:
+        res = twilio_client.calls.create(from_=settings.TWILIO['TWILIO_NUMBER'],
+                                   to=phone_number,
+                                   url="/outbound")
+    except Exception as e:
+
+        return JsonResponse({'error': e})
+
+    return JsonResponse({'message': 'Call incoming!'})
+
+
+
+def outbound(request):
+    response = VoiceResponse()
+
+    response.say("Thank you for contacting our sales department. If this "
+                 "click to call application was in production, we would "
+                 "dial out to your sales team with the Dial verb.",
+                 voice='alice')
+    '''
+    # Uncomment this code and replace the number with the number you want
+    # your customers to call.
+    '''
+    response.number("+16518675309")
+    return response
