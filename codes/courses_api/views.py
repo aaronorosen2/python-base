@@ -209,18 +209,17 @@ def lesson_update(request, pk):
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
-        lesson = Lesson.objects.get(user=user,id=pk)
+        lesson = Lesson.objects.get(id=pk)
         lesson_name = request.data['lesson_name']
         lesson_is_public = request.data['lesson_is_public']
         meta_attributes = request.data['meta_attributes']
-        Lesson.objects.filter(user=user,id=pk).update(lesson_name=lesson_name)
-        Lesson.objects.filter(user=user,id=pk).update(meta_attributes=meta_attributes)
-        Lesson.objects.filter(user=user,id=pk).update(lesson_is_public=lesson_is_public)
+        Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
+        Lesson.objects.filter(id=pk).update(meta_attributes=meta_attributes)
+        Lesson.objects.filter(id=pk).update(lesson_is_public=lesson_is_public)
 
         for fc in FlashCard.objects.filter(lesson=lesson):
             toDelete = True
             for flashcard in request.data["flashcards"]:
-                cprint(flashcard,color="yellow")
                 if "id" in flashcard:
                     if fc.id == flashcard["id"]:
                         toDelete = False
@@ -531,19 +530,16 @@ def lesson_flashcard_responses(request,lesson_id,session_id):
     return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
 
 @api_view(['GET'])
-@csrf_exempt
 def overall_flashcard_responses(request,lesson_id):
     try:
-        lesson = Lesson.objects.get(id=lesson_id)
-        flash_obj = FlashCardResponse.objects.filter(lesson=lesson.id)
+        flash_obj = FlashCardResponse.objects.filter(lesson=lesson_id)
         data = FlashcardResponseSerializer(flash_obj,many=True)
         return Response(data.data)
-    except:
+    except Exception as e:
         return Response("error")
 
 
 @api_view(['GET'])
-@csrf_exempt
 def user_responses(request,lesson_id):
     try:
         flash_obj = FlashCardResponse.objects.filter(lesson=lesson_id)
