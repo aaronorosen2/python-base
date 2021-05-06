@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('api/get_services', views.get_services),
     path('api/set_user_info', views.set_user_info),
+    path('api/get_user_info', views.get_user_info),
     path('api/do_checkin_gps', views.do_checkin_gps),
     path('api/checkin_activity', views.checkin_activity, name="checkin_activity"),
     path('api/checkin_activity_admin', views.checkin_activity_admin, name="checkin_activity_admin"),
