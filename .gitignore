@@ -6,6 +6,7 @@ __pycache__/
 .profile
 .DS_Store
 venv
+env/
 *.sv?
 agent_data.csv
 *.csv

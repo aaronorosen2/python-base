@@ -6,7 +6,7 @@ from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer
-from .serializers import UserSessionEventSerializer
+from .serializers import UserSessionEventSerializer,UserSessionSerializer
 from .serializers import FlashcardResponseSerializer
 from .models import Lesson
 from .models import FlashCard
@@ -25,7 +25,9 @@ from sfapp2.utils.twilio import send_confirmation_code, send_sms
 from form_lead.utils.email_util import send_raw_email
 from classroom.models import Student, Class, ClassEnrolled
 from django.contrib.auth.models import User
-
+from django.shortcuts import get_list_or_404, get_object_or_404
+from django.core import serializers
+from django.views.decorators.csrf import csrf_exempt
 from knox.auth import get_user_model, AuthToken
 from knox.views import user_logged_in
 from knox.serializers import UserSerializer
@@ -44,6 +46,7 @@ def lesson_create(request):
     les_.lesson_name = request.data["lesson_name"]
     les_.meta_attributes = request.data["meta_attributes"]
     les_.user = user
+    les_.lesson_is_public = request.data["lesson_is_public"]
     les_.save()
     for flashcard in request.data["flashcards"]:
         question=""
@@ -129,23 +132,43 @@ def lesson_create(request):
     return Response(LessonSerializer(les_).data)
 
 @api_view(['GET'])
-def lesson_read(request,pk):
+def lesson_read(request, pk):
     les_= Lesson.objects.get(id=pk)
     less_serialized = LessonSerializer(les_)
     data = less_serialized.data
-    for card in data["flashcards"]:
-        if (card['lesson_type'] == "BrainTree"):
-            if card['braintree_config']:
-                obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
-                card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
-                card['braintree_public_key'] = obj_braintree_config.braintree_public_key
-                card['braintree_private_key'] = obj_braintree_config.braintree_private_key
+    try:
+        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = User.objects.get(id=token.user_id)
+        for card in data["flashcards"]:
+            if (card['lesson_type'] == "BrainTree"):
+                if card['braintree_config']:
+                    obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
+                    card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
+                    card['braintree_public_key'] = obj_braintree_config.braintree_public_key
+                    card['braintree_private_key'] = obj_braintree_config.braintree_private_key
 
-            if card['item_store']:
-                obj_item = item.objects.get(id=card['item_store'])
-                card['braintree_item_name'] = obj_item.title
-                card['braintree_item_price'] = obj_item.price
-    return Response(data)
+                if card['item_store']:
+                    obj_item = item.objects.get(id=card['item_store'])
+                    card['braintree_item_name'] = obj_item.title
+                    card['braintree_item_price'] = obj_item.price
+        return Response(data)
+    except:
+        if data['lesson_is_public'] == True:
+            for card in data["flashcards"]:
+                if (card['lesson_type'] == "BrainTree"):
+                    if card['braintree_config']:
+                        obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
+                        card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
+                        card['braintree_public_key'] = obj_braintree_config.braintree_public_key
+                        card['braintree_private_key'] = obj_braintree_config.braintree_private_key
+
+                    if card['item_store']:
+                        obj_item = item.objects.get(id=card['item_store'])
+                        card['braintree_item_name'] = obj_item.title
+                        card['braintree_item_price'] = obj_item.price
+            return Response(data)
+        else:
+            return Response({'msg':"you do not has access to view this lesson"},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET','POST','PUT','DELETE'])
 def lesson_all(request):
@@ -171,143 +194,177 @@ def lesson_all(request):
 
     if request.method == 'DELETE':
         try:
-            lesson = Lesson.objects.get(id=request.data.get('lesson_id'))
+            # lesson = Lesson.objects.get(id=request.data.get('lesson_id'))
+            lesson = Lesson.objects.get(id=request.GET['lesson_id'])
             lesson.delete()
             return JsonResponse({"success":True},status=status.HTTP_200_OK)
 
         except:
             return JsonResponse({"success":False},status=status.HTTP_204_NO_CONTENT)
 
-            
+from termcolor import cprint
+
 @api_view(['POST'])
-def lesson_update(request,pk):
-    lesson = Lesson.objects.get(id=pk)
-    lesson_name = request.data['lesson_name']
-    meta_attributes = request.data['meta_attributes']
-    Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
-    Lesson.objects.filter(id=pk).update(meta_attributes=meta_attributes)
-    for fc in FlashCard.objects.filter(lesson=lesson):
-        toDelete = True
+def lesson_update(request, pk):
+    try:
+        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = User.objects.get(id=token.user_id)
+        lesson = Lesson.objects.get(user=user,id=pk)
+        lesson_name = request.data['lesson_name']
+        lesson_is_public = request.data['lesson_is_public']
+        meta_attributes = request.data['meta_attributes']
+        Lesson.objects.filter(user=user,id=pk).update(lesson_name=lesson_name)
+        Lesson.objects.filter(user=user,id=pk).update(meta_attributes=meta_attributes)
+        Lesson.objects.filter(user=user,id=pk).update(lesson_is_public=lesson_is_public)
+
+        for fc in FlashCard.objects.filter(lesson=lesson):
+            toDelete = True
+            for flashcard in request.data["flashcards"]:
+                cprint(flashcard,color="yellow")
+                if "id" in flashcard:
+                    if fc.id == flashcard["id"]:
+                        toDelete = False
+                        break
+                    else:
+                        toDelete=True
+                        continue
+            if toDelete:
+                fc.delete()
         for flashcard in request.data["flashcards"]:
+            question=""
+            options=[]
+            answer=""
+            image=""
+            braintree_merchant_ID=""
+            braintree_public_key=""
+            braintree_private_key=""
+            braintree_item_name=""
+            braintree_item_price=""
+            position =flashcard["position"]
+            id_ = None
             if "id" in flashcard:
-                if fc.id == flashcard["id"]:
-                    toDelete = False
-                    break
-                else:
-                    toDelete=True
-                    continue
-        if toDelete:
-            fc.delete()
-    for flashcard in request.data["flashcards"]:
-        question=""
-        options=[]
-        answer=""
-        image=""
-        braintree_merchant_ID=""
-        braintree_public_key=""
-        braintree_private_key=""
-        braintree_item_name=""
-        braintree_item_price=""
-        position =flashcard["position"]
-        id_ = None
-        if "id" in flashcard:
-            id_ = flashcard["id"]
+                id_ = flashcard["id"]
 
-        if "question" in flashcard:
-            question = flashcard["question"]
+            if "question" in flashcard:
+                question = flashcard["question"]
 
-        if "options" in flashcard:
-            if not isinstance(flashcard["options"], list):
-                return HttpResponseBadRequest(content='Flashcard options must be a list')
-            options = flashcard["options"]
+            if "options" in flashcard:
+                if not isinstance(flashcard["options"], list):
+                    return HttpResponseBadRequest(content='Flashcard options must be a list')
+                options = flashcard["options"]
 
-        if "answer" in flashcard:
-            answer = flashcard["answer"]
-        
-        if "image" in flashcard:
-            image = flashcard["image"]
-        
-        if "braintree_merchant_ID" in flashcard:
-            braintree_merchant_ID = flashcard["braintree_merchant_ID"]
-        
-        if "braintree_public_key" in flashcard:
-            braintree_public_key = flashcard["braintree_public_key"]
-        
-        if "braintree_private_key" in flashcard:
-            braintree_private_key = flashcard["braintree_private_key"]
-        
-        if "braintree_item_name" in flashcard:
-            braintree_item_name = flashcard["braintree_item_name"]
-        
-        if "braintree_item_price" in flashcard:
-            braintree_item_price = flashcard["braintree_item_price"]
+            if "answer" in flashcard:
+                answer = flashcard["answer"]
+            
+            if "image" in flashcard:
+                image = flashcard["image"]
+            
+            if "braintree_merchant_ID" in flashcard:
+                braintree_merchant_ID = flashcard["braintree_merchant_ID"]
+            
+            if "braintree_public_key" in flashcard:
+                braintree_public_key = flashcard["braintree_public_key"]
+            
+            if "braintree_private_key" in flashcard:
+                braintree_private_key = flashcard["braintree_private_key"]
+            
+            if "braintree_item_name" in flashcard:
+                braintree_item_name = flashcard["braintree_item_name"]
+            
+            if "braintree_item_price" in flashcard:
+                braintree_item_price = flashcard["braintree_item_price"]
 
-        if "id" in flashcard:
-            if(braintree_item_name != '' or braintree_item_price != ''):
-                obj_item = FlashCard.objects.get(id=id_)
-                item_obj = item.objects.filter(id=obj_item.item_store).update(
-                            title=braintree_item_name,
-                            price=braintree_item_price
-                            ) 
-                # item_obj.save()
-            if(braintree_merchant_ID != '' or braintree_public_key != '' or braintree_private_key != ''):
-                obj_config = FlashCard.objects.get(id=id_)
-                BrainTreeConfig_obj = BrainTreeConfig.objects.filter(id=obj_config.braintree_config).update(
-                            braintree_merchant_ID=braintree_merchant_ID,
-                            braintree_public_key=braintree_public_key,
-                            braintree_private_key=braintree_private_key,
-                            )
-                # BrainTreeConfig_obj.save()
+            if "id" in flashcard:
+                if(braintree_item_name != '' or braintree_item_price != ''):
+                    obj_item = FlashCard.objects.get(id=id_)
+                    item_obj = item.objects.filter(id=obj_item.item_store).update(
+                                title=braintree_item_name,
+                                price=braintree_item_price
+                                ) 
+                    # item_obj.save()
+                if(braintree_merchant_ID != '' or braintree_public_key != '' or braintree_private_key != ''):
+                    obj_config = FlashCard.objects.get(id=id_)
+                    BrainTreeConfig_obj = BrainTreeConfig.objects.filter(id=obj_config.braintree_config).update(
+                                braintree_merchant_ID=braintree_merchant_ID,
+                                braintree_public_key=braintree_public_key,
+                                braintree_private_key=braintree_private_key,
+                                )
+                    # BrainTreeConfig_obj.save()
+                    
+                f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,
+                                                        image=image,position=position)
                 
-            f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,
-                                                    image=image,position=position)
-            
-        else:
-            lesson_type = flashcard["lesson_type"]
-            if(braintree_item_name != '' and braintree_item_price != ''):
-                item_obj = item(
-                            title=braintree_item_name,
-                            price=braintree_item_price
-                            ) 
-                item_obj.save()
-            if(braintree_merchant_ID != '' and braintree_public_key != '' and braintree_private_key != ''):
-                BrainTreeConfig_obj = BrainTreeConfig(
-                            braintree_merchant_ID=braintree_merchant_ID,
-                            braintree_public_key=braintree_public_key,
-                            braintree_private_key=braintree_private_key,
-                            )
-                BrainTreeConfig_obj.save()
-            
-            if(braintree_item_name != '' and braintree_item_price != '' and braintree_merchant_ID != '' 
-                and braintree_public_key != '' and braintree_private_key != ''):
-                f=FlashCard(lesson=lesson,
-                            lesson_type=lesson_type,
-                            question=question,
-                            options=options,
-                            answer=answer,
-                            image=image,
-                            position=position,
-                            braintree_config=BrainTreeConfig.objects.get(id=BrainTreeConfig_obj.id),
-                            item_store=item.objects.get(id=item_obj.id)
-                            )
-                f.save()
             else:
-                f=FlashCard(lesson=lesson,
-                            lesson_type=lesson_type,
-                            question=question,
-                            options=options,
-                            answer=answer,
-                            image=image,
-                            position=position
-                            )
-                f.save()
-            
-    return Response(LessonSerializer(lesson).data)
+                lesson_type = flashcard["lesson_type"]
+                if(braintree_item_name != '' and braintree_item_price != ''):
+                    item_obj = item(
+                                title=braintree_item_name,
+                                price=braintree_item_price
+                                ) 
+                    item_obj.save()
+                if(braintree_merchant_ID != '' and braintree_public_key != '' and braintree_private_key != ''):
+                    BrainTreeConfig_obj = BrainTreeConfig(
+                                braintree_merchant_ID=braintree_merchant_ID,
+                                braintree_public_key=braintree_public_key,
+                                braintree_private_key=braintree_private_key,
+                                )
+                    BrainTreeConfig_obj.save()
+                
+                if(braintree_item_name != '' and braintree_item_price != '' and braintree_merchant_ID != '' 
+                    and braintree_public_key != '' and braintree_private_key != ''):
+                    f=FlashCard(lesson=lesson,
+                                lesson_type=lesson_type,
+                                question=question,
+                                options=options,
+                                answer=answer,
+                                image=image,
+                                position=position,
+                                braintree_config=BrainTreeConfig.objects.get(id=BrainTreeConfig_obj.id),
+                                item_store=item.objects.get(id=item_obj.id)
+                                )
+                    f.save()
+                else:
+                    f=FlashCard(lesson=lesson,
+                                lesson_type=lesson_type,
+                                question=question,
+                                options=options,
+                                answer=answer,
+                                image=image,
+                                position=position
+                                )
+                    f.save()
+                
+        return Response(LessonSerializer(lesson).data)
+    except:
+        return Response({"msg":"you cannot update this lesson"},status=status.HTTP_401_UNAUTHORIZED)
+        
 
 @api_view(['DELETE'])
 def lesson_delete(request,pk):
     Lesson.objects.filter(id=pk).delete()
     return Response("deleted")
+
+#Slide Api Start
+
+@api_view(["GET"])
+def slide_read(request, pk):
+    les_= Lesson.objects.get(id=pk)
+    less_serialized = LessonSerializer(les_)
+    data = less_serialized.data
+    for card in data["flashcards"]:
+        if (card['lesson_type'] == "BrainTree"):
+            if card['braintree_config']:
+                obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
+                card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
+                card['braintree_public_key'] = obj_braintree_config.braintree_public_key
+                card['braintree_private_key'] = obj_braintree_config.braintree_private_key
+
+            if card['item_store']:
+                obj_item = item.objects.get(id=card['item_store'])
+                card['braintree_item_name'] = obj_item.title
+                card['braintree_item_price'] = obj_item.price
+    return Response(data)
+   
 
 # Flashcard API Start
 
@@ -420,6 +477,14 @@ def flashcard_response(request):
     session_id = request.data['session_id']
     answer = request.data['answer']
     params = request.data.get('params',None)
+    if 'latitude' in request.data:
+        latitude = request.data['latitude']
+    else:
+        latitude = 0
+    if 'longitude' in request.data:
+        longitude = request.data['longitude']
+    else:
+        longitude = 0
     student = ''
     if params:
         student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
@@ -444,13 +509,17 @@ def flashcard_response(request):
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
                 answer=answer,
-                student= student)
+                student= student,
+                latitude=latitude,
+                longitude=longitude)
         else:
             flashcard_response = FlashCardResponse(
                 user_session=user_session,
                 lesson=flashcard.lesson,
                 flashcard=flashcard,
-                answer=answer)
+                answer=answer,
+                latitude=latitude,
+                longitude=longitude)
     flashcard_response.save()
     return Response("Response Recorded",status=200)
 
@@ -462,19 +531,74 @@ def lesson_flashcard_responses(request,lesson_id,session_id):
     return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
 
 @api_view(['GET'])
+@csrf_exempt
 def overall_flashcard_responses(request,lesson_id):
-    lesson = Lesson.objects.get(id=lesson_id)
-    flashcard_responses = FlashCardResponse.objects.filter(lesson=lesson)
-    return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
+    try:
+        lesson = Lesson.objects.get(id=lesson_id)
+        flash_obj = FlashCardResponse.objects.filter(lesson=lesson.id)
+        data = FlashcardResponseSerializer(flash_obj,many=True)
+        return Response(data.data)
+    except:
+        return Response("error")
+
 
 @api_view(['GET'])
-def get_user_session(response):
+@csrf_exempt
+def user_responses(request,lesson_id):
+    try:
+        flash_obj = FlashCardResponse.objects.filter(lesson=lesson_id)
+        serializer = FlashcardResponseSerializer(flash_obj,many=True)
+        return Response(serializer.data)
+    except:
+        return Response("error")
+
+
+
+@api_view(['GET'])
+def logged_user(request):
+    print("reuest token")
+
+
+@api_view(['GET'])
+def get_user_session(request):
     user_session = UserSession()
     user_session.session_id = str(uuid.uuid4())
     user_session.save()
 
     return Response({'message': 'success',
     'session_id': user_session.session_id})
+
+
+@api_view(['POST'])
+def user_session_event(request,flashcard_id,session_id):
+    created_at = UserSession.objects.get(session_id=session_id).created_at
+    session_event_oject = UserSessionEvent(
+                            flash_card = FlashCard.objects.get(pk=flashcard_id),
+                            user_session = UserSession.objects.get(session_id=session_id),
+                            ip_address = request.data['ip_address'],
+                            user_device = request.data['user_device'],
+                            create_at = created_at,
+                            )
+    session_event_oject.save()
+    # try:
+    #     user_session = UserSession.objects.get(session_id=session_id)
+    #     print(flashcard_id, session_id,user_session.id)
+    #     session_event_oject = UserSessionEvent.objects.get(flash_card=flashcard_id, user_session = user_session)
+    #     print(session_event_oject.start_time )
+    #     session_event_oject.save()
+    # except:
+        # created_at = UserSession.objects.get(session_id=session_id).created_at
+        # session_event_oject = UserSessionEvent(
+        #                         flash_card = FlashCard.objects.get(pk=flashcard_id),
+        #                         user_session = UserSession.objects.get(session_id=session_id),
+        #                         ip_address = request.data['ip_address'],
+        #                         user_device = request.data['user_device'],
+        #                         create_at = created_at,
+        #                         )
+        # session_event_oject.save()
+    return Response({'message': 'success'})
+
+
 
 @api_view(['POST'])
 def confirm_phone_number(request):

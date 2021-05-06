@@ -253,7 +253,7 @@ def get_invitation_link(request):
 
 @csrf_exempt
 def get_invitation_info(request):
-    invite = InviteClass.objects.get(class_invited_id=Class.objects.get(id=request.GET.get('class_id')))
+    invite = InviteClass.objects.filter(class_invited_id=Class.objects.get(id=request.GET.get('class_id'))).first()
     if invite and invite is not None:
         invite = InviteLinkSerializer(invite).data
         return JsonResponse(invite, safe=False)

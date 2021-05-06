@@ -35,7 +35,7 @@ class AdminGroupMember(models.Model):
     is_admin = models.BooleanField(default=False)
 
 class CallList(models.Model):
-    date = models.DateField()
+    date = models.DateTimeField()
     from_number = models.CharField(max_length=20,null=True)
     to_number = models.CharField(max_length=20,null=True)
     recording_url = models.CharField(max_length=500,null=True)
@@ -55,7 +55,7 @@ class User_leads(models.Model):
     name = models.CharField(max_length=100,blank=True,null=True)
     phone = models.CharField(max_length=100,blank=True,null=True)
     email = models.EmailField(max_length=200, blank=True,null=True)
-    price = models.CharField(max_length=20, blank=True,null=True)
+    ask = models.CharField(max_length=20, blank=True,null=True)
     state = models.CharField(max_length=20,blank=True,null=True)
     last_call = models.DateField(blank=True,null=True)
     recording_url = models.CharField(max_length=256,blank=True,null=True)
@@ -66,5 +66,5 @@ class User_leads(models.Model):
     class Meta:
         db_table = 'User_leads'
         constraints = [
-            models.UniqueConstraint(fields=['name', 'phone', "email" , "price","state" , "url" ,"notes"], name='uniqueUserLead')
+            models.UniqueConstraint(fields=['name', 'phone', "email" , "ask","state" , "url" ,"notes"], name='uniqueUserLead')
         ]

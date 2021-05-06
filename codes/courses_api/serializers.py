@@ -45,3 +45,8 @@ class FlashcardResponseSerializer(serializers.ModelSerializer):
 
     def get_usersession(self,flashcardresponse):
         return UserSessionSerializer(UserSession.objects.filter(session_id=flashcardresponse.user_session.session_id),many=True).data
+
+# class UserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = '__all__'
