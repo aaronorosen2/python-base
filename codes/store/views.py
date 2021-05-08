@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
 from django.http.response import JsonResponse
-from django.db.models import Q
+from django.db.models import Q, F
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 
-from .models import item, order, subscription, userProfile as profile,BrainTreeConfig, StripeConfig
+from .models import item, order, subscription, userProfile as profile,BrainTreeConfig, StripeConfig, teacherUIMessage
 from neighbormade.models import Neighborhood
 from .serializers import itemSerializer, orderSerializer
 from s3_uploader.views import upload_to_s3
@@ -15,6 +15,7 @@ from rest_framework.decorators import api_view
 from .extras import transact, generate_client_token, create_customer, create_subscription, unsubscribe
 from rest_framework.response import Response
 import requests
+from django.db import connection
 
 from django.core import serializers
 
@@ -60,7 +61,7 @@ def get_file_extension(file_name, decoded_file):
 def userItem(request):
     # GET list of items, POST a new item, DELETE all items
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
-
+    print("token===",token)
     if request.method == 'GET':
         allItems = item.objects.filter(user = User.objects.get(id=token.user_id))
         item_serializer = itemSerializer(allItems, many=True)
@@ -376,8 +377,8 @@ def userbrainTreeSubscription(request):
         "payment_method_token": custy_result.customer.payment_methods[0].token,
         "plan_id": request.data['subscription_plan_ID']
     })
-    print(sub_result.subscription.id)
-    print(request.data['session_id'])
+    # print(sub_result.subscription.id)
+    # print(request.data['session_id'])
     if sub_result.is_success:
         print("Subscription Success!")
         obj = subscription(braintreeSubscriptionID=sub_result.subscription.id,
@@ -652,8 +653,56 @@ def StripeConfiguration(request):
                             )
             stripe_obj.save()
         return JsonResponse({"success":True},status=201)
-        
-        
+
+@api_view(['GET', 'POST'])
+def StoreFCMToken(request):
+    print("abc")
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    print(request.data['FCMtoken'])
+    if request.method == 'GET':
+        pass
+        # allItems = item.objects.filter(user = User.objects.get(id=token.user_id))
+        # item_serializer = itemSerializer(allItems, many=True)
+        # return JsonResponse(item_serializer.data, safe=False)
+        # 'safe=False' for objects serialization
+    elif request.method == 'POST':
+        try:
+            FCMtoken = request.data['FCMtoken']
+            print(FCMtoken)
+            if FCMtoken:
+                # obj, created = Person.objects.update_or_create(
+                #     first_name='John', last_name='Lennon',
+                #     defaults={'first_name': 'Bob'},
+                # )
+                # device = FCMDevice() # instantiate fcmdevice object
+                # # device.device_id = "Device ID"
+                # device.registration_id = FCMtoken
+                # device.type = "web" # simple string field doesnt matter what you pass
+                # # device.name = "Can be anything"
+                # device.user = User.objects.get(id=token.user_id)
+                # device.save()
+                
+                d, created = FCMDevice.objects.get_or_create(
+                    user= User.objects.get(id=token.user_id),
+                    defaults={
+                        'registration_id' : FCMtoken,
+                        'type' : "web"
+                        },
+                )
+                
+                # device.send_message(title="Title checking", body="Message", data={"test": "test"})
+                print("123",d, created)
+                return JsonResponse({"success":True},status=201)
+            else:
+                return JsonResponse({"success":True,"message":"token is not available"},status=201)
+
+        except:
+            return JsonResponse({"success":False},status=400)
+    # elif request.method == 'DELETE':
+    #     count = item.objects.filter(user = User.objects.get(id=token.user_id)).delete()
+    #     return JsonResponse({'message': '{} items were deleted successfully!'.format(count[0])})
+            
+    
 def FCMDeviceTest(request):
     # Send to single device.
     from pyfcm import FCMNotification
@@ -709,4 +758,261 @@ def ItemsAndMember(request):
             else:
                 return JsonResponse({"success":True, "status":"No profile with this user"},status=201)
         except:
-            return JsonResponse({"success":False}, status=400)
+            return JsonResponse({"success":False},status=400)
+        
+
+@api_view(['GET'])
+def profilePic(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'GET':
+        try:
+            obj = profile.objects.filter(user = User.objects.get(id=token.user_id))
+            if(len(obj)>0):
+                profileImage = obj[0].profileImage
+                return JsonResponse({"success":True,"profileImage":profileImage})
+            else:
+                return JsonResponse({"success":True,"status":"No profile with this user"},status=201)
+        except:
+            return JsonResponse({"success":False},status=400)
+
+
+@api_view(['GET', 'POST'])
+def sendMessage(request):
+    # try:
+    #     FCMtoken = request.data['FCMtoken']
+    #     print(FCMtoken)
+    #     if FCMtoken:
+    #         # obj, created = Person.objects.update_or_create(
+    #         #     first_name='John', last_name='Lennon',
+    #         #     defaults={'first_name': 'Bob'},
+    #         # )
+    #         device = FCMDevice() # instantiate fcmdevice object
+    #         # device.device_id = "Device ID"
+    #         device.registration_id = FCMtoken
+    #         device.type = "web" # simple string field doesnt matter what you pass
+    #         # device.name = "Can be anything"
+    #         device.user = User.objects.get(id=token.user_id)
+    #         device.save()
+
+    #         device.send_message(title="Title checking", body="Message", data={"test": "test"})
+    #         print("123")
+    #         return JsonResponse({"success":True},status=201)
+    #     else:
+    #         return JsonResponse({"success":True,"message":"token is not available"},status=201)
+    
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'POST':
+        try:
+            if(request.data['messageItemIdStatus'] == "false"):
+                message_obj = teacherUIMessage(message_text=request.data['messageText'],
+                            conversation_id=request.data['conversation_id'],
+                            recipient=User.objects.get(id=int(request.data['recipient_id'])),
+                            sender=User.objects.get(id=int(request.data['user_id'])))
+                message_obj.save()
+                device = FCMDevice.objects.get(user = User.objects.get(id=int(request.data['recipient_id'])))
+                if(device):
+                    # device.send_message(title="Title checking", body="Message", data={"test": "test"})
+                    # FCMdata = FCMPreprocess(request.data['conversation_id'],request.data['recipient_id'],request.data['user_id'])
+                    
+                    # userProfileImg = profile.objects.get(user=User.objects.get(id=request.data['recipient_id'])).profileImage
+                    # particientProfileImg = profile.objects.get(user=User.objects.get(id=request.data['user_id'])).profileImage
+                    
+                    # cursor = connection.cursor()
+                    # cursor.execute('select S.*,I.images from store_teacheruimessage S left join store_item I on S."item_ID_id" = I.id \
+                    # where S.conversation_id = %s',[request.data['conversation_id']])
+                    # row = cursor.fetchall()
+                    # # data = serializers.serialize('json', data)
+                    # data = []
+                    # for item in row:
+                    #     data.append({"id":item[0],"message_text":item[1],"delivered":item[2],"sent_at":str(item[3]),"delivered_date":str(item[4])
+                    #                 ,"item_ID_id":item[5],"sender_id":item[6],"recipient_id":item[7],"conversation_id":item[8],
+                    #                 "images":item[9]})
+                        
+                    # FCMdata = {"success":True,"data":data,"userProfileImg":userProfileImg,"user_id":request.data['recipient_id'],
+                    #     "participant_id":request.data['user_id'],
+                    #     "particientProfileImg":particientProfileImg}
+                    device.send_message(data={
+                        # "FCMdata":FCMdata,
+                        "message":request.data['messageText'],
+                        "conversation_id":request.data['conversation_id'],
+                        "recipient_id":request.data['recipient_id'],
+                        "user_id":request.data['user_id'],
+                        "messageItemIdStatus":request.data['messageItemIdStatus']})
+                    return JsonResponse({"success":True,"messageStatus":True},status=201)
+                return JsonResponse({"success":True},status=201)
+            else:
+                messageItemId = request.data['messageItemId']
+                itemMessage = request.data['itemMessage']
+                item_obj = item.objects.get(id = messageItemId)
+                if(item_obj.user.id > token.user_id):
+                    conversation_id = str(token.user_id)+'_'+str(item_obj.user.id)
+                else:
+                    conversation_id = str(item_obj.user.id)+'_'+str(token.user_id)
+                message_obj = teacherUIMessage(message_text=itemMessage,
+                            item_ID=item.objects.get(id=messageItemId),
+                            conversation_id=conversation_id,
+                            recipient=User.objects.get(id=item_obj.user.id),
+                            sender=User.objects.get(id=token.user_id))
+                message_obj.save()
+                # send message through fcm
+                device = FCMDevice.objects.get(user = User.objects.get(id=item_obj.user.id))
+                if(device):
+                    # device.send_message(title="Title checking", body="Message", data={"test": "test"})
+                    # FCMdata = FCMPreprocess(conversation_id,item_obj.user.id,token.user_id)
+                    
+                    # userProfileImg = profile.objects.get(user=User.objects.get(id=item_obj.user.id)).profileImage
+                    # particientProfileImg = profile.objects.get(user=User.objects.get(id=token.user_id)).profileImage
+                    
+                    # cursor = connection.cursor()
+                    # cursor.execute('select S.*,I.images from store_teacheruimessage S left join store_item I on S."item_ID_id" = I.id \
+                    # where S.conversation_id = %s',[conversation_id])
+                    # row = cursor.fetchall()
+                    # # data = serializers.serialize('json', data)
+                    # data = []
+                    # for item in row:
+                    #     data.append({"id":item[0],"message_text":item[1],"delivered":item[2],"sent_at":str(item[3]),"delivered_date":str(item[4])
+                    #                 ,"item_ID_id":item[5],"sender_id":item[6],"recipient_id":item[7],"conversation_id":item[8],
+                    #                 "images":item[9]})
+                    # FCMdata = {"success":True,"data":data,"userProfileImg":userProfileImg,"user_id":item_obj.user.id,
+                    #     "participant_id":token.user_id,
+                    #     "particientProfileImg":particientProfileImg} 
+                    device.send_message(data={
+                        # "FCMdata":FCMdata,
+                        "message":request.data['itemMessage'],
+                        "conversation_id":conversation_id,
+                        "recipient_id":item_obj.user.id,
+                        "user_id":token.user_id,
+                        "messageItemId":messageItemId,
+                        "messageItemIdStatus":request.data['messageItemIdStatus']})
+                    return JsonResponse({"success":True,"messageStatus":True},status=201)
+                
+                return JsonResponse({"success":True,"messageStatus":False},status=201)
+        except Exception as e:
+            print(e)
+            return JsonResponse({"success":False},status=400)
+
+# def FCMPreprocess(conversation_id,user_id,recipient_id):
+#     print("FCMPreprocess",conversation_id,user_id,recipient_id)
+#     userProfileImg = profile.objects.get(user=User.objects.get(id=user_id)).profileImage
+#     particientProfileImg = profile.objects.get(user=User.objects.get(id=recipient_id)).profileImage
+    
+#     cursor = connection.cursor()
+#     cursor.execute('select S.*,I.images from store_teacheruimessage S left join store_item I on S."item_ID_id" = I.id \
+#     where S.conversation_id = %s',[conversation_id])
+#     row = cursor.fetchall()
+#     # data = serializers.serialize('json', data)
+#     data = []
+#     for item in row:
+#         data.append({"id":item[0],"message_text":item[1],"delivered":item[2],"sent_at":item[3],"delivered_date":item[4]
+#                     ,"item_ID_id":item[5],"sender_id":item[6],"recipient_id":item[7],"conversation_id":item[8],
+#                     "images":item[9]})
+#     return ({"success":True,"data":data,"userProfileImg":userProfileImg,"user_id":user_id,
+#                         "participant_id":recipient_id,
+#                         "particientProfileImg":particientProfileImg})
+            
+# messages
+@api_view(['GET', 'POST'])
+def getMessages(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'GET':
+        try:
+            # obj = teacherUIMessage.objects.filter(Q(receiver = User.objects.get(id=token.user_id)) | 
+            #                                     Q(sender = User.objects.get(id=token.user_id))).select_related('item_ID').values()
+            # obj = teacherUIMessage.objects.all().select_related('item_ID').values().annotate(q1=F('item_ID_id__title'))
+            # user = request.user
+            # token.user_id
+            # print(user)
+            # print(token.user_id)
+            # users = User.objects.filter(Q(r__sender=User.objects.get(id=token.user_id)) | Q(s__recipient=User.objects.get(id=token.user_id))).distinct().extra(
+            #     select={'last_message_time': 'select MAX(sent_at) from store_teacherUIMessage where \
+            #     (recipient_id=auth_user.id and sender_id=%s) or (recipient_id=%s and sender_id=auth_user.id)'}
+            #     , select_params=(token.user_id, token.user_id,)).extra(order_by=['-last_message_time']).extra(select={'message': '\
+            #     select message_text from store_teacherUIMessage where (sent_at=(select MAX(sent_at) from store_teacherUIMessage \
+            #     where (recipient_id=auth_user.id and sender_id=%s) or (recipient_id=%s and sender_id=auth_user.id)) and \
+            #     ((recipient_id=auth_user.id and sender_id=%s) or (recipient_id=%s and sender_id=auth_user.id)))',}, 
+            #     select_params=(token.user_id, token.user_id,token.user_id, token.user_id,))
+            # print("123",users)
+            # obj = teacherUIMessage.objects.raw('SELECT m.*, CASE WHEN u2.id = 45\
+            #                                         THEN u1.username\
+            #                                         ELSE u2.username\
+            #                                         END as participant,\
+            #                                         CASE WHEN p2.user_id = 45\
+            #                                         THEN p1."profileImage"\
+            #                                         ELSE p2."profileImage"\
+            #                                         END as img_id\
+            #                                     FROM store_teacheruimessage m\
+            #                                     JOIN auth_user u1 ON m.sender_id=u1.id\
+            #                                     JOIN auth_user u2 ON m.recipient_id=u2.id\
+            #                                     JOIN store_userprofile  p1 ON m.sender_id=p1.user_id\
+            #                                     JOIN store_userprofile  p2 ON m.recipient_id=p2.user_id\
+            #                                     WHERE m.id IN (\
+            #                                     SELECT MAX(id)\
+            #                                     FROM store_teacheruimessage\
+            #                                     WHERE sender_id = 45 OR recipient_id =45\
+            #                                     GROUP BY conversation_id) ORDER BY m.id DESC')
+            cursor = connection.cursor()
+            cursor.execute('SELECT m.*, CASE WHEN u2.id = %s\
+                                THEN u1.username\
+                                ELSE u2.username\
+                                END as participant,\
+                                CASE WHEN p2.user_id = %s\
+                                THEN p1."profileImage"\
+                                ELSE p2."profileImage"\
+                                END as img_url\
+                            FROM store_teacheruimessage m\
+                            JOIN auth_user u1 ON m.sender_id=u1.id\
+                            JOIN auth_user u2 ON m.recipient_id=u2.id\
+                            JOIN store_userprofile  p1 ON m.sender_id=p1.user_id\
+                            JOIN store_userprofile  p2 ON m.recipient_id=p2.user_id\
+                            WHERE m.id IN (\
+                            SELECT MAX(id)\
+                            FROM store_teacheruimessage\
+                            WHERE sender_id = %s OR recipient_id =%s\
+                            GROUP BY conversation_id) ORDER BY m.id DESC',[token.user_id,token.user_id,token.user_id,token.user_id])
+            row = cursor.fetchall()
+            # # obj[0].key
+            data = []
+            for item in row:
+                if(token.user_id == item[6]):
+                    participant_id = item[7]
+                else:
+                    participant_id = item[6]
+                data.append({"id":item[0],"message_text":item[1],"delivered":item[2],"sent_at":item[3],"delivered_date":item[4]
+                            ,"item_ID_id":item[5],"sender_id":item[6],"recipient_id":item[7],"conversation_id":item[8],
+                            "participant":item[9],"img_url":item[10],"user_id":token.user_id,"participant_id":participant_id})
+                print("item = ",data)
+            # obj = serializers.serialize('json', obj)
+            print("obj =",data)
+            return JsonResponse({"success":True,"data":data},status=201)
+        except Exception as e:
+            print(e)
+            return JsonResponse({"success":False},status=400)
+        
+@api_view(['GET', 'POST'])       
+def getAllMessages(request):
+    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    if request.method == 'POST':
+        try:
+            print("frrukh",request.data['conversation_id'],request.data['user_id'],request.data['recipient_id'])
+            userProfileImg = profile.objects.get(user=User.objects.get(id=request.data['user_id'])).profileImage
+            particientProfileImg = profile.objects.get(user=User.objects.get(id=request.data['recipient_id'])).profileImage
+            
+            cursor = connection.cursor()
+            cursor.execute('select S.*,I.images from store_teacheruimessage S left join store_item I on S."item_ID_id" = I.id \
+            where S.conversation_id = %s',[request.data['conversation_id']])
+            row = cursor.fetchall()
+            # data = serializers.serialize('json', data)
+            data = []
+            for item in row:
+                data.append({"id":item[0],"message_text":item[1],"delivered":item[2],"sent_at":item[3],"delivered_date":item[4]
+                            ,"item_ID_id":item[5],"sender_id":item[6],"recipient_id":item[7],"conversation_id":item[8],
+                            "images":item[9]})
+                # print("item = ",data)
+            # obj = serializers.serialize('json', obj)
+            print("farrukh obj =",data)
+            return JsonResponse({"success":True,"data":data,"userProfileImg":userProfileImg,"user_id":request.data['user_id'],
+                                "participant_id":request.data['recipient_id'],
+                                "particientProfileImg":particientProfileImg},status=201)
+        except Exception as e:
+            print(e)
+            return JsonResponse({"success":False},status=400)

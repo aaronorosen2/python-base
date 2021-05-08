@@ -76,3 +76,15 @@ class StripeConfig(models.Model):
     STRIPE_date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                             null=True, blank=True)
+    
+class teacherUIMessage(models.Model):
+    message_text = models.CharField(max_length=200, blank=False)
+    delivered = models.BooleanField(default=False)
+    sent_at = models.DateTimeField(auto_now=True)
+    delivered_date = models.DateTimeField(blank=True,null=True)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE,
+                            null=True, blank=True,related_name='sender', related_query_name='s')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE,
+                            null=True, blank=True,related_name='recipient', related_query_name='r')
+    conversation_id = models.CharField(max_length=200, blank=False)
+    item_ID = models.ForeignKey(item, on_delete=models.CASCADE,null=True, blank=True)
