@@ -19,5 +19,11 @@ urlpatterns = [
     path('api_voip/send_sms_', views.send_sms),
     path('api_voip/getlead', views.get_lead),
     path('api_voip/csvUploder', views.csvUploder),
+    path('api_voip/handle_incoming_call', views.handle_incoming_call),
+    path('api_voip/recording_status_callback', views.recording_status_callback),
+    path('api_voip/voicemail_view', views.voicemail_view),
+    path('api_voip/recording/<str:sid>', views.recording_by_sid),
+    path('api_voip/handleDialCallStatus', views.handleDialCallStatus),
+
 ]
 
