@@ -30,7 +30,8 @@ urlpatterns = [
      path("session/get", views.get_user_session, name="get-user-session"),
      path("session/event/<str:flashcard_id>/<str:session_id>",
           views.user_session_event, name="session_event"),
-
+     path("lesson/student/get/<str:student_id>",
+          views.student_lesson_list, name="student-lesson-list"),
      path("lesson/response/get/<str:lesson_id>/<str:session_id>",
           views.lesson_flashcard_responses, name="get-lesson-response"),
      path("lesson/response/get/<str:lesson_id>/",

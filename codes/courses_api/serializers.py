@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Lesson, FlashCard, UserSessionEvent, FlashCardResponse,UserSession
+from .models import Lesson, FlashCard, UserSessionEvent, FlashCardResponse,UserSession,Invite
 
 class LessonSerializer(serializers.ModelSerializer):
     flashcards = serializers.SerializerMethodField('get_flashcards')
@@ -50,3 +50,16 @@ class FlashcardResponseSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = User
 #         fields = '__all__'
+
+class StudentLessonSerializer(serializers.ModelSerializer):
+    lesson = serializers.CharField(source='lesson.lesson_name', read_only=True)
+
+    class Meta:
+        model = Invite
+        fields = '__all__'
+        depth = 2
+
+class LessonListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = '__all__'

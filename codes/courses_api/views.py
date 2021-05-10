@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer
 from .serializers import UserSessionEventSerializer,UserSessionSerializer
-from .serializers import FlashcardResponseSerializer
+from .serializers import FlashcardResponseSerializer,StudentLessonSerializer
 from .models import Lesson
 from .models import FlashCard
 from .models import UserSessionEvent
@@ -633,7 +633,11 @@ def Phone_verification_check(request):
     else:
         return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
 
-
+@api_view(['GET'])
+def student_lesson_list(request,pk):
+    stulist = Invite.objects.filter(student=pk)
+    serializer = StudentLessonSerializer(stulist,many=True)
+    return Response(serializer.data)
 
 @api_view(['POST'])
 def invite_email(request):
