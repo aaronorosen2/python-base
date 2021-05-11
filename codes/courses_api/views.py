@@ -634,10 +634,13 @@ def Phone_verification_check(request):
         return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
-def student_lesson_list(request,pk):
-    stulist = Invite.objects.filter(student=pk)
-    serializer = StudentLessonSerializer(stulist,many=True)
-    return Response(serializer.data)
+def student_lesson_list(request,student_id):
+    try:
+        stulist = Invite.objects.filter(student=student_id)
+        serializer = StudentLessonSerializer(stulist,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except:
+        return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 def invite_email(request):
