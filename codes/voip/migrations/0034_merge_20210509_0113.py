@@ -6,9 +6,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('voip', '0031_auto_20210419_2108'),
+        # ('voip', '0031_auto_20210419_2108'),
         ('voip', '0033_auto_20210408_0426'),
-        ('voip', '0028_merge_20210418_1227'),
+        # ('voip', '0028_merge_20210418_1227'),
     ]
 
     operations = [
