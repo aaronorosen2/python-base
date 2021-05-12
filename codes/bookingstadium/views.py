@@ -11,7 +11,7 @@ from django.utils.safestring import mark_safe
 from django.views import View
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
 from django.views.generic import ListView,DetailView
-from .models import Event,Stadium
+from .models import Event,Stadium,User
 from .utils import Calendar
 from django.views.decorators.clickjacking import xframe_options_exempt
 from    sfapp2.utils.twilio import send_sms
@@ -21,10 +21,10 @@ from django.template.response import TemplateResponse
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework.decorators import api_view
-from .serializers import StadiumSerializer,EventSerializer
+from .serializers import StadiumSerializer,EventSerializer,UserSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework import status
-
+from rest_framework.generics import CreateAPIView,ListCreateAPIView
 def get_stadiums(request):
     stadiums = Stadium.objects.all()
     context={'stadiums':stadiums}
@@ -74,8 +74,8 @@ class MonthCalendar(XFrameOptionsExemptMixin, View):
         context['stadium'] = stadium
         return render(request, "bookingstadium/calendar.html", context)
 
-    
-class CreateEvent(XFrameOptionsExemptMixin, View):
+   
+class CreateEvent(XFrameOptionsExemptMixin,View):
     def post(self, request, *args, **kwargs):
         name = request.POST.get('name')
         email = request.POST.get('email')
@@ -217,11 +217,9 @@ class DateEventAll(XFrameOptionsExemptMixin,LoginRequiredMixin, View):
         }
         return render(request, 'bookingstadium/date/datedetail.html',  context)
 
-class Bookings(View):
-    def get(self,request):
-        events=Event.objects.all()
-        context={'events':events}
-        return render(request,'bookingstadium/bookings.html',context)
+class Bookings(ListCreateAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
 
 
 @api_view(['POST'])  
@@ -279,4 +277,9 @@ def stadium_detail(request,pk):
         return JsonResponse(stadium_serializer.data)
     except Stadium.DoesNotExist:
         return JsonResponse({'message': 'Stadium does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+class UserCreateView(CreateAPIView):
+    serializer_class = UserSerializer
+    lookup_url_kwarg = 'id'
+    queryset = User.objects.all()
 
