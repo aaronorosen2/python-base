@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+    <style>
+        table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+        
+        th, td {
+          text-align: left;
+          padding: 8px;
+        }
+        
+        tr:nth-child(even) {background-color: #f2f2f2;}
+    </style>
+<head>
+    <title>User Response</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- user.html JS, CSS start -->
+</head>
+
+<body>
+    <div class="table-div" style="overflow-x:auto;">
+        <table id="table">
+            <thead>
+                <tr>
+                    <th style="background-color: #4CAF50;color: white;">lesson</th>
+                    <th style="background-color: #4CAF50;color: white;">lesson_type</th>
+                    <th style="background-color: #4CAF50;color: white;">Response</th>
+                    <th style="background-color: #4CAF50;color: white;">options</th>
+                    <th style="background-color: #4CAF50;color: white;">name</th>
+                    <th style="background-color: #4CAF50;color: white;">answer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in data %}
+                <tr class="table-primary">
+                    <td style="background-color: #f2f2f2">{{i.lesson}}</td>
+                    <td style="background-color: #f2f2f2">{{i.flashcard.lesson_type}}</td>
+                    <td style="background-color: #f2f2f2">{{i.flashcard.question}}</td>
+                    <td style="background-color: #f2f2f2">{{i.flashcard.options}}</td>
+                    <td style="background-color: #f2f2f2">{{i.student.name}}</td>
+                    <td style="background-color: #f2f2f2">{{i.answer}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

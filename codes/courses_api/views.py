@@ -5,10 +5,10 @@ from rest_framework.response import Response
 from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from .serializers import LessonSerializer
-from .serializers import FlashCardSerializer
+from .serializers import FlashCardSerializer,LessonEmailNotifySerializer
 from .serializers import UserSessionEventSerializer,UserSessionSerializer
 from .serializers import FlashcardResponseSerializer,StudentLessonSerializer
-from .models import Lesson
+from .models import Lesson,LessonEmailNotify
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
@@ -31,6 +31,8 @@ from django.views.decorators.csrf import csrf_exempt
 from knox.auth import get_user_model, AuthToken
 from knox.views import user_logged_in
 from knox.serializers import UserSerializer
+from django.template.loader import render_to_string
+from sfapp.views import get_member_from_headers
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -206,6 +208,9 @@ from termcolor import cprint
 
 @api_view(['POST'])
 def lesson_update(request, pk):
+    # member = get_member_from_headers(request.headers.get('Authorization')[:8])
+    # if not member:
+    #     return JsonResponse({'message': 'not logged in'})
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
@@ -540,6 +545,32 @@ def overall_flashcard_responses(request,lesson_id):
 
 
 @api_view(['GET'])
+def email_responses(request,lessonId):
+    try:
+        notify = LessonEmailNotify.objects.get(lesson=lessonId)
+        print("🚀 ~ file: views.py ~ line 551 ~ notify", notify)
+        flash_obj = FlashCardResponse.objects.filter(lesson=notify.lesson.id)
+        print("🚀 ~ file: views.py ~ line 553 ~ flash_obj", flash_obj)
+        # data = FlashcardResponseSerializer(flash_obj,many=True)
+        
+        subject = f'User Response'
+        body = ''
+        html_message = render_to_string(
+            'email.html', {"data": flash_obj})
+        # recipient_list = [email]
+        # send_mail(subject=subject, message=None, from_email=email_from,
+        #           recipient_list=recipient_list, html_message=html_message)
+        send_raw_email(to_email=[notify.email],reply_to=None,
+                            subject=subject,
+                            message_text=body,
+                            message_html=html_message)
+        return Response({"sucess":True},status=200)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 568 ~ e", e)
+        return Response("error")
+
+
+@api_view(['GET'])
 def user_responses(request,lesson_id):
     try:
         flash_obj = FlashCardResponse.objects.filter(lesson=lesson_id)
@@ -548,7 +579,27 @@ def user_responses(request,lesson_id):
     except:
         return Response("error")
 
+@api_view(['POST'])
+def lesson_email_notify(request,lessonId):
+    try:
+        lesson = Lesson.objects.get(id=lessonId)
+        print("🚀 ~ file: views.py ~ line 584 ~ lesson", lesson)
+        email = request.POST.get('email')
+        print("🚀 ~ file: views.py ~ line 586 ~ email", email)
+        data = LessonEmailNotify(lesson=lesson,email=email)
+        data.save()
+        return Response("Email Recorded",status=201)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 591 ~ e", e)
+        return Response("error")
 
+@api_view(['DELETE'])
+def lesson_email_notify_delete(request,lessonId):
+    try:
+        LessonEmailNotify.objects.filter(lesson=lessonId).delete()
+        return Response("deleted",status=200)
+    except:
+        return Response("error")
 
 @api_view(['GET'])
 def logged_user(request):
