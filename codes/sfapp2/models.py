@@ -58,6 +58,7 @@ class VideoUpload(models.Model):
     source = models.CharField(max_length=500, default="")
     video_uuid = models.CharField(max_length=500, default='')
     admin_feedback = models.ManyToManyField(AdminFeedback)
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="", blank=True, null=True)
 
 
 class MyMed(models.Model):

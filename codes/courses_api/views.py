@@ -135,12 +135,14 @@ def lesson_create(request):
 
 @api_view(['GET'])
 def lesson_read(request, pk):
-    les_= Lesson.objects.get(id=pk)
-    less_serialized = LessonSerializer(les_)
-    data = less_serialized.data
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
+        les_= Lesson.objects.get(user=user,id=pk)
+        if not les_:
+            return JsonResponse({'message': 'Unauthorized'})
+        less_serialized = LessonSerializer(les_)
+        data = less_serialized.data
         for card in data["flashcards"]:
             if (card['lesson_type'] == "BrainTree"):
                 if card['braintree_config']:
@@ -156,6 +158,9 @@ def lesson_read(request, pk):
         return Response(data)
     except:
         if data['lesson_is_public'] == True:
+            les_= Lesson.objects.get(id=pk)
+            less_serialized = LessonSerializer(les_)
+            data = less_serialized.data
             for card in data["flashcards"]:
                 if (card['lesson_type'] == "BrainTree"):
                     if card['braintree_config']:
@@ -208,20 +213,16 @@ from termcolor import cprint
 
 @api_view(['POST'])
 def lesson_update(request, pk):
-    # member = get_member_from_headers(request.headers.get('Authorization')[:8])
-    # if not member:
-    #     return JsonResponse({'message': 'not logged in'})
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
-        lesson = Lesson.objects.get(id=pk)
+        lesson = Lesson.objects.get(user=user,id=pk)
         lesson_name = request.data['lesson_name']
         lesson_is_public = request.data['lesson_is_public']
         meta_attributes = request.data['meta_attributes']
-        Lesson.objects.filter(id=pk).update(lesson_name=lesson_name)
-        Lesson.objects.filter(id=pk).update(meta_attributes=meta_attributes)
-        Lesson.objects.filter(id=pk).update(lesson_is_public=lesson_is_public)
-
+        Lesson.objects.filter(user=user,id=pk).update(lesson_name=lesson_name)
+        Lesson.objects.filter(user=user,id=pk).update(meta_attributes=meta_attributes)
+        Lesson.objects.filter(user=user,id=pk).update(lesson_is_public=lesson_is_public)
         for fc in FlashCard.objects.filter(lesson=lesson):
             toDelete = True
             for flashcard in request.data["flashcards"]:
@@ -345,9 +346,14 @@ def lesson_update(request, pk):
 
 @api_view(['DELETE'])
 def lesson_delete(request,pk):
-    Lesson.objects.filter(id=pk).delete()
-    return Response("deleted")
-
+    try:
+        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = User.objects.get(id=token.user_id)
+        lesson = Lesson.objects.filter(user=user,id=pk)
+        lesson.delete()
+        return Response("deleted")
+    except:
+        return Response({"msg":"you cannot update this lesson"},status=status.HTTP_401_UNAUTHORIZED)
 #Slide Api Start
 
 @api_view(["GET"])
