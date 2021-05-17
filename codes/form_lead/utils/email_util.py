@@ -18,12 +18,12 @@ def send_raw_email(to_email, reply_to, subject,
 
     CHARSET = "utf-8"
     textpart = MIMEText(message_text.encode(CHARSET), 'plain', CHARSET)
-    # htmlpart = MIMEText(message_html.encode(CHARSET), 'html', CHARSET)
+    htmlpart = MIMEText(message_html.encode(CHARSET), 'html', CHARSET)
 
     # Create a multipart/alternative child container.
     msg_body = MIMEMultipart('alternative')
     msg_body.attach(textpart)
-    # msg_body.attach(htmlpart)
+    msg_body.attach(htmlpart)
 
     # Attach the multipart/alternative child container to the multipart/mixed
     # parent container.

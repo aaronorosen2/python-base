@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+    <style>
+        table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+        
+        th, td {
+          text-align: left;
+          padding: 8px;
+        }
+        
+        tr:nth-child(even) {background-color: #f2f2f2;}
+    </style>
+<head>
+    <title>User Response</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- user.html JS, CSS start -->
+</head>
+
+<body>
+    <div class="table-div" style="overflow-x:auto;">
+        <h3 style="color: black;">User Response</h3>
+        <table id="table" style="width: 100%;border-collapse: collapse;font-family: arial, sans-serif;">
+            <thead>
+                <tr>
+                    <th style="background-color: #4CAF50;color: white;">lesson</th>
+                    <th style="background-color: #4CAF50;color: white;">lesson_type</th>
+                    <th style="background-color: #4CAF50;color: white;">question</th>
+                    <th style="background-color: #4CAF50;color: white;">options</th>
+                    <th style="background-color: #4CAF50;color: white;">name</th>
+                    <th style="background-color: #4CAF50;color: white;">answer</th>
+                    <th style="background-color: #4CAF50;color: white;">latitude</th>
+                    <th style="background-color: #4CAF50;color: white;">longitude</th>
+                    <th style="background-color: #4CAF50;color: white;">braintree_config</th>
+                    <th style="background-color: #4CAF50;color: white;">item_store</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in data %}
+                <tr class="table-primary" style="border: 2px solid #dddddd;">
+                    <td style="background-color: #f2f2f2">{{i.lesson}}</td>
+                    <td>{{i.flashcard.lesson_type}}</td>
+                    <td style="background-color: #f2f2f2">{{i.flashcard.question}}</td>
+                    <td>{{i.flashcard.options}}</td>
+                    <td style="background-color: #f2f2f2">{{i.student.name}}</td>
+                    <td>{{i.answer}}</td>
+                    <td style="background-color: #f2f2f2">{{i.latitude}}</td>
+                    <td>{{i.longitude}}</td>
+                    <td style="background-color: #f2f2f2">{{i.flashcard.braintree_config.id}}</td>
+                    <td>{{i.flashcard.item_store.title}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

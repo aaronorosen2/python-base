@@ -14,6 +14,7 @@ from rest_framework import status
 import csv
 import re
 from termcolor import cprint
+from rest_framework.response import Response
 from django.shortcuts import redirect
 # To store session variables
 sessionID_to_callsid = {}
@@ -408,35 +409,67 @@ def csvUploder(request):
             lead.save()
     return JsonResponse({'message': 'lead save successfully'}, status=200)
 
+# @csrf_exempt
+# def handle_incoming_call(request):
+#     # response = VoiceResponse()
+#     # dial = Dial(ring_tone='https://www.kozco.com/tech/piano2-CoolEdit.mp3',recording_status_callback='https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback',timeout=10)
+#     # dial.number('+919904924290')
+#     # response.append(dial)
+#     # response.say("Hi, I can't come to the phone right now, please leave a message after the beep")
+#     # response.redirect("https://830ecbd6a5d9.ngrok.io/voip/api_voip/handleDialCallStatus")
+#     response = VoiceResponse()
+#     # dial = Dial()
+#     # dial.client(
+#     #     status_callback='https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback',
+#     #     status_callback_method="POST",
+#     #     status_callback_event='completed')
+#     response.dial('+18434259777')
+#     # response.redirect('https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback', method='POST')
+#     return HttpResponse(response)
 @csrf_exempt
 def handle_incoming_call(request):
-    # response = VoiceResponse()
-    # dial = Dial(ring_tone='https://www.kozco.com/tech/piano2-CoolEdit.mp3',recording_status_callback='https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback',timeout=10)
-    # dial.number('+919904924290')
-    # response.append(dial)
-    # response.say("Hi, I can't come to the phone right now, please leave a message after the beep")
-    # response.redirect("https://830ecbd6a5d9.ngrok.io/voip/api_voip/handleDialCallStatus")
     response = VoiceResponse()
-    # dial = Dial()
-    # dial.client(
-    #     status_callback='https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback',
-    #     status_callback_method="POST",
-    #     status_callback_event='completed')
-    response.dial('+919904924290')
-    response.redirect('https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback', method='POST')
+    dial = Dial(
+        record='record-from-ringing-dual',
+        timeout="1000",
+    )
+    dial.number('+18434259777')
+    response.append(dial)
+    response.say("Hi, I can't come to the phone right now, please leave a message after the beep",voice="alice")
+    response.record(
+        recording_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/recording_status_callback',
+        recording_status_callback_event='completed')
+    response.hangup()
     return HttpResponse(response)
 
 @csrf_exempt
-def handleDialCallStatus(request):
-    response = VoiceResponse()
-    response.play('https://www.kozco.com/tech/piano2-CoolEdit.mp3', loop=2)
-    response.say("Hi, I can't come to the phone right now, please leave a message after the beep")
-    response.pause(length=3)
-    response.record(
-        recording_status_callback='https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback',
-        recording_status_callback_event='completed')
-    response.hangup()
-    return HttpResponse(str(response))
+@api_view(['GET'])
+def retrieving_call_logs(request):
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+    
+
+    calls = client.calls.list(limit=1,to=settings.TWILIO['TWILIO_NUMBER'])
+    datalist = []
+    for record in calls:
+       
+        datalist.append(record)
+        # print(record.sid)
+    print("🚀 ~ file: views.py ~ line 491 ~ datalist", type(datalist))
+    return JsonResponse(datalist,safe=False)
+
+# @csrf_exempt
+# def handleDialCallStatus(request):
+#     response = VoiceResponse()
+#     response.play('https://www.kozco.com/tech/piano2-CoolEdit.mp3', loop=2)
+#     response.say("Hi, I can't come to the phone right now, please leave a message after the beep")
+#     response.pause(length=3)
+#     response.record(
+#         recording_status_callback='https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback',
+#         recording_status_callback_event='completed')
+#     response.hangup()
+#     return HttpResponse(str(response))
 
 
 @csrf_exempt
@@ -573,31 +606,6 @@ def voicemail(request):
 #         )
 
 #     return recording
-
-def call(request):
-    # Get phone number we need to call
-    phone_number = request.POST.get('phoneNumber', None)
-
-    if not phone_number:
-        msg = 'Missing phone number value'
-        return JsonResponse({'error': msg})
-
-    try:
-        twilio_client = Client(settings.TWILIO['TWILIO_ACCOUNT_SID'],
-                               settings.TWILIO['TWILIO_AUTH_TOKEN'])
-    except Exception as e:
-        return JsonResponse({'error': e})
-
-    try:
-        res = twilio_client.calls.create(from_=settings.TWILIO['TWILIO_NUMBER'],
-                                   to=phone_number,
-                                   url="/outbound")
-    except Exception as e:
-
-        return JsonResponse({'error': e})
-
-    return JsonResponse({'message': 'Call incoming!'})
-
 
 
 def outbound(request):

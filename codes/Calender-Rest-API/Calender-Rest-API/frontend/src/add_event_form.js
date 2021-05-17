@@ -9,7 +9,8 @@ const AddForm = ({clickedDate, addEvent, modalVisible}) => {
     const [phone, setPhone] = useState("")
     const [start_time, setStartTime] = useState('12:00')
     const [end_time, setEndTime] = useState('12:00')
-
+    const query = new URLSearchParams(window.location.search);
+    const stadiumid = query.get('stadium')
     const handleChangeName = (e) => {
         let name = e.target.value;
         setName(name)
@@ -31,7 +32,8 @@ const AddForm = ({clickedDate, addEvent, modalVisible}) => {
             "phone": phone,
             "date": clickedDate,
             "start_time": start_time,
-            "end_time": end_time
+            "end_time": end_time,
+            "stadium":stadiumid
         })
         modalVisible(false)
     }
