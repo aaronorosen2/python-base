@@ -18,6 +18,8 @@ urlpatterns = [
                 name="userbrainTreeSubscription"),
         path('userbrainTreeUnsubscription', views.userbrainTreeUnsubscription,
                 name="userbrainTreeUnsubscription"),
+        path('subscriptionStatus', views.subscriptionStatus,
+                name="subscriptionStatus"),
         path('userOrderList', views.userOrderList, name='userOrderList'),
         path('deleteImage', views.deleteImage, name='deleteImage'),
         path('userProfile', views.userProfile, name='userProfile'),

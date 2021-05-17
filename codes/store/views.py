@@ -362,6 +362,7 @@ def userSubscribe(request):
 
 @api_view(['GET', 'POST'])
 def userbrainTreeSubscription(request):
+    print(request.data)
     custy_result = create_customer( {
         'payment_method_nonce': request.data['payment_method_nonce'],
     })
@@ -404,10 +405,22 @@ def userbrainTreeUnsubscription(request):
     the_subscription_id = the_subscription[len(the_subscription)-1].braintreeSubscriptionID
     result = unsubscribe(the_subscription_id)
     if(result):
+        subscription.objects.filter(pk=the_subscription[len(the_subscription)-1].id).update(is_ordered=False)
         return JsonResponse({"success":True,"status":"OKAY"},status=201)
     else:
         return JsonResponse({"success":False,"status":"NOT OKAY"},status=201)
 
+@api_view(['GET', 'POST', 'DELETE'])
+def subscriptionStatus(request):
+    the_subscription = subscription.objects.filter(source=request.data['session_id'])
+    if(len(the_subscription)>0):
+        if(the_subscription[len(the_subscription)-1].is_ordered == True):
+            return JsonResponse({"success":True,"subscribe":"yes"},status=201)
+        else:
+            return JsonResponse({"success":True,"subscribe":"no"},status=201)
+    else:
+            return JsonResponse({"success":True,"subscribe":"no"},status=201)
+        
 @api_view(['GET', 'POST', 'DELETE'])
 def userOrderList(request):
     # GET list of items, POST a new item, DELETE all items
