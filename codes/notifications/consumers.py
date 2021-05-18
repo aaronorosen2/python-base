@@ -336,6 +336,7 @@ class NotificationConsumerQueue(AsyncWebsocketConsumer):
         # del self.user_dictionary[self.channel_name]
         # self.user_list.clear()
         # self.user_list.extend(self.user_dictionary.values())
+        redisconn.hdel("connected_users", self.channel_name)
         if(redisconn.hget(self.room_name+'@live', self.channel_name) == self.room_name+"_rep"):
             redisconn.hdel("roomrepresentative", self.room_name)
         if(redisconn.hexists(self.room_name+'@live', self.channel_name)):
