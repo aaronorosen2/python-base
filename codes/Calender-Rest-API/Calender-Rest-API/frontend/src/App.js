@@ -17,12 +17,14 @@ const App = () => {
     const [visible, setVisible] = React.useState(false);
     const [confirmLoading, setConfirmLoading] = React.useState(false);
     const [clickedDate, setClickedData] = React.useState(null);
-
+    const query = new URLSearchParams(window.location.search);
+    const stadium = query.get('stadium')
+    console.log('stadium='+stadium)
 
     const [selectedDay, setSelectedDay] = React.useState(null);
     const [selectedMonth, setSelectedMonth] = React.useState(null);
     const [selectedYear, setSelectedYear] = React.useState(null);
-
+    const [selectedStadium, setSelectedStadium] = React.useState(null);
     const locales = {
         "en-US": require("date-fns/locale/en-US")
     };
@@ -40,7 +42,9 @@ const App = () => {
         let date = data.start.getDate()
         let month = data.start.getMonth()
         let year = data.start.getFullYear()
-
+        const query = new URLSearchParams(window.location.search);
+        const stadiumid = query.get('stadium')
+        setSelectedStadium(stadium)
         setSelectedDay(date)
         setSelectedMonth(month)
         setSelectedYear(year)
@@ -62,7 +66,7 @@ const App = () => {
 
     const addEvent = (e) => {
         console.log(e)
-        axios.post('http://127.0.0.1:8000/api/events/list/', e)
+        axios.post('https://api.dreampotential.org/bookingstadium/bookings/', e)
             .then(response => {
                 console.log(response)
                 setMyEventsList(
@@ -75,7 +79,8 @@ const App = () => {
                         phone: response.data.phone,
                         date: response.data.date,
                         start_time: response.data.start_time,
-                        end_time: response.data.end_time
+                        end_time: response.data.end_time,
+                        stadium: 'ds'
                     }]
                 )
             })
@@ -84,7 +89,7 @@ const App = () => {
     const addUser = (e) => {
         e['event'] = clickEventID
         console.log(e)
-        axios.post("http://127.0.0.1:8000/api/user/assign/", e)
+        axios.post("https://api.dreampotential.org/bookingstadium/user/assign/", e)
             .then(response => {
                 setMyEventsList([])
                 fetchEvents()
@@ -94,7 +99,7 @@ const App = () => {
 
     const fetchEvents = () => {
         // setMyEventsList([]);
-        axios.get('http://127.0.0.1:8000/api/events/list/')
+        axios.get('https://api.dreampotential.org/bookingstadium/api/bookings')
             .then(response => {
                     console.log(response.data)
                     response.data.forEach((response, index) => {
@@ -116,7 +121,9 @@ const App = () => {
                                 date: response.date,
                                 start_time: response.start_time,
                                 end_time: response.end_time,
+                                stadium: response.stadium,
                                 total_users: response.total_users
+
                             }]
                         )
                     })
@@ -136,7 +143,8 @@ const App = () => {
     const [clickEventStartTime, setClickEventStartTime] = React.useState(null)
     const [clickEventEndTime, setClickEventEndTime] = React.useState(null)
     const [clickEventTotalUsers, setClickEventTotalUsers] = React.useState(null)
-
+    const [clickEventStadium, setClickEventStadium] = React.useState(null)
+    
     const [eventModalVisible, setEventModalVisible] = React.useState(false)
     const [eventConfirmLoading, setEventConfirmLoading] = React.useState(false);
 
@@ -161,6 +169,7 @@ const App = () => {
         setClickEventStartTime(event.start_time)
         setClickEventEndTime(event.end_time)
         setClickEventTotalUsers(event.total_users)
+        setClickEventStadium(event.stadium)
     }
 
 
@@ -213,7 +222,7 @@ const App = () => {
                 <p><b>Date:</b> {clickEventDate}</p>
                 <p><b>Start Time:</b> {clickEventStartTime}</p>
                 <p><b>End Time:</b> {clickEventEndTime}</p>
-
+                 <p><b>Stadium:</b> {clickEventStadium}</p>
                 <p><b>{clickEventTotalUsers}</b> user are attending</p>
                 <button onClick={() => {
                     setUserModalVisible(true)

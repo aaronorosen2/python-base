@@ -2,7 +2,7 @@ from sfapp2.utils.twilio import send_sms, list_sms, send_sms_file
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
-from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause
+from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause, Number,Record,Say
 from twilio.rest import Client
 import uuid
 from .models import Phone, assigned_numbers, User_leads
@@ -14,7 +14,8 @@ from rest_framework import status
 import csv
 import re
 from termcolor import cprint
-
+from rest_framework.response import Response
+from django.shortcuts import redirect
 # To store session variables
 sessionID_to_callsid = {}
 sessionID_to_confsid = {}
@@ -180,27 +181,27 @@ def add_user_to_conf(request, session_id):
 
 @csrf_exempt
 def leave_conf(request, session_id, destination_number):
-    cprint("conf leave.---",color='yellow')
+    # cprint("conf leave.---",color='yellow')
     # print(request.POST)
     event = request.POST.get('SequenceNumber')
     conference_sid = request.POST.get('ConferenceSid')
 
     sessionID_to_confsid[session_id] = conference_sid
-    print("Leave call request:", conference_sid, event, session_id)
+    # print("Leave call request:", conference_sid, event, session_id)
 
     if request.POST.get('StatusCallbackEvent') == 'participant-leave':
-        print("A Participant Left Call")
+        # print("A Participant Left Call")
         client = get_client()
         # ends conference call if only 1 participant left
         participants = client.conferences(conference_sid).participants
         if participants and len(participants.list()) == 1:
             client.conferences(conference_sid).update(status='completed')
-            print("Call ended")
+            # print("Call ended")
         # ends conference call if original caller leaves before callee picks up
         elif len(participants.list()) == 0 and event == '2':
             client.calls(sessionID_to_callsid.get(
                 session_id)).update(status='completed')
-        print("Call ended")
+        # print("Call ended")
 
 
 
@@ -229,14 +230,14 @@ def leave_conf(request, session_id, destination_number):
 @csrf_exempt
 def complete_call(request, session_id):
     # print(request.POST)
-    print("## Ending conference call, callee rejected call")
+    # print("## Ending conference call, callee rejected call")
     global sessionID_to_confsid
 
     try:
         client = get_client()
         participants = client.conferences(
             sessionID_to_confsid.get(session_id)).participants
-        print('participants:', participants)
+        # print('participants:', participants)
 
         # only does so if 1 participant left in the conference call (i.e. the caller)
         if participants and len(participants.list()) == 1:
@@ -407,3 +408,230 @@ def csvUploder(request):
                               url=url)
             lead.save()
     return JsonResponse({'message': 'lead save successfully'}, status=200)
+
+# @csrf_exempt
+# def handle_incoming_call(request):
+#     # response = VoiceResponse()
+#     # dial = Dial(ring_tone='https://www.kozco.com/tech/piano2-CoolEdit.mp3',recording_status_callback='https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback',timeout=10)
+#     # dial.number('+919904924290')
+#     # response.append(dial)
+#     # response.say("Hi, I can't come to the phone right now, please leave a message after the beep")
+#     # response.redirect("https://830ecbd6a5d9.ngrok.io/voip/api_voip/handleDialCallStatus")
+#     response = VoiceResponse()
+#     # dial = Dial()
+#     # dial.client(
+#     #     status_callback='https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback',
+#     #     status_callback_method="POST",
+#     #     status_callback_event='completed')
+#     response.dial('+18434259777')
+#     # response.redirect('https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback', method='POST')
+#     return HttpResponse(response)
+@csrf_exempt
+def handle_incoming_call(request):
+    response = VoiceResponse()
+    dial = Dial(
+        record='record-from-ringing-dual',
+        timeout="1000",
+    )
+    dial.number('+18434259777')
+    response.append(dial)
+    response.say("Hi, I can't come to the phone right now, please leave a message after the beep",voice="alice")
+    response.record(
+        recording_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/recording_status_callback',
+        recording_status_callback_event='completed')
+    response.hangup()
+    return HttpResponse(response)
+
+@csrf_exempt
+@api_view(['GET'])
+def retrieving_call_logs(request):
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+    
+
+    calls = client.calls.list(limit=1,to=settings.TWILIO['TWILIO_NUMBER'])
+    datalist = []
+    for record in calls:
+       
+        datalist.append(record)
+        # print(record.sid)
+    print("🚀 ~ file: views.py ~ line 491 ~ datalist", type(datalist))
+    return JsonResponse(datalist,safe=False)
+
+# @csrf_exempt
+# def handleDialCallStatus(request):
+#     response = VoiceResponse()
+#     response.play('https://www.kozco.com/tech/piano2-CoolEdit.mp3', loop=2)
+#     response.say("Hi, I can't come to the phone right now, please leave a message after the beep")
+#     response.pause(length=3)
+#     response.record(
+#         recording_status_callback='https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback',
+#         recording_status_callback_event='completed')
+#     response.hangup()
+#     return HttpResponse(str(response))
+
+
+@csrf_exempt
+def recording_status_callback(request):
+    data = request.POST
+    return HttpResponse("")
+
+@csrf_exempt
+def voicemail_view(request):
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+    recordings = client.recordings.list()
+    # print("🚀 ~ file: views.py ~ line 435 ~ recordings", recordings)
+    all_recordings = []
+    for record in recordings:
+        # print("🚀 ~ file: views.py ~ line 438 ~ record", record)
+        if record is not None:
+            rec = {
+                'date_created': record.date_created,
+                'sid': record.sid,
+                'duration': record.duration,
+                'status': record.status,
+                'price': record.price,
+                'path': "https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording/{}".format(record.sid)
+            }
+            # print("🚀 ~ file: views.py ~ line 439 ~ rec", rec)
+            
+            all_recordings.append(rec)
+    return JsonResponse(all_recordings,safe=False)
+
+
+# def get_recordings(request):
+#     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+#     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+#     client = Client(account_sid, auth_token)
+#     recordings = client.recordings.list()
+#     all_recordings = []
+#     for record in recordings:
+#         if record.encryption_details is not None:
+#             rec = {
+#                 'date_created': record.date_created,
+#                 'sid': record.sid,
+#                 'duration': record.duration,
+#                 'status': record.status,
+#                 'price': record.price,
+#                 'path': "https://b8a302883e82.ngrok.io/voip/api_voip/recording/{}".format(record.sid)
+#             }
+#             all_recordings.append(rec)
+#     return all_recordings
+
+@csrf_exempt
+def recording_by_sid(request,sid):
+    if request.method == 'GET':
+        account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID'],
+        auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+        client = Client(account_sid, auth_token)
+        # recording = client.recordings(sid).fetch()
+        url = ('https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+                        (account_sid[0],
+                        sid))
+        # print('recording found', recording.date_created)
+        return JsonResponse(url,safe=False)
+    else:
+        print('delete file')
+        del sid
+        return redirect('/')
+
+# def delete_recording(request,sid):
+#     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID'],
+#     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+#     client = Client(account_sid, auth_token)
+#     client.recordings(sid).delete()
+
+#     files = glob.glob('static/recordings/*.wav')
+#     for f in files:
+#         try:
+#             if sid in f:
+#                 os.remove(f)
+#                 print(f, ' file deleted')
+#         except OSError as e:
+#             print("Error: %s : %s" % (f, e.strerror))
+
+
+# def status_callback(request):
+#     response = VoiceResponse()
+#     dial = Dial()
+#     dial.number(
+#         '+12349013030',
+#         status_callback_event='initiated ringing answered completed',
+#         status_callback='https://myapp.com/calls/events',
+#         status_callback_method='POST'
+#     )
+#     response.append(dial)
+
+#     return response
+
+def record(request):
+    response = VoiceResponse()
+    response.record(timeout=10, transcribe=True)
+
+    return response
+
+def voicemail(request):
+
+    response = VoiceResponse()
+    response.say(
+        'Please leave a message at the beep.\nPress the star key when finished.'
+    )
+    response.record(
+        action='https://6f9ea7deb62f.ngrok.io',
+        method='GET',
+        max_length=20,
+        finish_on_key='*'
+    )
+    # for post req
+    # response.record(transcribe=True, transcribe_callback='/handle_transcribe.php')
+
+    response.say('I did not receive a recording')
+
+    return response
+
+# def recording_status_callback(request):
+#     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID'],
+#     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+#     client = Client(account_sid, auth_token)
+
+#     recording = client.calls('CAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') \
+#         .recordings \
+#         .create(
+#             recording_status_callback='https://myapp.com/recording-events',
+#             recording_status_callback_event=['in-progress completed'],
+#             recording_channels='dual'
+#         )
+
+#     return recording
+
+
+def outbound(request):
+    response = VoiceResponse()
+
+    response.say("Thank you for contacting our sales department. If this "
+                 "click to call application was in production, we would "
+                 "dial out to your sales team with the Dial verb.",
+                 voice='alice')
+    '''
+    # Uncomment this code and replace the number with the number you want
+    # your customers to call.
+    '''
+    response.number("+16518675309")
+    return response
+
+# def click_to_call(request):
+#     client = get_client()
+#     call = client.calls.create(
+#         record=True,
+#         from_=from_num,
+#         to=to_num,
+#         url='http://demo.twilio.com/docs/voice.xml',
+#     )
+#     sms = client.messages.create(
+#             body=text,
+#             from_=from_num,
+#             to=to_num,
+#         )

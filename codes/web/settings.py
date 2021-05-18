@@ -125,6 +125,7 @@ INSTALLED_APPS = [
     'bookingstadium.apps.BookingstadiumConfig',
     'bookingsystem.apps.BookingsystemConfig',
     "fcm_django",
+    "calendar_v2",
 ]
 
 FCM_DJANGO_SETTINGS = {

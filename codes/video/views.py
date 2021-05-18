@@ -14,6 +14,8 @@ from django.conf import settings
 import logging
 import boto3
 from botocore.exceptions import ClientError
+from knox.auth import get_user_model, AuthToken
+from django.contrib.auth.models import User
 
 @csrf_exempt
 def video_play(request):
@@ -176,6 +178,10 @@ def generate_s3_signed_url(request):
 @csrf_exempt
 def save_video_upload(request):
     member = get_member_from_headers(request.headers)
+    token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+    if not token:
+        return JsonResponse({'message': 'not logged in'})
+    user = User.objects.get(id=token.user_id)
     if not member:
         return JsonResponse({'message': 'not logged in'})
 
@@ -189,6 +195,7 @@ def save_video_upload(request):
         member=member,
         video_uuid=str(uuid.uuid4()),
         # s3_upload=myfile,
+        user=user,
     )
     print('video id: ', video.id)
 

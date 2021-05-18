@@ -91,3 +91,9 @@ class InviteResponse(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE,
                                null=True, blank=True)
     answer = models.TextField(null=True, blank=True)
+
+
+class LessonEmailNotify(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE,
+                               null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)

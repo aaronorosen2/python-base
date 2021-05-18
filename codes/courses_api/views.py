@@ -5,10 +5,10 @@ from rest_framework.response import Response
 from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from .serializers import LessonSerializer
-from .serializers import FlashCardSerializer
+from .serializers import FlashCardSerializer,LessonEmailNotifySerializer
 from .serializers import UserSessionEventSerializer,UserSessionSerializer
-from .serializers import FlashcardResponseSerializer
-from .models import Lesson
+from .serializers import FlashcardResponseSerializer,StudentLessonSerializer
+from .models import Lesson,LessonEmailNotify
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
@@ -31,6 +31,8 @@ from django.views.decorators.csrf import csrf_exempt
 from knox.auth import get_user_model, AuthToken
 from knox.views import user_logged_in
 from knox.serializers import UserSerializer
+from django.template.loader import render_to_string
+from sfapp.views import get_member_from_headers
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -133,12 +135,14 @@ def lesson_create(request):
 
 @api_view(['GET'])
 def lesson_read(request, pk):
-    les_= Lesson.objects.get(id=pk)
-    less_serialized = LessonSerializer(les_)
-    data = less_serialized.data
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
+        les_= Lesson.objects.get(user=user,id=pk)
+        if not les_:
+            return JsonResponse({'message': 'Unauthorized'})
+        less_serialized = LessonSerializer(les_)
+        data = less_serialized.data
         for card in data["flashcards"]:
             if (card['lesson_type'] == "BrainTree"):
                 if card['braintree_config']:
@@ -154,6 +158,9 @@ def lesson_read(request, pk):
         return Response(data)
     except:
         if data['lesson_is_public'] == True:
+            les_= Lesson.objects.get(id=pk)
+            less_serialized = LessonSerializer(les_)
+            data = less_serialized.data
             for card in data["flashcards"]:
                 if (card['lesson_type'] == "BrainTree"):
                     if card['braintree_config']:
@@ -216,11 +223,9 @@ def lesson_update(request, pk):
         Lesson.objects.filter(user=user,id=pk).update(lesson_name=lesson_name)
         Lesson.objects.filter(user=user,id=pk).update(meta_attributes=meta_attributes)
         Lesson.objects.filter(user=user,id=pk).update(lesson_is_public=lesson_is_public)
-
         for fc in FlashCard.objects.filter(lesson=lesson):
             toDelete = True
             for flashcard in request.data["flashcards"]:
-                cprint(flashcard,color="yellow")
                 if "id" in flashcard:
                     if fc.id == flashcard["id"]:
                         toDelete = False
@@ -341,9 +346,14 @@ def lesson_update(request, pk):
 
 @api_view(['DELETE'])
 def lesson_delete(request,pk):
-    Lesson.objects.filter(id=pk).delete()
-    return Response("deleted")
-
+    try:
+        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = User.objects.get(id=token.user_id)
+        lesson = Lesson.objects.filter(user=user,id=pk)
+        lesson.delete()
+        return Response("deleted")
+    except:
+        return Response({"msg":"you cannot update this lesson"},status=status.HTTP_401_UNAUTHORIZED)
 #Slide Api Start
 
 @api_view(["GET"])
@@ -531,19 +541,42 @@ def lesson_flashcard_responses(request,lesson_id,session_id):
     return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
 
 @api_view(['GET'])
-@csrf_exempt
 def overall_flashcard_responses(request,lesson_id):
     try:
-        lesson = Lesson.objects.get(id=lesson_id)
-        flash_obj = FlashCardResponse.objects.filter(lesson=lesson.id)
+        flash_obj = FlashCardResponse.objects.filter(lesson=lesson_id)
         data = FlashcardResponseSerializer(flash_obj,many=True)
         return Response(data.data)
-    except:
+    except Exception as e:
         return Response("error")
 
 
 @api_view(['GET'])
-@csrf_exempt
+def email_responses(request,lessonId):
+    try:
+        notify = LessonEmailNotify.objects.get(lesson=lessonId)
+        print("🚀 ~ file: views.py ~ line 551 ~ notify", notify)
+        flash_obj = FlashCardResponse.objects.filter(lesson=notify.lesson.id)
+        print("🚀 ~ file: views.py ~ line 553 ~ flash_obj", flash_obj)
+        # data = FlashcardResponseSerializer(flash_obj,many=True)
+        
+        subject = f'User Response'
+        body = ''
+        html_message = render_to_string(
+            'email.html', {"data": flash_obj})
+        # recipient_list = [email]
+        # send_mail(subject=subject, message=None, from_email=email_from,
+        #           recipient_list=recipient_list, html_message=html_message)
+        send_raw_email(to_email=[notify.email],reply_to=None,
+                            subject=subject,
+                            message_text=body,
+                            message_html=html_message)
+        return Response({"sucess":True},status=200)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 568 ~ e", e)
+        return Response("error")
+
+
+@api_view(['GET'])
 def user_responses(request,lesson_id):
     try:
         flash_obj = FlashCardResponse.objects.filter(lesson=lesson_id)
@@ -552,7 +585,27 @@ def user_responses(request,lesson_id):
     except:
         return Response("error")
 
+@api_view(['POST'])
+def lesson_email_notify(request,lessonId):
+    try:
+        lesson = Lesson.objects.get(id=lessonId)
+        print("🚀 ~ file: views.py ~ line 584 ~ lesson", lesson)
+        email = request.POST.get('email')
+        print("🚀 ~ file: views.py ~ line 586 ~ email", email)
+        data = LessonEmailNotify(lesson=lesson,email=email)
+        data.save()
+        return Response("Email Recorded",status=201)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 591 ~ e", e)
+        return Response("error")
 
+@api_view(['DELETE'])
+def lesson_email_notify_delete(request,lessonId):
+    try:
+        LessonEmailNotify.objects.filter(lesson=lessonId).delete()
+        return Response("deleted",status=200)
+    except:
+        return Response("error")
 
 @api_view(['GET'])
 def logged_user(request):
@@ -637,7 +690,14 @@ def Phone_verification_check(request):
     else:
         return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
 
-
+@api_view(['GET'])
+def student_lesson_list(request,student_id):
+    try:
+        stulist = Invite.objects.filter(student=student_id)
+        serializer = StudentLessonSerializer(stulist,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except:
+        return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 def invite_email(request):

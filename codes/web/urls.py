@@ -36,6 +36,11 @@ urlpatterns = [
     path('courses_api/', include("courses_api.urls")),
     path('notification/', notification),
     path('admin/', admin.site.urls),
+
+    path('events_api/', include(
+        ('calendar_v2.urls', 'calendar_v2'),
+        namespace='sfapp2_voip')),
+
     path('voip/', include(
         ('voip.urls', 'voip'),
         namespace='sfapp2_voip')),

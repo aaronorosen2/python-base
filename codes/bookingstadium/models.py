@@ -52,4 +52,11 @@ class Event(models.Model):
             return f' <a href="{url}"> ... </a>'
         return ""
     
+    def get_num_of_users(self):
+        users = self.user_set.all().count()
+        return users
 
+class User(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)

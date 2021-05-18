@@ -158,6 +158,15 @@ def set_user_info(request):
 
         return JsonResponse({'message': 'success'})
 
+@csrf_exempt
+def get_user_info(request):
+    member = get_member_from_headers(request.headers)
+    print(member)
+    if(member.question_answers):
+        return JsonResponse({'data': json.loads(member.question_answers)})
+    else:
+        return JsonResponse({'data': {}})
+
 
 @csrf_exempt
 def do_checkin_gps(request):

@@ -16,6 +16,7 @@ from .views import (
     stadiumcreate,
     getbookings,
     stadium_detail,
+    UserCreateView
 )
 
 urlpatterns =[
@@ -32,4 +33,5 @@ urlpatterns =[
     path('api/stadium/create',stadiumcreate,name='stadiumcreateapi'),
     path('api/bookings',getbookings,name='getbookings'),
     path('api/stadium/<int:pk>/',stadium_detail,name='stadium-detail'),
+    path('user/assign/', UserCreateView.as_view())
 ]

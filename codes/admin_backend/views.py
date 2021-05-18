@@ -37,7 +37,11 @@ def get_question_counters(request):
         if member.get('question_answers'):
             question_answers = json.loads(member['question_answers'])
             for key in question_answers.keys():
-                choice = int(question_answers[key])
+                try:
+                    choice = int(question_answers[key])
+                except:
+                    choice = question_answers[key]
+                    
                 if choice not in choice_counters:
                     choice_counters[choice] = 0
                 choice_counters[choice] += 1
