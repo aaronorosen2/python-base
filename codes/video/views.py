@@ -182,8 +182,6 @@ def save_video_upload(request):
     if not token:
         return JsonResponse({'message': 'not logged in'})
     user = User.objects.get(id=token.user_id)
-    if not member:
-        return JsonResponse({'message': 'not logged in'})
 
     uploaded_file_url = request.POST.get('uploaded_file_url')
 
