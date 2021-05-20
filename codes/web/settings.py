@@ -126,6 +126,7 @@ INSTALLED_APPS = [
     'bookingsystem.apps.BookingsystemConfig',
     "fcm_django",
     "calendar_v2",
+    "faceswap",
 ]
 
 FCM_DJANGO_SETTINGS = {
