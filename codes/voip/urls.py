@@ -12,7 +12,7 @@ urlpatterns = [
     path('api_voip/voip_callback/<str:session_id>', views.voip_callback),
     path('api_voip/add_user/<str:session_id>', views.add_user_to_conf),
     path('api_voip/complete_call/<str:session_id>', views.complete_call),
-    path('api_voip/leave_conf/<str:session_id>', views.leave_conf),
+    path('api_voip/leave_conf/<str:session_id>/<str:destination_number>', views.leave_conf),
     path('api_voip/getNumber', views.getNumber),
     path('api_voip/assign_number_', views.assign_number_),
     path('api_voip/make_call', views.make_call),

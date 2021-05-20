@@ -104,12 +104,11 @@ def voip_callback(request, session_id):
 
         # Say a different message depending on the caller's choice
         if choice == '1':
+            print("🚀 ~ file: views.py ~ line 398 ~ resp",str(session_id))
             resp.say('Adding destination number to the conference!')
-            resp.redirect(
-                'https://api.dreampotential.org/voip/api_voip/add_user/'
-                # 'https://fee4064b2b82.ngrok.io/voip/api_voip/add_user/'
-                + session_id)
-            print(str(resp))
+            resp.redirect('https://sfapp-api.dreamstate-4-all.org/voip/api_voip/add_user/' + str(session_id))
+            # print(str(resp))
+            
             return HttpResponse(resp)
         elif choice == '2':
             resp.say('Thank you for calling, have a nice day!')
@@ -157,8 +156,10 @@ def voip_callback(request, session_id):
 
 @csrf_exempt
 def add_user_to_conf(request, session_id):
+    print("🚀 ~ file: views.py ~ line 399 ~ session_id", session_id)
     # print(request.POST)
     destination_number = sessionID_to_destNo.get(session_id)
+    print("🚀 ~ file: views.py ~ line 162 ~ destination_number", destination_number)
     print("Attemtping to add phone number to call: " + destination_number)
 
     client = get_client()
@@ -172,7 +173,7 @@ def add_user_to_conf(request, session_id):
         record=True,
         from_=settings.TWILIO['TWILIO_NUMBER'],
         to=destination_number,
-        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id + destination_number,
+        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + str(session_id) +"/" + destination_number,
         # conference_status_callback='https://fee4064b2b82.ngrok.io/voip/api_voip/leave_conf/' + session_id + destination_number,
         conference_status_callback_event="leave")
 
@@ -253,8 +254,11 @@ def complete_call(request, session_id):
 def join_conference(request):
     global sessionID_to_destNo
     source_number = request.POST.get("source_number")    
+    print("🚀 ~ file: views.py ~ line 256 ~ source_number", source_number)
     dest_number = request.POST.get("dest_number")
+    print("🚀 ~ file: views.py ~ line 258 ~ dest_number", dest_number)
     your_number = request.POST.get("your_number")
+    print("🚀 ~ file: views.py ~ line 260 ~ your_number", your_number)
 
     try:
         twilio_client = get_client()

@@ -39,7 +39,7 @@ urlpatterns = [
 
     path('events_api/', include(
         ('calendar_v2.urls', 'calendar_v2'),
-        namespace='sfapp2_voip')),
+        namespace='events_api')),
 
     path('voip/', include(
         ('voip.urls', 'voip'),

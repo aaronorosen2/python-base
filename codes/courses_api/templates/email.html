@@ -1,29 +1,35 @@
-<!doctype html>
-<html>
-    <style>
-        table {
-          border-collapse: collapse;
-          width: 100%;
-        }
-        
-        th, td {
-          text-align: left;
-          padding: 8px;
-        }
-        
-        tr:nth-child(even) {background-color: #f2f2f2;}
-    </style>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
     <title>User Response</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- user.html JS, CSS start -->
+
+    <style type="text/css">
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 
-<body>
-    <div class="table-div" style="overflow-x:auto;">
+<body style="margin:0; padding:0; background-color:#F2F2F2;">
+    <center>
         <h3 style="color: black;">User Response</h3>
-        <table id="table" style="width: 100%;border-collapse: collapse;font-family: arial, sans-serif;">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#F2F2F2">
             <thead>
                 <tr>
                     <th style="background-color: #4CAF50;color: white;">lesson</th>
@@ -41,21 +47,22 @@
             <tbody>
                 {% for i in data %}
                 <tr class="table-primary" style="border: 2px solid #dddddd;">
-                    <td style="background-color: #f2f2f2">{{i.lesson}}</td>
-                    <td>{{i.flashcard.lesson_type}}</td>
-                    <td style="background-color: #f2f2f2">{{i.flashcard.question}}</td>
-                    <td>{{i.flashcard.options}}</td>
-                    <td style="background-color: #f2f2f2">{{i.student.name}}</td>
-                    <td>{{i.answer}}</td>
-                    <td style="background-color: #f2f2f2">{{i.latitude}}</td>
-                    <td>{{i.longitude}}</td>
-                    <td style="background-color: #f2f2f2">{{i.flashcard.braintree_config.id}}</td>
-                    <td>{{i.flashcard.item_store.title}}</td>
+                    <td align="center" valign="top" style="background-color: #f2f2f2">{{i.lesson}}</td>
+                    <td align="center" valign="top">{{i.flashcard.lesson_type}}</td>
+                    <td align="center" valign="top" style="background-color: #f2f2f2">{{i.flashcard.question}}</td>
+                    <td align="center" valign="top">{{i.flashcard.options}}</td>
+                    <td align="center" valign="top" style="background-color: #f2f2f2">{{i.student.name}}</td>
+                    <td align="center" valign="top">{{i.answer}}</td>
+                    <td align="center" valign="top" style="background-color: #f2f2f2">{{i.latitude}}</td>
+                    <td align="center" valign="top">{{i.longitude}}</td>
+                    <td align="center" valign="top" style="background-color: #f2f2f2">
+                        {{i.flashcard.braintree_config.id}}</td>
+                    <td align="center" valign="top">{{i.flashcard.item_store.title}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </div>
+    </center>
 </body>
 
 </html>
