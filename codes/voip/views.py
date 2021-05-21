@@ -106,7 +106,8 @@ def voip_callback(request, session_id):
         if choice == '1':
             print("🚀 ~ file: views.py ~ line 398 ~ resp",str(session_id))
             resp.say('Adding destination number to the conference!')
-            resp.redirect('https://sfapp-api.dreamstate-4-all.org/voip/api_voip/add_user/' + str(session_id))
+            resp.redirect('https://api.dreampotential.org/voip/api_voip/add_user/' + str(session_id))
+            # resp.redirect('https://7b0b3fa9d2d4.ngrok.io/voip/api_voip/add_user/' + str(session_id))
             # print(str(resp))
             
             return HttpResponse(resp)
@@ -140,7 +141,7 @@ def voip_callback(request, session_id):
             num_digits=1,
             action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/'
                     + session_id)
-            # action='https://fee4064b2b82.ngrok.io/voip/api_voip/voip_callback/'
+            # action='https://7b0b3fa9d2d4.ngrok.io/voip/api_voip/voip_callback/'
                 # + session_id)
         gather.say(
             'Please Press 1 to connect to destination. Press 2 to terminate the call. Press 3 to play music. Press 4 to play music. Press 5 to play music. Press 6 to play music. Press 7 to play music. Press 8 to play music. Press 9 to pause music')
@@ -148,8 +149,8 @@ def voip_callback(request, session_id):
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
     resp.redirect(
-        'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
-        # 'https://fee4064b2b82.ngrok.io/voip/api_voip/voip_callback/' + session_id)
+        'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id))
+        # 'https://7b0b3fa9d2d4.ngrok.io/voip/api_voip/voip_callback/' + str(session_id))
 
     print(str(resp))
     return HttpResponse(resp)
@@ -173,8 +174,8 @@ def add_user_to_conf(request, session_id):
         record=True,
         from_=settings.TWILIO['TWILIO_NUMBER'],
         to=destination_number,
-        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + str(session_id) +"/" + destination_number,
-        # conference_status_callback='https://fee4064b2b82.ngrok.io/voip/api_voip/leave_conf/' + session_id + destination_number,
+        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + str(session_id) +"/" + str(destination_number),
+        # conference_status_callback='https://7b0b3fa9d2d4.ngrok.io/voip/api_voip/leave_conf/' + str(session_id) +"/" + str(destination_number),
         conference_status_callback_event="leave")
 
     return HttpResponse(str(resp))
@@ -269,10 +270,10 @@ def join_conference(request):
                                           from_= settings.TWILIO['TWILIO_NUMBER'],
                                           to = your_number,
                                           url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
-                                        #   url='https://fee4064b2b82.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
+                                        #   url='https://7b0b3fa9d2d4.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
                                           status_callback_event=['completed'],
                                           status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id),
-                                        #   status_callback='https://fee4064b2b82.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
+                                        #   status_callback='https://7b0b3fa9d2d4.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
                                         )
 
         global sessionID_to_callsid    
