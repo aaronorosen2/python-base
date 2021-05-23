@@ -123,6 +123,12 @@ class Command(BaseCommand):
                 # Triangulation of second face
                 print(triangle_index)
                 print(landmarks_points2)
+
+                # XXX we have break statement here though we need
+                # to continue carry over mask this is avoid crash for now..
+                if not landmarks_points2:
+                    break
+
                 tr2_pt1 = landmarks_points2[triangle_index[0]]
                 tr2_pt2 = landmarks_points2[triangle_index[1]]
                 tr2_pt3 = landmarks_points2[triangle_index[2]]
