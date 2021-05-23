@@ -13,7 +13,6 @@ def extract_index_nparray(nparray):
     return index
 
 
-
 class Command(BaseCommand):
     help = ''
 
@@ -21,14 +20,15 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        img = cv2.imread("barack-obama-12782369-1-402.jpg")
+        img = cv2.imread("data_files/barack-obama-12782369-1-402.jpg")
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         mask = np.zeros_like(img_gray)
 
         cap = cv2.VideoCapture(0)
 
         detector = dlib.get_frontal_face_detector()
-        predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+        predictor = dlib.shape_predictor(
+            "data_files/shape_predictor_68_face_landmarks.dat")
 
         indexes_triangles = []
 
@@ -76,7 +76,6 @@ class Command(BaseCommand):
                 if index_pt1 is not None and index_pt2 is not None and index_pt3 is not None:
                     triangle = [index_pt1, index_pt2, index_pt3]
                     indexes_triangles.append(triangle)
-
 
         while True:
             _, img2 = cap.read()
@@ -136,43 +135,49 @@ class Command(BaseCommand):
 
                 points2 = np.array([[tr2_pt1[0] - x, tr2_pt1[1] - y],
                                     [tr2_pt2[0] - x, tr2_pt2[1] - y],
-                                    [tr2_pt3[0] - x, tr2_pt3[1] - y]], np.int32)
+                                    [tr2_pt3[0] - x, tr2_pt3[1] - y]],
+                                   np.int32)
 
                 cv2.fillConvexPoly(cropped_tr2_mask, points2, 255)
-
-
 
                 # Warp triangles
                 points = np.float32(points)
                 points2 = np.float32(points2)
                 M = cv2.getAffineTransform(points, points2)
                 warped_triangle = cv2.warpAffine(cropped_triangle, M, (w, h))
-                warped_triangle = cv2.bitwise_and(warped_triangle, warped_triangle, mask=cropped_tr2_mask)
+                warped_triangle = cv2.bitwise_and(
+                    warped_triangle, warped_triangle, mask=cropped_tr2_mask)
 
-
-                # Reconstructing destination face
+                #  Reconstructing destination face
                 img2_new_face_rect_area = img2_new_face[y: y + h, x: x + w]
-                img2_new_face_rect_area_gray = cv2.cvtColor(img2_new_face_rect_area, cv2.COLOR_BGR2GRAY)
-                _, mask_triangles_designed = cv2.threshold(img2_new_face_rect_area_gray, 1, 255, cv2.THRESH_BINARY_INV)
-                warped_triangle = cv2.bitwise_and(warped_triangle, warped_triangle, mask=mask_triangles_designed)
+                img2_new_face_rect_area_gray = cv2.cvtColor(
+                    img2_new_face_rect_area, cv2.COLOR_BGR2GRAY)
+                _, mask_triangles_designed = cv2.threshold(
+                    img2_new_face_rect_area_gray, 1, 255,
+                    cv2.THRESH_BINARY_INV)
+                warped_triangle = cv2.bitwise_and(
+                    warped_triangle, warped_triangle,
+                    mask=mask_triangles_designed)
 
-                img2_new_face_rect_area = cv2.add(img2_new_face_rect_area, warped_triangle)
+                img2_new_face_rect_area = cv2.add(img2_new_face_rect_area,
+                                                  warped_triangle)
                 img2_new_face[y: y + h, x: x + w] = img2_new_face_rect_area
 
-
-            # Face swapped (putting 1st face into 2nd face)
+            #  Face swapped (putting 1st face into 2nd face)
             img2_face_mask = np.zeros_like(img2_gray)
-            img2_head_mask = cv2.fillConvexPoly(img2_face_mask, convexhull2, 255)
+            img2_head_mask = cv2.fillConvexPoly(img2_face_mask,
+                                                convexhull2, 255)
             img2_face_mask = cv2.bitwise_not(img2_head_mask)
 
-
-            img2_head_noface = cv2.bitwise_and(img2, img2, mask=img2_face_mask)
+            img2_head_noface = cv2.bitwise_and(img2, img2,
+                                               mask=img2_face_mask)
             result = cv2.add(img2_head_noface, img2_new_face)
 
             (x, y, w, h) = cv2.boundingRect(convexhull2)
             center_face2 = (int((x + x + w) / 2), int((y + y + h) / 2))
 
-            seamlessclone = cv2.seamlessClone(result, img2, img2_head_mask, center_face2, cv2.MIXED_CLONE)
+            seamlessclone = cv2.seamlessClone(result, img2, img2_head_mask,
+                                              center_face2, cv2.MIXED_CLONE)
 
             cv2.imshow("img2", img2)
             cv2.imshow("clone", seamlessclone)
