@@ -1,6 +1,8 @@
 from django.core.files import File
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from knox.auth import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
@@ -134,10 +136,13 @@ def lesson_create(request):
     return Response(LessonSerializer(les_).data)
 
 @api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def lesson_read(request, pk):
+    data = {}
     try:
-        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-        user = User.objects.get(id=token.user_id)
+        # token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = request.user
         les_= Lesson.objects.get(user=user,id=pk)
         if not les_:
             return JsonResponse({'message': 'Unauthorized'})
@@ -178,6 +183,7 @@ def lesson_read(request, pk):
             return Response({'msg':"you do not has access to view this lesson"},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET','POST','PUT','DELETE'])
+@csrf_exempt
 def lesson_all(request):
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
