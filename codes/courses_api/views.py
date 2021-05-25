@@ -162,10 +162,10 @@ def lesson_read(request, pk):
                     card['braintree_item_price'] = obj_item.price
         return Response(data)
     except:
+        les_= Lesson.objects.get(id=pk)
+        less_serialized = LessonSerializer(les_)
+        data = less_serialized.data
         if data['lesson_is_public'] == True:
-            les_= Lesson.objects.get(id=pk)
-            less_serialized = LessonSerializer(les_)
-            data = less_serialized.data
             for card in data["flashcards"]:
                 if (card['lesson_type'] == "BrainTree"):
                     if card['braintree_config']:
