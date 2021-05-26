@@ -57,6 +57,8 @@ def lesson_create(request):
         options=[]
         answer=""
         image=""
+        latitude=0,
+        longitude=0,
         braintree_merchant_ID=""
         braintree_public_key=""
         braintree_private_key=""
@@ -77,6 +79,12 @@ def lesson_create(request):
         if "answer" in flashcard:
             answer = flashcard["answer"]
         
+        if "latitude" in flashcard:
+                latitude = flashcard["latitude"]
+            
+        if "longitude" in flashcard:
+            longitude = flashcard["longitude"]
+
         if "image" in flashcard:
             image = flashcard["image"]
         
@@ -117,6 +125,8 @@ def lesson_create(request):
                         question=question,
                         options=options,
                         answer=answer,
+                        latitude=latitude,
+                        longitude=longitude,
                         image=image,
                         position=position,
                         braintree_config=BrainTreeConfig.objects.get(id=BrainTreeConfig_obj.id),
@@ -129,6 +139,8 @@ def lesson_create(request):
                         question=question,
                         options=options,
                         answer=answer,
+                        latitude=latitude,
+                        longitude=longitude,
                         image=image,
                         position=position
                         )
@@ -246,6 +258,8 @@ def lesson_update(request, pk):
             options=[]
             answer=""
             image=""
+            latitude=0,
+            longitude=0,
             braintree_merchant_ID=""
             braintree_public_key=""
             braintree_private_key=""
@@ -267,6 +281,12 @@ def lesson_update(request, pk):
             if "answer" in flashcard:
                 answer = flashcard["answer"]
             
+            if "latitude" in flashcard:
+                latitude = flashcard["latitude"]
+            
+            if "longitude" in flashcard:
+                longitude = flashcard["longitude"]
+
             if "image" in flashcard:
                 image = flashcard["image"]
             
@@ -302,8 +322,8 @@ def lesson_update(request, pk):
                                 )
                     # BrainTreeConfig_obj.save()
                     
-                f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,
-                                                        image=image,position=position)
+                f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,latitude=latitude,
+                                                        longitude=longitude,image=image,position=position)
                 
             else:
                 lesson_type = flashcard["lesson_type"]
@@ -328,6 +348,8 @@ def lesson_update(request, pk):
                                 question=question,
                                 options=options,
                                 answer=answer,
+                                latitude=latitude,
+                                longitude=longitude,
                                 image=image,
                                 position=position,
                                 braintree_config=BrainTreeConfig.objects.get(id=BrainTreeConfig_obj.id),
@@ -340,6 +362,8 @@ def lesson_update(request, pk):
                                 question=question,
                                 options=options,
                                 answer=answer,
+                                latitude=latitude,
+                                longitude=longitude,
                                 image=image,
                                 position=position
                                 )
@@ -390,6 +414,8 @@ def flashcard_create(request,lessonId):
     options=[]
     answer=""
     image=""
+    latitude=0,
+    longitude=0,
     lesson_type = request.data["lesson_type"]
     position =request.data["position"]
     if "question" in request.data:
@@ -403,11 +429,18 @@ def flashcard_create(request,lessonId):
     if "answer" in request.data:
         answer = request.data["answer"]
     
+    if "latitude" in request.data:
+                latitude = request.data["latitude"]
+            
+    if "longitude" in request.data:
+        longitude = request.data["longitude"]
+
     if "image" in request.data:
         image = request.data["image"]
     lesson = Lesson.objects.filter(id=lessonId).get()
 
-    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
+    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,latitude=latitude,
+                                longitude=longitude,image=image,position=position)
     f.save()
     return Response("FlashCard Created!")
 
@@ -424,6 +457,8 @@ def flashcard_update(request,pk):
     question=f.question
     options=f.options
     answer=f.answer
+    latitude=f.latitude
+    longitude=f.longitude
     image=f.image
     position=f.position
    
@@ -438,13 +473,20 @@ def flashcard_update(request,pk):
     if "answer" in request.data:
         answer = request.data["answer"]
     
+    if "latitude" in request.data:
+        latitude = request.data["latitude"]
+            
+    if "longitude" in request.data:
+        longitude = request.data["longitude"]
+
     if "image" in request.data:
         image = request.data["image"]
     
     if "position" in request.data:
         position = request.data["position"]
 
-    FlashCard.objects.filter(id=pk).update(question=question,options=options,answer=answer,image=image,position=position)
+    FlashCard.objects.filter(id=pk).update(question=question,options=options,answer=answer,latitude=latitude,
+                                longitude=longitude,image=image,position=position)
     return Response("updated")
 
 @api_view(['DELETE'])
