@@ -35,7 +35,7 @@ from knox.views import user_logged_in
 from knox.serializers import UserSerializer
 from django.template.loader import render_to_string
 from sfapp.views import get_member_from_headers
-from codes.vconf.views import upload_to_s3, uuid_file_path
+# from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -531,17 +531,17 @@ def session_update(request, flashcardId, pk):
     UserSessionEvent.objects.filter(id=pk).update(end_time=now, view_duration=durate)
     return Response("Move slide")
 
-@api_view(['POST'])
-def record_webcam(request):
-    uploaded_file = request.FILES.get('video')
-    if uploaded_file:
-            # Get unique filename using UUID
-            file_name = uploaded_file.name
-            file_name_uuid = uuid_file_path(file_name)
-            s3_key = 'Test/teacherui/{0}'.format(file_name_uuid)
+# @api_view(['POST'])
+# def record_webcam(request):
+#     uploaded_file = request.FILES.get('video')
+#     if uploaded_file:
+#             # Get unique filename using UUID
+#             file_name = uploaded_file.name
+#             file_name_uuid = uuid_file_path(file_name)
+#             s3_key = 'Test/teacherui/{0}'.format(file_name_uuid)
 
-            content_type, file_url = upload_to_s3(s3_key, uploaded_file)
-            return Response({'video_url': file_url},status=200)
+#             content_type, file_url = upload_to_s3(s3_key, uploaded_file)
+#             return Response({'video_url': file_url},status=200)
 
 
 @api_view(['POST'])
