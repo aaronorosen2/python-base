@@ -57,8 +57,8 @@ def lesson_create(request):
         options=[]
         answer=""
         image=""
-        latitude=0,
-        longitude=0,
+        latitude=0
+        longitude=0
         braintree_merchant_ID=""
         braintree_public_key=""
         braintree_private_key=""
@@ -258,8 +258,8 @@ def lesson_update(request, pk):
             options=[]
             answer=""
             image=""
-            latitude=0,
-            longitude=0,
+            latitude=0
+            longitude=0
             braintree_merchant_ID=""
             braintree_public_key=""
             braintree_private_key=""
@@ -415,8 +415,8 @@ def flashcard_create(request,lessonId):
     options=[]
     answer=""
     image=""
-    latitude=0,
-    longitude=0,
+    latitude=0
+    longitude=0
     lesson_type = request.data["lesson_type"]
     position =request.data["position"]
     if "question" in request.data:
