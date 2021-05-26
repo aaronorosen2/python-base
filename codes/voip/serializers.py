@@ -13,3 +13,9 @@ class Assigned_numbersSerializer(serializers.ModelSerializer):
     class Meta:
         model = assigned_numbers
         fields = '__all__'
+        
+class UserLeadsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User_leads
+        fields = '__all__'

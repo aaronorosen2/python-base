@@ -126,6 +126,7 @@ INSTALLED_APPS = [
     'bookingsystem.apps.BookingsystemConfig',
     "fcm_django",
     "calendar_v2",
+    "faceswap",
 ]
 
 FCM_DJANGO_SETTINGS = {
@@ -344,7 +345,7 @@ CELERY_BEAT_SCHEDULE = {
 
 
 # CORS
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS=['*']
 
 # Email

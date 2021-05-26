@@ -1,6 +1,8 @@
 from django.core.files import File
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from knox.auth import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
@@ -55,6 +57,8 @@ def lesson_create(request):
         options=[]
         answer=""
         image=""
+        latitude=0
+        longitude=0
         braintree_merchant_ID=""
         braintree_public_key=""
         braintree_private_key=""
@@ -75,6 +79,12 @@ def lesson_create(request):
         if "answer" in flashcard:
             answer = flashcard["answer"]
         
+        if "latitude" in flashcard:
+                latitude = flashcard["latitude"]
+            
+        if "longitude" in flashcard:
+            longitude = flashcard["longitude"]
+
         if "image" in flashcard:
             image = flashcard["image"]
         
@@ -115,6 +125,8 @@ def lesson_create(request):
                         question=question,
                         options=options,
                         answer=answer,
+                        latitude=latitude,
+                        longitude=longitude,
                         image=image,
                         position=position,
                         braintree_config=BrainTreeConfig.objects.get(id=BrainTreeConfig_obj.id),
@@ -127,6 +139,8 @@ def lesson_create(request):
                         question=question,
                         options=options,
                         answer=answer,
+                        latitude=latitude,
+                        longitude=longitude,
                         image=image,
                         position=position
                         )
@@ -134,10 +148,13 @@ def lesson_create(request):
     return Response(LessonSerializer(les_).data)
 
 @api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def lesson_read(request, pk):
+    data = {}
     try:
-        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-        user = User.objects.get(id=token.user_id)
+        # token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = request.user
         les_= Lesson.objects.get(user=user,id=pk)
         if not les_:
             return JsonResponse({'message': 'Unauthorized'})
@@ -157,10 +174,10 @@ def lesson_read(request, pk):
                     card['braintree_item_price'] = obj_item.price
         return Response(data)
     except:
+        les_= Lesson.objects.get(id=pk)
+        less_serialized = LessonSerializer(les_)
+        data = less_serialized.data
         if data['lesson_is_public'] == True:
-            les_= Lesson.objects.get(id=pk)
-            less_serialized = LessonSerializer(les_)
-            data = less_serialized.data
             for card in data["flashcards"]:
                 if (card['lesson_type'] == "BrainTree"):
                     if card['braintree_config']:
@@ -178,6 +195,7 @@ def lesson_read(request, pk):
             return Response({'msg':"you do not has access to view this lesson"},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET','POST','PUT','DELETE'])
+@csrf_exempt
 def lesson_all(request):
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
@@ -240,6 +258,8 @@ def lesson_update(request, pk):
             options=[]
             answer=""
             image=""
+            latitude=0
+            longitude=0
             braintree_merchant_ID=""
             braintree_public_key=""
             braintree_private_key=""
@@ -261,6 +281,12 @@ def lesson_update(request, pk):
             if "answer" in flashcard:
                 answer = flashcard["answer"]
             
+            if "latitude" in flashcard:
+                latitude = flashcard["latitude"]
+            
+            if "longitude" in flashcard:
+                longitude = flashcard["longitude"]
+
             if "image" in flashcard:
                 image = flashcard["image"]
             
@@ -296,8 +322,8 @@ def lesson_update(request, pk):
                                 )
                     # BrainTreeConfig_obj.save()
                     
-                f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,
-                                                        image=image,position=position)
+                f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,latitude=latitude,
+                                                        longitude=longitude,image=image,position=position)
                 
             else:
                 lesson_type = flashcard["lesson_type"]
@@ -322,6 +348,8 @@ def lesson_update(request, pk):
                                 question=question,
                                 options=options,
                                 answer=answer,
+                                latitude=latitude,
+                                longitude=longitude,
                                 image=image,
                                 position=position,
                                 braintree_config=BrainTreeConfig.objects.get(id=BrainTreeConfig_obj.id),
@@ -334,13 +362,16 @@ def lesson_update(request, pk):
                                 question=question,
                                 options=options,
                                 answer=answer,
+                                latitude=latitude,
+                                longitude=longitude,
                                 image=image,
                                 position=position
                                 )
                     f.save()
                 
         return Response(LessonSerializer(lesson).data)
-    except:
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 374 ~ e", e)
         return Response({"msg":"you cannot update this lesson"},status=status.HTTP_401_UNAUTHORIZED)
         
 
@@ -384,6 +415,8 @@ def flashcard_create(request,lessonId):
     options=[]
     answer=""
     image=""
+    latitude=0
+    longitude=0
     lesson_type = request.data["lesson_type"]
     position =request.data["position"]
     if "question" in request.data:
@@ -397,11 +430,18 @@ def flashcard_create(request,lessonId):
     if "answer" in request.data:
         answer = request.data["answer"]
     
+    if "latitude" in request.data:
+                latitude = request.data["latitude"]
+            
+    if "longitude" in request.data:
+        longitude = request.data["longitude"]
+
     if "image" in request.data:
         image = request.data["image"]
     lesson = Lesson.objects.filter(id=lessonId).get()
 
-    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,image=image,position=position)
+    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,latitude=latitude,
+                                longitude=longitude,image=image,position=position)
     f.save()
     return Response("FlashCard Created!")
 
@@ -418,6 +458,8 @@ def flashcard_update(request,pk):
     question=f.question
     options=f.options
     answer=f.answer
+    latitude=f.latitude
+    longitude=f.longitude
     image=f.image
     position=f.position
    
@@ -432,13 +474,20 @@ def flashcard_update(request,pk):
     if "answer" in request.data:
         answer = request.data["answer"]
     
+    if "latitude" in request.data:
+        latitude = request.data["latitude"]
+            
+    if "longitude" in request.data:
+        longitude = request.data["longitude"]
+
     if "image" in request.data:
         image = request.data["image"]
     
     if "position" in request.data:
         position = request.data["position"]
 
-    FlashCard.objects.filter(id=pk).update(question=question,options=options,answer=answer,image=image,position=position)
+    FlashCard.objects.filter(id=pk).update(question=question,options=options,answer=answer,latitude=latitude,
+                                longitude=longitude,image=image,position=position)
     return Response("updated")
 
 @api_view(['DELETE'])

@@ -52,16 +52,20 @@ class assigned_numbers(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
 
 class User_leads(models.Model):
-    name = models.CharField(max_length=100,blank=True,null=True)
-    phone = models.CharField(max_length=100,blank=True,null=True)
-    email = models.EmailField(max_length=200, blank=True,null=True)
-    ask = models.CharField(max_length=20, blank=True,null=True)
-    state = models.CharField(max_length=20,blank=True,null=True)
+    name = models.CharField(max_length=255,blank=True,null=True)
+    phone = models.CharField(max_length=255,blank=True,null=True)
+    email = models.EmailField(max_length=255, blank=True,null=True)
+    ask = models.CharField(max_length=255, blank=True,null=True)
+    state = models.CharField(max_length=255,blank=True,null=True)
     last_call = models.DateField(blank=True,null=True)
     recording_url = models.CharField(max_length=256,blank=True,null=True)
     url = models.CharField(max_length=300,blank=True,null=True)
     notes = models.TextField(blank=True,default="")
-    status = models.CharField(max_length = 20, default = '-')
+    status = models.CharField(max_length = 255, default = '-')
+    user = models.ForeignKey(User,on_delete=models.CASCADE,blank=True,null=True)
+    city = models.CharField(max_length=255,blank=True,null=True)
+    zipcode = models.CharField(max_length=255,blank=True,null=True)
+    address = models.CharField(max_length=255,blank=True,null=True)
 
     class Meta:
         db_table = 'User_leads'

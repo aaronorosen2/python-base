@@ -13,7 +13,7 @@ class Lesson(models.Model):
                              default=None)
     meta_attributes = models.CharField(max_length=100, blank=True, default='')
     lesson_is_public = models.BooleanField(default=False)
-    
+
     def __str__(self):
         return self.lesson_name
 
@@ -22,14 +22,17 @@ class FlashCard(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     lesson_type = models.CharField(max_length=250)
     question = models.CharField(max_length=250)
-    options = ArrayField(models.CharField(blank=True, max_length=100), default=list, null=True)
+    options = ArrayField(models.CharField(blank=True, max_length=100),
+                         default=list, null=True)
     answer = models.TextField(null=True, blank=True)
     image = models.CharField(max_length=250)
     position = models.IntegerField()
     braintree_config = models.ForeignKey(
         BrainTreeConfig, on_delete=models.CASCADE, blank=True, null=True)
-    item_store = models.ForeignKey(
-        item, on_delete=models.CASCADE, blank=True, null=True)
+    item_store = models.ForeignKey(item, on_delete=models.CASCADE,
+                                   blank=True, null=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
 
 class UserSession(models.Model):
@@ -40,6 +43,7 @@ class UserSession(models.Model):
     has_verified_phone = models.BooleanField(default=False)
     name = models.CharField(max_length=128, blank=True, null=True)
     email = models.EmailField(max_length=254, blank=True, null=True)
+    has_verified_email = models.BooleanField(default=False)
 
 
 class UserSessionEvent(models.Model):
@@ -73,8 +77,8 @@ class FlashCardResponse(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
 
-class Invite(models.Model):
 
+class Invite(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     params = models.TextField(null=False, blank=False)

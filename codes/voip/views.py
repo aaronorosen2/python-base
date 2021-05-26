@@ -1,3 +1,4 @@
+from rest_framework.serializers import Serializer
 from sfapp2.utils.twilio import send_sms, list_sms, send_sms_file
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
@@ -5,8 +6,9 @@ from django.conf import settings
 from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause, Number,Record,Say
 from twilio.rest import Client
 import uuid
+from knox.auth import AuthToken
 from .models import Phone, assigned_numbers, User_leads
-from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer
+from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer,UserLeadsSerializer
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 from django.core import serializers
@@ -16,6 +18,9 @@ import re
 from termcolor import cprint
 from rest_framework.response import Response
 from django.shortcuts import redirect
+import io
+import codecs
+import requests
 # To store session variables
 sessionID_to_callsid = {}
 sessionID_to_confsid = {}
@@ -104,12 +109,12 @@ def voip_callback(request, session_id):
 
         # Say a different message depending on the caller's choice
         if choice == '1':
+            print("🚀 ~ file: views.py ~ line 398 ~ resp",str(session_id))
             resp.say('Adding destination number to the conference!')
-            resp.redirect(
-                'https://api.dreampotential.org/voip/api_voip/add_user/'
-                # 'https://fee4064b2b82.ngrok.io/voip/api_voip/add_user/'
-                + session_id)
-            print(str(resp))
+            resp.redirect('https://api.dreampotential.org/voip/api_voip/add_user/' + str(session_id))
+            # resp.redirect('https://03ec2bac2d29.ngrok.io/voip/api_voip/add_user/' + str(session_id))
+            # print(str(resp))
+            
             return HttpResponse(resp)
         elif choice == '2':
             resp.say('Thank you for calling, have a nice day!')
@@ -141,7 +146,7 @@ def voip_callback(request, session_id):
             num_digits=1,
             action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/'
                     + session_id)
-            # action='https://fee4064b2b82.ngrok.io/voip/api_voip/voip_callback/'
+            # action='https://03ec2bac2d29.ngrok.io/voip/api_voip/voip_callback/'
                 # + session_id)
         gather.say(
             'Please Press 1 to connect to destination. Press 2 to terminate the call. Press 3 to play music. Press 4 to play music. Press 5 to play music. Press 6 to play music. Press 7 to play music. Press 8 to play music. Press 9 to pause music')
@@ -149,16 +154,18 @@ def voip_callback(request, session_id):
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
     resp.redirect(
-        'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + session_id)
-        # 'https://fee4064b2b82.ngrok.io/voip/api_voip/voip_callback/' + session_id)
+        'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id))
+        # 'https://03ec2bac2d29.ngrok.io/voip/api_voip/voip_callback/' + str(session_id))
 
     print(str(resp))
     return HttpResponse(resp)
 
 @csrf_exempt
 def add_user_to_conf(request, session_id):
+    print("🚀 ~ file: views.py ~ line 399 ~ session_id", session_id)
     # print(request.POST)
     destination_number = sessionID_to_destNo.get(session_id)
+    print("🚀 ~ file: views.py ~ line 162 ~ destination_number", destination_number)
     print("Attemtping to add phone number to call: " + destination_number)
 
     client = get_client()
@@ -172,8 +179,8 @@ def add_user_to_conf(request, session_id):
         record=True,
         from_=settings.TWILIO['TWILIO_NUMBER'],
         to=destination_number,
-        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + session_id + destination_number,
-        # conference_status_callback='https://fee4064b2b82.ngrok.io/voip/api_voip/leave_conf/' + session_id + destination_number,
+        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + str(session_id) +"/" + str(destination_number),
+        # conference_status_callback='https://03ec2bac2d29.ngrok.io/voip/api_voip/leave_conf/' + str(session_id) +"/" + str(destination_number),
         conference_status_callback_event="leave")
 
     return HttpResponse(str(resp))
@@ -217,13 +224,15 @@ def leave_conf(request, session_id, destination_number):
                         calls[0].recordings.list()[0].sid))
             else:
                 url=''
+            # print("🚀 ~ file: views.py ~ line 229 ~ url", url)
+            # print("🚀 ~ file: views.py ~ line 231 ~ calls[0].date_created", calls[0].date_created)
             lead = User_leads.objects.get(phone=destination_number)
-            lead.url = url
+            lead.recording_url = url
             lead.last_call = calls[0].date_created
             lead.save()
-        except:
-            cprint("not called.",color='red')
-
+        except Exception as e:
+            print("🚀 ~ file: views.py ~ line 234 ~ e", e)
+            # cprint("not called.",color='red')
     return HttpResponse('')
 
 
@@ -253,8 +262,11 @@ def complete_call(request, session_id):
 def join_conference(request):
     global sessionID_to_destNo
     source_number = request.POST.get("source_number")    
+    print("🚀 ~ file: views.py ~ line 256 ~ source_number", source_number)
     dest_number = request.POST.get("dest_number")
+    print("🚀 ~ file: views.py ~ line 258 ~ dest_number", dest_number)
     your_number = request.POST.get("your_number")
+    print("🚀 ~ file: views.py ~ line 260 ~ your_number", your_number)
 
     try:
         twilio_client = get_client()
@@ -265,10 +277,10 @@ def join_conference(request):
                                           from_= settings.TWILIO['TWILIO_NUMBER'],
                                           to = your_number,
                                           url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
-                                        #   url='https://fee4064b2b82.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
+                                        #   url='https://03ec2bac2d29.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
                                           status_callback_event=['completed'],
                                           status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id),
-                                        #   status_callback='https://fee4064b2b82.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
+                                        #   status_callback='https://03ec2bac2d29.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
                                         )
 
         global sessionID_to_callsid    
@@ -327,11 +339,26 @@ def send_sms(request):
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def get_lead(request):
     if request.method == 'GET':
-        return JsonResponse(
-            serializers.serialize("json", User_leads.objects.all()),
-            safe=False)
+        try:
+            token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+            print("🚀 ~ file: views.py ~ line 342 ~ token", token)
+            user = User.objects.get(id=token.user_id)
+            print("🚀 ~ file: views.py ~ line 344 ~ user", user)
+            # leads = User_leads.objects.filter(user=user)
+            # print("🚀 ~ file: views.py ~ line 346 ~ leads", leads)
+            # leads_ser = UserLeadsSerializer(leads,many=True)
+            # print("🚀 ~ file: views.py ~ line 348 ~ leads_ser", leads_ser.data)
+            # return JsonResponse(leads_ser.data,safe=False)
+            return JsonResponse(
+                    serializers.serialize("json", User_leads.objects.filter(user=user)),
+                    safe=False)
+        except Exception as e:
+            print("🚀 ~ file: views.py ~ line 351 ~ e", e)
+            return Response({"msg":"No data"},status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'POST':
+        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = User.objects.get(id=token.user_id)
         name = request.data.get('name')
         phone = request.data.get('phone')
         email = request.data.get('email')
@@ -339,8 +366,9 @@ def get_lead(request):
         ask = request.data.get('ask')
         notes = request.data.get('notes')
         new_url = request.data.get('new_url')
-        lead = User_leads(name=name, phone=phone, email=email,
-                          state=state, url=new_url, notes=notes, ask=ask)
+        lead = User_leads(user=user,name=name, phone=phone,  email=email,
+                                ask=ask, state=state, notes=notes,
+                                url=new_url)
 
         lead.save()
         return JsonResponse({'message': "sucess !"}, status=200)
@@ -379,34 +407,69 @@ def get_lead(request):
             return JsonResponse({'message': 'success'}, status=200)
 
 
+# @api_view(['POST'])
+# def csvUploder(request):
+#     csv_file = request.data['csvFile']
+#     common_header = ['Name', 'Phone', 'Email',
+#                      'State', 'Ask',
+#                      'Notes', 'Url']
+#     for index, row in enumerate(csv_file):
+#         data = row.decode('utf-8')
+#         if data:
+#             line = data.split('","')
+#             if index == 0:
+#                 if common_header != [re.sub(r"\r\n","",column.replace('"',"")) for column in line]:
+#                     return JsonResponse({
+#                         "message": "error csv format"}, safe=False, status=406)
+#                 continue
+            
+#             line = [re.sub(r"\r\n","",column.replace('"',"")) for column in line]
+#             name = line[0]
+#             phone = line[1]
+#             email = line[2]
+#             state = line[3]
+#             ask = line[4]
+#             notes = line[5]
+#             url = line[6]
+#             lead = User_leads(name=name, phone=phone,  email=email,
+#                               ask=ask, state=state, notes=notes,
+#                               url=url)
+#             lead.save()
+#     return JsonResponse({'message': 'lead save successfully'}, status=200)
 @api_view(['POST'])
 def csvUploder(request):
+    print("🚀 ~ file: views.py ~ line 429 ~ token", request.headers.get('Authorization')[:8])
+    token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+    user = User.objects.get(id=token.user_id)
+    print("🚀 ~ file: views.py ~ line 431 ~ user", user)
+    common_header = ['Name', 'Phone', 'Email', 'State', 'Ask', 'Notes', 'Website', 'City', 'Zipcode', 'Address']
     csv_file = request.data['csvFile']
-    common_header = ['Name', 'Phone', 'Email',
-                     'State', 'Ask',
-                     'Notes', 'Url']
-    for index, row in enumerate(csv_file):
-        data = row.decode('utf-8')
-        if data:
-            line = data.split('","')
-            if index == 0:
-                if common_header != [re.sub(r"\r\n","",column.replace('"',"")) for column in line]:
-                    return JsonResponse({
-                        "message": "error csv format"}, safe=False, status=406)
-                continue
-            
-            line = [re.sub(r"\r\n","",column.replace('"',"")) for column in line]
-            name = line[0]
-            phone = line[1]
-            email = line[2]
-            state = line[3]
-            ask = line[4]
-            notes = line[5]
-            url = line[6]
-            lead = User_leads(name=name, phone=phone,  email=email,
-                              ask=ask, state=state, notes=notes,
-                              url=url)
-            lead.save()
+    reader = csv.reader(codecs.iterdecode(csv_file, 'utf-8'))
+    for j,i in enumerate(reader):
+        if j == 0:
+            print("🚀 ~ file: views.py ~ line 430 ~ common_header != i", common_header != i)
+            if common_header != i:
+                return JsonResponse({
+                            "message": "error csv format"}, safe=False, status=406)
+        if j != 0:
+            # print("🚀 ~ file: views.py ~ line 441 ~ i", i)
+            name = i[0]
+            phone = i[1]
+            email = i[2]
+            state = i[3]
+            ask = i[4]
+            notes = i[5]
+            url = i[6]
+            city = i[7]
+            zipcode= i[8]
+            address = i[9]
+            try:
+                lead = User_leads(user=user,name=name, phone=phone,  email=email,
+                                ask=ask, state=state, notes=notes,
+                                url=url,city=city,zipcode=zipcode,address=address)
+                lead.save()
+            except:
+                continue    
     return JsonResponse({'message': 'lead save successfully'}, status=200)
 
 # @csrf_exempt
