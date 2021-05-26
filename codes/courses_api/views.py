@@ -370,7 +370,8 @@ def lesson_update(request, pk):
                     f.save()
                 
         return Response(LessonSerializer(lesson).data)
-    except:
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 374 ~ e", e)
         return Response({"msg":"you cannot update this lesson"},status=status.HTTP_401_UNAUTHORIZED)
         
 

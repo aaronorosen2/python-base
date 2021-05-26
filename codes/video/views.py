@@ -158,12 +158,15 @@ def generate_s3_signed_url(request):
 
     # Get form fields
     seconds_per_day = 24 * 60 * 60
-    member = get_member_from_headers(request.headers)
-
+    # member = get_member_from_headers(request.headers)
+    token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+    if not token:
+        return JsonResponse({'message': 'not logged in'})
+    user = User.objects.get(id=token.user_id)
     # Get unique filename using UUID
     file_name = request.POST.get('file_name')
     file_name_uuid = uuid_file_path(file_name)
-    final_file_name = 'videos/{0}/{1}'.format(member.id, file_name_uuid)
+    final_file_name = 'videos/{0}/{1}'.format(user.id, file_name_uuid)
 
     print("file_name_uuid:", file_name_uuid)
 
