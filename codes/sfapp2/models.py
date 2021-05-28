@@ -49,6 +49,7 @@ class GpsCheckin(models.Model):
     lng = models.CharField(max_length=500, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     admin_feedback = models.ManyToManyField(AdminFeedback)
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="", blank=True, null=True)
 
 
 class VideoUpload(models.Model):

@@ -188,7 +188,7 @@ def save_video_upload(request):
 
     uploaded_file_url = request.POST.get('uploaded_file_url')
 
-    print(f"Saving Video details. member: {member.id}, file: {uploaded_file_url}")
+    print(f"Saving Video details. member: {user.id}, file: {uploaded_file_url}")
 
     video = VideoUpload.objects.create(
         videoUrl=uploaded_file_url,

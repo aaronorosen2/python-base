@@ -341,9 +341,9 @@ def get_lead(request):
     if request.method == 'GET':
         try:
             token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-            print("🚀 ~ file: views.py ~ line 342 ~ token", token)
+            # print("🚀 ~ file: views.py ~ line 342 ~ token", token)
             user = User.objects.get(id=token.user_id)
-            print("🚀 ~ file: views.py ~ line 344 ~ user", user)
+            # print("🚀 ~ file: views.py ~ line 344 ~ user", user)
             # leads = User_leads.objects.filter(user=user)
             # print("🚀 ~ file: views.py ~ line 346 ~ leads", leads)
             # leads_ser = UserLeadsSerializer(leads,many=True)
@@ -353,7 +353,7 @@ def get_lead(request):
                     serializers.serialize("json", User_leads.objects.filter(user=user)),
                     safe=False)
         except Exception as e:
-            print("🚀 ~ file: views.py ~ line 351 ~ e", e)
+            # print("🚀 ~ file: views.py ~ line 351 ~ e", e)
             return Response({"msg":"No data"},status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'POST':
@@ -438,16 +438,16 @@ def get_lead(request):
 #     return JsonResponse({'message': 'lead save successfully'}, status=200)
 @api_view(['POST'])
 def csvUploder(request):
-    print("🚀 ~ file: views.py ~ line 429 ~ token", request.headers.get('Authorization')[:8])
+    # print("🚀 ~ file: views.py ~ line 429 ~ token", request.headers.get('Authorization')[:8])
     token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
     user = User.objects.get(id=token.user_id)
-    print("🚀 ~ file: views.py ~ line 431 ~ user", user)
+    # print("🚀 ~ file: views.py ~ line 431 ~ user", user)
     common_header = ['Name', 'Phone', 'Email', 'State', 'Ask', 'Notes', 'Website', 'City', 'Zipcode', 'Address']
     csv_file = request.data['csvFile']
     reader = csv.reader(codecs.iterdecode(csv_file, 'utf-8'))
     for j,i in enumerate(reader):
         if j == 0:
-            print("🚀 ~ file: views.py ~ line 430 ~ common_header != i", common_header != i)
+            # print("🚀 ~ file: views.py ~ line 430 ~ common_header != i", common_header != i)
             if common_header != i:
                 return JsonResponse({
                             "message": "error csv format"}, safe=False, status=406)

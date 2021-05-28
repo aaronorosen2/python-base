@@ -5,11 +5,11 @@ import uuid
 from django.shortcuts import render
 from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
-from sfapp2.utils.twilio import send_confirmation_code
+from .utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
-from sfapp2.models import Member, Token, Service, GpsCheckin
-from sfapp2.models import VideoUpload
-from sfapp2.models import MyMed, Question, Choice, AdminFeedback, TagEntry
+from .models import Member, Token, Service, GpsCheckin
+from .models import VideoUpload
+from .models import MyMed, Question, Choice, AdminFeedback, TagEntry
 from django.conf import settings
 import logging
 import boto3
@@ -21,6 +21,7 @@ from knox.auth import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CheckinActivityAdminSerializer, TagEntrySerializer
+from django.contrib.auth.models import User
 
 def to_list(el):
     if not el:
@@ -229,13 +230,15 @@ def checkin_activity(request):
 @permission_classes([IsAuthenticated])
 def checkin_activity_admin(request):
     if request.user.is_authenticated:
-        user_phone = request.GET.get('phone')
-        if user_phone:
-            member = Member.objects.filter(phone=user_phone).first()
+        # user_phone = request.GET.get('phone')
+        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = User.objects.get(id=token.user_id)
+        if user:
+            # member = Member.objects.filter(phone=user_phone).first()
             gps_checkins = GpsCheckin.objects.filter(
-                member=member).order_by('-created_at').all()
+                user=user).order_by('-created_at').all()
             video_events = VideoUpload.objects.filter(
-                member=member).order_by('-created_at').all()
+                user=user).order_by('-created_at').all()
             events = []
             for gps_checkin in gps_checkins:
                 t = gps_checkin.created_at
