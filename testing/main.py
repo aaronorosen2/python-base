@@ -121,12 +121,12 @@ except:
 WebDriverWait(browser,20).until(EC.presence_of_element_located((By.ID, "selectsegment")))
 flashcard_select =Select(browser.find_element_by_id("selectsegment"))
 
-# edit_lesson_name(browser,"Test 1")
-# iframe_link(browser,flashcard_select,"Iframe","swornim.me")
-# speed_read(browser,flashcard_select,"Hello") #user this function to add speed read
-# prompt_text_input(browser,flashcard_select,"Hello 2") #user this function to add speed read
-# title_text(browser,flashcard_select,"This is title","This is Text")
-# title_textarea(browser,flashcard_select,"Title Textarea")
+edit_lesson_name(browser,"Test 1")
+iframe_link(browser,flashcard_select,"Iframe","swornim.me")
+speed_read(browser,flashcard_select,"Hello") #user this function to add speed read
+prompt_text_input(browser,flashcard_select,"Hello 2") #user this function to add speed read
+title_text(browser,flashcard_select,"This is title","This is Text")
+title_textarea(browser,flashcard_select,"Title Textarea")
 verify_phone(browser,flashcard_select)
 signature_image(browser,flashcard_select)
 time.sleep(10)
