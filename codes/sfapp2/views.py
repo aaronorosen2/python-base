@@ -226,53 +226,50 @@ def checkin_activity(request):
 
 @csrf_exempt
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
 def checkin_activity_admin(request):
-    if request.user.is_authenticated:
-        # user_phone = request.GET.get('phone')
-        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-        user = User.objects.get(id=token.user_id)
-        if user:
-            # member = Member.objects.filter(phone=user_phone).first()
-            gps_checkins = GpsCheckin.objects.filter(
-                user=user).order_by('-created_at').all()
-            video_events = VideoUpload.objects.filter(
-                user=user).order_by('-created_at').all()
-            events = []
-            for gps_checkin in gps_checkins:
-                t = gps_checkin.created_at
-                feedbacks = AdminFeedback.objects.filter(gpscheckin=gps_checkin.id).select_related('user')
+    # user_phone = request.GET.get('phone')
+    token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+    user = User.objects.get(id=token.user_id)
+    if user:
+        # member = Member.objects.filter(phone=user_phone).first()
+        gps_checkins = GpsCheckin.objects.filter(
+            user=user).order_by('-created_at').all()
+        video_events = VideoUpload.objects.filter(
+            user=user).order_by('-created_at').all()
+        events = []
+        for gps_checkin in gps_checkins:
+            t = gps_checkin.created_at
+            feedbacks = AdminFeedback.objects.filter(gpscheckin=gps_checkin.id).select_related('user')
+            feed_serialized = CheckinActivityAdminSerializer(feedbacks, many=True)
+            events.append({
+                'type': 'gps',
+                'id': gps_checkin.id,
+                'lat': gps_checkin.lat,
+                'lng': gps_checkin.lng,
+                'msg': gps_checkin.msg,
+                'feedbacks': list(feed_serialized.data),
+                'created_at': time.mktime(t.timetuple()),
+            })
+        for event in video_events:
+            t = event.created_at
+            # Disable server streaming, Only show videos that are uploaded to S3
+            if event.source == 's3':
+                video_url = get_presigned_video_url(event.videoUrl)
+                feedbacks = AdminFeedback.objects.filter(videoupload=event.id).select_related('user')
                 feed_serialized = CheckinActivityAdminSerializer(feedbacks, many=True)
                 events.append({
-                    'type': 'gps',
-                    'id': gps_checkin.id,
-                    'lat': gps_checkin.lat,
-                    'lng': gps_checkin.lng,
-                    'msg': gps_checkin.msg,
+                    'type': 'video',
+                    'video_url': video_url,
+                    'video_uuid': event.video_uuid,
                     'feedbacks': list(feed_serialized.data),
-                    'created_at': time.mktime(t.timetuple()),
+                    'created_at': time.mktime(t.timetuple())
                 })
-            for event in video_events:
-                t = event.created_at
-                # Disable server streaming, Only show videos that are uploaded to S3
-                if event.source == 's3':
-                    video_url = get_presigned_video_url(event.videoUrl)
-                    feedbacks = AdminFeedback.objects.filter(videoupload=event.id).select_related('user')
-                    feed_serialized = CheckinActivityAdminSerializer(feedbacks, many=True)
-                    events.append({
-                        'type': 'video',
-                        'video_url': video_url,
-                        'video_uuid': event.video_uuid,
-                        'feedbacks': list(feed_serialized.data),
-                        'created_at': time.mktime(t.timetuple())
-                    })
-            return JsonResponse({
-                'user_activities': sorted(events,
-                                key=lambda i: i['created_at'], reverse=True)
-            })
-        else:
-            return None
+        return JsonResponse({
+            'user_activities': sorted(events,
+                            key=lambda i: i['created_at'], reverse=True)
+        })
+    else:
+        return None
 
 @csrf_exempt
 @api_view(['POST'])
