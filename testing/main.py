@@ -1,4 +1,4 @@
-from time import time
+import time
 from selenium.webdriver import Firefox
 from selenium.webdriver.support.select import Select
 
