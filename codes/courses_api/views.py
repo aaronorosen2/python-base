@@ -198,6 +198,7 @@ def lesson_read(request, pk):
 @api_view(['GET','POST','PUT','DELETE'])
 @csrf_exempt
 def lesson_all(request):
+    print("🚀 ~ file: views.py ~ line 202 ~ request.headers.get('Authorization')[:8]", request.headers.get('Authorization')[:8])
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
         if 'Authorization' in request.headers:

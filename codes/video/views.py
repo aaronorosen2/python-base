@@ -159,6 +159,7 @@ def generate_s3_signed_url(request):
     # Get form fields
     seconds_per_day = 24 * 60 * 60
     # member = get_member_from_headers(request.headers)
+    # print("🚀 ~ file: views.py ~ line 163 ~ request.headers.get('Authorization')[:8]", request.headers)
     token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
     if not token:
         return JsonResponse({'message': 'not logged in'})
@@ -180,8 +181,10 @@ def generate_s3_signed_url(request):
 
 @csrf_exempt
 def save_video_upload(request):
-    member = get_member_from_headers(request.headers)
+    # member = get_member_from_headers(request.headers)
+    # print("🚀 ~ file: views.py ~ line 185 ~ request.headers.get('Authorization')[:8]", request.headers)
     token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+    # print("🚀 ~ file: views.py ~ line 186 ~ token", token)
     if not token:
         return JsonResponse({'message': 'not logged in'})
     user = User.objects.get(id=token.user_id)
@@ -193,7 +196,6 @@ def save_video_upload(request):
     video = VideoUpload.objects.create(
         videoUrl=uploaded_file_url,
         source='s3',
-        member=member,
         video_uuid=str(uuid.uuid4()),
         # s3_upload=myfile,
         user=user,
