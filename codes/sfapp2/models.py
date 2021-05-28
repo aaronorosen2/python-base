@@ -43,7 +43,7 @@ class MemberMonitor(models.Model):
 
 class GpsCheckin(models.Model):
     member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
-                               default="")
+                               default="", blank=True, null=True)
     msg = models.CharField(max_length=2000, default='')
     lat = models.CharField(max_length=500, default='')
     lng = models.CharField(max_length=500, default='')
@@ -54,7 +54,7 @@ class GpsCheckin(models.Model):
 
 class VideoUpload(models.Model):
     videoUrl = models.CharField(max_length=500)
-    member = models.ForeignKey(to=Member, on_delete=models.CASCADE, default="")
+    member = models.ForeignKey(to=Member, on_delete=models.CASCADE, default="", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     source = models.CharField(max_length=500, default="")
     video_uuid = models.CharField(max_length=500, default='')
