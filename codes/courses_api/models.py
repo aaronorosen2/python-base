@@ -22,7 +22,7 @@ class FlashCard(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     lesson_type = models.CharField(max_length=250)
     question = models.CharField(max_length=250)
-    options = ArrayField(models.CharField(blank=True, max_length=100),
+    options = ArrayField(models.CharField(blank=True, max_length=255),
                          default=list, null=True)
     answer = models.TextField(null=True, blank=True)
     image = models.CharField(max_length=250)
