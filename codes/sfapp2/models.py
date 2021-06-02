@@ -15,10 +15,12 @@ class Upload(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     file = models.FileField(upload_to=uuid_file_path)
 
+
 class AdminFeedback(models.Model):
-    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="")
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE,
+                             default="")
     message = models.TextField(default="")
-    created_at = models.DateTimeField(auto_now_add=True)    
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Member(models.Model):
@@ -37,11 +39,15 @@ class Member(models.Model):
     class Meta:
         unique_together = ('user', 'phone')
 
+
 class TagEntry(models.Model):
-    assigned_by = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="")
+    assigned_by = models.ForeignKey(to=get_user_model(),
+                                    on_delete=models.CASCADE, default="")
     tag = models.TextField(default="", max_length=150)
-    assigned_to = models.ForeignKey(to=Member, on_delete=models.CASCADE, default="")
-    created_at = models.DateTimeField(auto_now_add=True)   
+    assigned_to = models.ForeignKey(to=Member, on_delete=models.CASCADE,
+                                    default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
 class MemberMonitor(models.Model):
     member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
@@ -57,17 +63,20 @@ class GpsCheckin(models.Model):
     lng = models.CharField(max_length=500, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     admin_feedback = models.ManyToManyField(AdminFeedback)
-    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="", blank=True, null=True)
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE,
+                             default="", blank=True, null=True)
 
 
 class VideoUpload(models.Model):
     videoUrl = models.CharField(max_length=500)
-    member = models.ForeignKey(to=Member, on_delete=models.CASCADE, default="", blank=True, null=True)
+    member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
+                               default="", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     source = models.CharField(max_length=500, default="")
     video_uuid = models.CharField(max_length=500, default='')
     admin_feedback = models.ManyToManyField(AdminFeedback)
-    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="", blank=True, null=True)
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE,
+                             default="", blank=True, null=True)
 
 
 class MyMed(models.Model):
