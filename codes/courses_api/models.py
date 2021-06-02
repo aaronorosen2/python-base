@@ -31,8 +31,6 @@ class FlashCard(models.Model):
         BrainTreeConfig, on_delete=models.CASCADE, blank=True, null=True)
     item_store = models.ForeignKey(item, on_delete=models.CASCADE,
                                    blank=True, null=True)
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
 
 
 class UserSession(models.Model):

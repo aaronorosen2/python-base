@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from knox.auth import get_user_model
-from .models import AdminFeedback, TagEntry
+from .models import AdminFeedback, TagEntry, Member
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -15,7 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
 #         model = AdminFeedback
 #         fields ='__all__'
 
-
+class MemberSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Member
+        fields = '__all__'
 
 class CheckinActivityAdminSerializer(serializers.ModelSerializer):
     uesr_details = UserSerializer(source='user', read_only=True)

@@ -22,12 +22,20 @@ class AdminFeedback(models.Model):
 
 
 class Member(models.Model):
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE,
+                             null=True, blank=True,
+                             default=None)
     phone = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=128, blank=True, null=True)
+    bio = models.CharField(max_length=255, blank=True, null=True)
+    photo = models.CharField(max_length=255, blank=True, null=True)
     code_2fa = models.CharField(max_length=20, blank=True, null=True)
     has_verified_phone = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
     question_answers = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('user', 'phone')
 
 class TagEntry(models.Model):
     assigned_by = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="")
