@@ -230,8 +230,7 @@ def face_swap_on_a_video(request):
         cap.release()
         cv2.destroyAllWindows()
 
-        
-        path = '/python-base/codes/faceswap/media/'
+        path = 'python-base/codes/faceswap/media'
         video = create_video(path, "result1", frames_array,
                         frames_array[0].shape[1], frames_array[0].shape[0], 30)
 
