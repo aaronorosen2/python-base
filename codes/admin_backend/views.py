@@ -107,18 +107,19 @@ def list_calls(request):
 
 
 @app.task()
-def notify_sms():
+def notify_sms(data):
     import time
     time.sleep(3)
     print("HERER")
-    send_sms("18434259777", "notify phone number source")
+    print(data)
+    if '5102885469' in data.get("TO"):
+        send_sms("18434259777", "SF APP Phone number")
 
 
 @csrf_exempt
 def voice(request):
     print(request.POST)
-    # XXX how to pass request.post data?
-    notify_sms.delay()
+    notify_sms.delay(request.GET)
     resp = (
         '<Response>'
             '<Dial record="record-from-ringing-dual">'
