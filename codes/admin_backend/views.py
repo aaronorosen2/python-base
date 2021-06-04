@@ -119,6 +119,12 @@ def notify_sms_chiro():
     send_sms("18434259777", "Chiro Phone number", '+15106310459')
 
 
+@app.task()
+def notify_sms_agentstat():
+    time.sleep(3)
+    send_sms("18434259777", "AgentStat Phone number", '+15102144636')
+
+
 @csrf_exempt
 def voice(request):
     # Reason we do this is we want to show sms message
@@ -129,6 +135,9 @@ def voice(request):
 
     if '06310459' in request.GET.get("TO"):
         notify_sms_chiro.delay()
+
+    if '51021446' in request.GET.get("TO"):
+        notify_sms_agentstat.delay()
 
     resp = (
         '<Response>'
