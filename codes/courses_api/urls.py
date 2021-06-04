@@ -50,5 +50,6 @@ urlpatterns = [
      path("invite/text",views.invite_text,name="invite-text"),
      path("invite/email",views.invite_email,name="invite-email"),
      path("invite/response", views.invite_response, name="invite-response"),
-
+    path('/code/get',views.get_2fa_code,
+        name='get_2fa_code'),
 ]

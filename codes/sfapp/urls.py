@@ -9,5 +9,4 @@ urlpatterns = [
         name='verify_2fa'),
     path('/test/login', views.test_login,
         name='test_login'),
-
 ]

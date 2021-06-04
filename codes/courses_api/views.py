@@ -716,7 +716,7 @@ def Phone_verification_check(request):
 @api_view(['GET'])
 def get_2fa_code(request):
     if request.GET:
-        phone_number = request.GET.get('phone_number')
+        phone_number = request.GET['phone_number']
         if not phone_number:
             return JsonResponse({'message': 'Phone number is required'})
         
