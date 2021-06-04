@@ -1,5 +1,6 @@
 from rest_framework.serializers import Serializer
-from sfapp2.utils.twilio import send_sms, list_sms, send_sms_file
+from sfapp2.utils.twilio import list_sms, send_sms_file
+from sfapp2.utils.twilio import send_sms as send_sms_v2
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -97,7 +98,7 @@ def list_sms_api(request):
 def twilio_call_status(request):
     print(request.POST)
     print(request.POST.get("SequenceNumber"))
-    send_sms("+18434259777", "Inbound call from abc")
+    send_sms_v2("+18434259777", "Inbound call from abc")
     return JsonResponse({"success":True})
 
 
@@ -565,9 +566,8 @@ def voicemail_view(request):
                 'path': "https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording/{}".format(record.sid)
             }
             # print("🚀 ~ file: views.py ~ line 439 ~ rec", rec)
-            
             all_recordings.append(rec)
-    return JsonResponse(all_recordings,safe=False)
+    return JsonResponse(all_recordings, safe=False)
 
 
 # def get_recordings(request):
@@ -590,7 +590,7 @@ def voicemail_view(request):
 #     return all_recordings
 
 @csrf_exempt
-def recording_by_sid(request,sid):
+def recording_by_sid(request, sid):
     if request.method == 'GET':
         account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID'],
         auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
@@ -600,7 +600,7 @@ def recording_by_sid(request,sid):
                         (account_sid[0],
                         sid))
         # print('recording found', recording.date_created)
-        return JsonResponse(url,safe=False)
+        return JsonResponse(url, safe=False)
     else:
         print('delete file')
         del sid
@@ -641,6 +641,7 @@ def record(request):
 
     return response
 
+
 def voicemail(request):
     response = VoiceResponse()
     response.say(
@@ -653,7 +654,8 @@ def voicemail(request):
         finish_on_key='*'
     )
     # for post req
-    # response.record(transcribe=True, transcribe_callback='/handle_transcribe.php')
+    # response.record(transcribe=True,
+    #                 transcribe_callback='/handle_transcribe.php')
 
     response.say('I did not receive a recording')
 
