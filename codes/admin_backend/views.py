@@ -1,8 +1,9 @@
+import os
+from celery import Celery
 import json
 from sfapp2.models import Member, Question, Choice
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from sfapp2.utils import twilio
 from knox.auth import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.decorators import permission_classes
@@ -10,6 +11,12 @@ from rest_framework.permissions import IsAuthenticated
 from django.core import serializers
 from voip.models import CallList
 from sfapp2.utils.twilio import send_sms
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
+
+app = Celery('web')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
 
 
 def parse_question_answers(question_answers):
@@ -99,11 +106,19 @@ def list_calls(request):
     return JsonResponse(serializers.serialize("json", records), safe=False)
 
 
+@app.task()
+def notify_sms():
+    import time
+    time.sleep(3)
+    print("HERER")
+    send_sms("18434259777", "notify phone number source")
+
+
 @csrf_exempt
 def voice(request):
     print(request.POST)
-    send_sms("18434259777", "notify phone number source")
-
+    # XXX how to pass request.post data?
+    notify_sms.delay()
     resp = (
         '<Response>'
             '<Dial record="record-from-ringing-dual">'
