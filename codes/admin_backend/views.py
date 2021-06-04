@@ -130,6 +130,7 @@ def voice(request):
     # Reason we do this is we want to show sms message
     # of who call is from few seconds after phone starts ringing
     # so better display on users device.
+    print(request.GET)
     if '5102885469' in request.GET.get("TO"):
         notify_sms_sf.delay()
 
