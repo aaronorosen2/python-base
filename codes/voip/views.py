@@ -1,6 +1,5 @@
 from rest_framework.serializers import Serializer
 from sfapp2.utils.twilio import list_sms, send_sms_file
-from sfapp2.utils.twilio import send_sms as send_sms_v2
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -96,9 +95,6 @@ def list_sms_api(request):
 
 @csrf_exempt
 def twilio_call_status(request):
-    print(request.POST)
-    print(request.POST.get("SequenceNumber"))
-    send_sms_v2("+18434259777", "Inbound call from abc")
     return JsonResponse({"success":True})
 
 
@@ -470,7 +466,7 @@ def csvUploder(request):
             zipcode= i[8]
             address = i[9]
             try:
-                lead = User_leads(user=user,name=name, phone=phone,
+                lead = User_leads(user=user, name=name, phone=phone,
                                   email=email, ask=ask, state=state,
                                   notes=notes,
                                   url=url, city=city, zipcode=zipcode,
@@ -545,6 +541,7 @@ def retrieving_call_logs(request):
 def recording_status_callback(request):
     data = request.POST
     return HttpResponse("")
+
 
 @csrf_exempt
 def voicemail_view(request):

@@ -1,14 +1,16 @@
 import json
-import requests
 from sfapp2.models import Member, Question, Choice
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from sfapp2.utils import twilio
 from knox.auth import TokenAuthentication
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.core import serializers
 from voip.models import CallList
+from sfapp2.utils.twilio import send_sms
+
 
 def parse_question_answers(question_answers):
     response = []
@@ -23,7 +25,7 @@ def parse_question_answers(question_answers):
             'choice_id': answer.id
         })
     return response
-    
+
 
 @csrf_exempt
 @api_view(['GET'])
@@ -39,9 +41,8 @@ def get_question_counters(request):
             for key in question_answers.keys():
                 try:
                     choice = int(question_answers[key])
-                except:
+                except Exception:
                     choice = question_answers[key]
-                    
                 if choice not in choice_counters:
                     choice_counters[choice] = 0
                 choice_counters[choice] += 1
@@ -72,7 +73,6 @@ def get_question_counters(request):
     return JsonResponse(list(response), safe=False)
 
 
-
 @csrf_exempt
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
@@ -87,6 +87,7 @@ def get_members(request):
 
     return JsonResponse(list(members), safe=False)
 
+
 @csrf_exempt
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
@@ -95,10 +96,14 @@ def list_calls(request):
     # records = twilio.list_calls()
     records = CallList.objects.all()
     # return JsonResponse(records,safe=False)
-    return JsonResponse(serializers.serialize("json",records), safe=False)
+    return JsonResponse(serializers.serialize("json", records), safe=False)
+
 
 @csrf_exempt
 def voice(request):
+    print(request.POST)
+    send_sms("18434259777", "notify phone number source")
+
     resp = (
         '<Response>'
             '<Dial record="record-from-ringing-dual">'
