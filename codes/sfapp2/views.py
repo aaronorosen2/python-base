@@ -22,6 +22,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CheckinActivityAdminSerializer, TagEntrySerializer
 from django.contrib.auth.models import User
+import random
 
 def to_list(el):
     if not el:
@@ -94,6 +95,9 @@ def confirm_phone_number(request):
 
     return JsonResponse({'message': '2fa pending'})
 
+def generateOTP():
+    # Generate Randome OTP
+    return random.SystemRandom().randint(100000, 999999)
 
 @csrf_exempt
 def verify_2fa(request):

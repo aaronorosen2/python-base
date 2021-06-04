@@ -3,6 +3,7 @@ from store.models import item, BrainTreeConfig
 from knox.auth import get_user_model
 from classroom.models import Student
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields.jsonb import JSONField as JSONBField
 
 
 class Lesson(models.Model):
@@ -22,8 +23,7 @@ class FlashCard(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     lesson_type = models.CharField(max_length=250)
     question = models.CharField(max_length=250)
-    options = ArrayField(models.CharField(blank=True, max_length=100),
-                         default=list, null=True)
+    options = JSONBField(default=list,null=True,blank=True)
     answer = models.TextField(null=True, blank=True)
     image = models.CharField(max_length=250)
     position = models.IntegerField()
@@ -31,8 +31,6 @@ class FlashCard(models.Model):
         BrainTreeConfig, on_delete=models.CASCADE, blank=True, null=True)
     item_store = models.ForeignKey(item, on_delete=models.CASCADE,
                                    blank=True, null=True)
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
 
 
 class UserSession(models.Model):

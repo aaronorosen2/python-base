@@ -15,25 +15,39 @@ class Upload(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     file = models.FileField(upload_to=uuid_file_path)
 
+
 class AdminFeedback(models.Model):
-    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="")
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE,
+                             default="")
     message = models.TextField(default="")
-    created_at = models.DateTimeField(auto_now_add=True)    
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Member(models.Model):
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE,
+                             null=True, blank=True,
+                             default=None)
     phone = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=128, blank=True, null=True)
+    bio = models.CharField(max_length=255, blank=True, null=True)
+    photo = models.CharField(max_length=255, blank=True, null=True)
     code_2fa = models.CharField(max_length=20, blank=True, null=True)
     has_verified_phone = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
     question_answers = models.TextField(blank=True, null=True)
 
+    class Meta:
+        unique_together = ('user', 'phone')
+
+
 class TagEntry(models.Model):
-    assigned_by = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="")
+    assigned_by = models.ForeignKey(to=get_user_model(),
+                                    on_delete=models.CASCADE, default="")
     tag = models.TextField(default="", max_length=150)
-    assigned_to = models.ForeignKey(to=Member, on_delete=models.CASCADE, default="")
-    created_at = models.DateTimeField(auto_now_add=True)   
+    assigned_to = models.ForeignKey(to=Member, on_delete=models.CASCADE,
+                                    default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
 class MemberMonitor(models.Model):
     member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
@@ -49,17 +63,20 @@ class GpsCheckin(models.Model):
     lng = models.CharField(max_length=500, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     admin_feedback = models.ManyToManyField(AdminFeedback)
-    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="", blank=True, null=True)
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE,
+                             default="", blank=True, null=True)
 
 
 class VideoUpload(models.Model):
     videoUrl = models.CharField(max_length=500)
-    member = models.ForeignKey(to=Member, on_delete=models.CASCADE, default="", blank=True, null=True)
+    member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
+                               default="", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     source = models.CharField(max_length=500, default="")
     video_uuid = models.CharField(max_length=500, default='')
     admin_feedback = models.ManyToManyField(AdminFeedback)
-    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, default="", blank=True, null=True)
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE,
+                             default="", blank=True, null=True)
 
 
 class MyMed(models.Model):
@@ -108,3 +125,22 @@ class Service(models.Model):
                                    blank=True, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6,
                                     blank=True, null=True)
+
+
+class MemberSession(models.Model):
+    member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
+                               default="", blank=True, null=True)
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField()
+
+
+class MemberGpsEntry(models.Model):
+    member_session = models.ForeignKey(to=MemberSession,
+                                       on_delete=models.CASCADE,
+                                       default="", blank=True, null=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6,
+                                   blank=True, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6,
+                                    blank=True, null=True)
+    device_timestamp = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
