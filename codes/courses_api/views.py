@@ -716,11 +716,13 @@ def Phone_verification_check(request):
 @api_view(['GET'])
 def get_2fa_code(request):
     if request.GET:
-        phone_number = request.GET['phone_number']
+        phone_number = request.GET.get('phone_number')
         if not phone_number:
             return JsonResponse({'message': 'Phone number is required'})
         
-        member = UserSession.objects.filter(phone=phone_number).first()
+        member = UserSession.objects.filter(phone=phone_number).last()
+        if not member:
+            return JsonResponse({"error":"Invalid Number"})
         if(member.code_2fa):
             return JsonResponse({'2fa-code':member.code_2fa})
         else:
