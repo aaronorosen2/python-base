@@ -1,3 +1,4 @@
+import time
 import os
 from celery import Celery
 import json
@@ -108,17 +109,20 @@ def list_calls(request):
 
 @app.task()
 def notify_sms(data):
-    import time
     time.sleep(3)
     print("HERER")
     print(data)
     if '5102885469' in data.get("TO"):
         send_sms("18434259777", "SF APP Phone number")
+    else:
+        send_sms("18434259777", "cannot parse number number")
 
 
 @csrf_exempt
 def voice(request):
-    print(request.POST)
+    # Reason we do this is we want to show sms message
+    # of who call is from few seconds after phone starts ringing
+    # so better display on users device.
     notify_sms.delay(request.GET)
     resp = (
         '<Response>'
