@@ -21,6 +21,9 @@ from django.shortcuts import redirect
 import io
 import codecs
 import requests
+
+
+
 # To store session variables
 sessionID_to_callsid = {}
 sessionID_to_confsid = {}
@@ -93,6 +96,8 @@ def list_sms_api(request):
 @csrf_exempt
 def twilio_call_status(request):
     print(request.POST)
+    print(request.POST.get("SequenceNumber"))
+    send_sms("+18434259777", "Inbound call from abc")
     return JsonResponse({"success":True})
 
 
@@ -464,12 +469,14 @@ def csvUploder(request):
             zipcode= i[8]
             address = i[9]
             try:
-                lead = User_leads(user=user,name=name, phone=phone,  email=email,
-                                ask=ask, state=state, notes=notes,
-                                url=url,city=city,zipcode=zipcode,address=address)
+                lead = User_leads(user=user,name=name, phone=phone,
+                                  email=email, ask=ask, state=state,
+                                  notes=notes,
+                                  url=url, city=city, zipcode=zipcode,
+                                  address=address)
                 lead.save()
             except:
-                continue    
+                continue
     return JsonResponse({'message': 'lead save successfully'}, status=200)
 
 # @csrf_exempt
@@ -511,12 +518,10 @@ def retrieving_call_logs(request):
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
-    
 
     calls = client.calls.list(limit=1,to=settings.TWILIO['TWILIO_NUMBER'])
     datalist = []
     for record in calls:
-       
         datalist.append(record)
         # print(record.sid)
     print("🚀 ~ file: views.py ~ line 491 ~ datalist", type(datalist))
@@ -637,7 +642,6 @@ def record(request):
     return response
 
 def voicemail(request):
-
     response = VoiceResponse()
     response.say(
         'Please leave a message at the beep.\nPress the star key when finished.'
