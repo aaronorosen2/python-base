@@ -135,13 +135,15 @@ def voice(request):
         print("notify sf")
         notify_sms_sf.delay()
 
-    if '06310459' in request.GET.get("To"):
+    elif '06310459' in request.GET.get("To"):
         print("notify chiro")
         notify_sms_chiro.delay()
 
-    if '51021446' in request.GET.get("To"):
+    elif '51021446' in request.GET.get("To"):
         print("notify as")
         notify_sms_agentstat.delay()
+    else:
+        print("missing sms alert")
 
     resp = (
         '<Response>'
