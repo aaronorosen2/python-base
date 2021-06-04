@@ -108,14 +108,15 @@ def list_calls(request):
 
 
 @app.task()
-def notify_sms(data):
+def notify_sms_sf():
     time.sleep(3)
-    print("HERER")
-    print(data)
-    if '5102885469' in data.get("TO"):
-        send_sms("18434259777", "SF APP Phone number")
-    else:
-        send_sms("18434259777", "cannot parse number number")
+    send_sms("18434259777", "SF APP Phone number", '+15102885469')
+
+
+@app.task()
+def notify_sms_chiro():
+    time.sleep(3)
+    send_sms("18434259777", "Chiro Phone number", '+15106310459')
 
 
 @csrf_exempt
@@ -123,7 +124,12 @@ def voice(request):
     # Reason we do this is we want to show sms message
     # of who call is from few seconds after phone starts ringing
     # so better display on users device.
-    notify_sms.delay(request.GET)
+    if '5102885469' in request.GET.get("TO"):
+        notify_sms_sf.delay()
+
+    if '06310459' in request.GET.get("TO"):
+        notify_sms_chiro.delay()
+
     resp = (
         '<Response>'
             '<Dial record="record-from-ringing-dual">'

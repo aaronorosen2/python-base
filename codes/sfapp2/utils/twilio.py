@@ -2,9 +2,6 @@ from django.conf import settings
 from twilio.rest import Client
 from voip.models import CallList
 import random
-import time
-from termcolor import cprint
-from django.db import connection
 
 
 def send_confirmation_code(to_number):
@@ -17,10 +14,11 @@ def generate_code():
     return str(random.randrange(1000, 9999))
 
 
-def send_sms(to_number, body):
+def send_sms(to_number, body, twilio_number=None):
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
-    twilio_number = settings.TWILIO['TWILIO_NUMBER']
+    if not twilio_number:
+        twilio_number = settings.TWILIO['TWILIO_NUMBER']
     client = Client(account_sid, auth_token)
 
     client.api.messages.create(to_number, from_=twilio_number, body=body)
@@ -31,7 +29,7 @@ def send_sms_file(to_number, media_url):
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
     twilio_number = settings.TWILIO['TWILIO_NUMBER']
     client = Client(account_sid, auth_token)
-    message = client.messages.create(
+    client.messages.create(
         media_url=[media_url],
         from_=twilio_number,
         to=to_number
