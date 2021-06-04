@@ -26,3 +26,4 @@ codes/staticfiles
 sqlite3.db
 
 logger.log
+geckodriver.log
