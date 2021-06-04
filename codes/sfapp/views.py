@@ -59,19 +59,7 @@ def get_member_from_headers(headers):
             token=token).first()
         if user_token:
             return user_token.member
-
-def get_2fa_code(request):
-    if request.GET:
-        phone_number = request.GET.get('phone_number')
-        if not phone_number:
-            return JsonResponse({'message': 'Phone number is required'})
-        
-        member = Member.objects.filter(phone=phone_number).first()
-        if(member.code_2fa):
-            return JsonResponse({'2fa-code':member.code_2fa})
-        else:
-            return JsonResponse({'error':"Phone number is does not have code sent."})
-
+            
 @csrf_exempt
 def test_login(request):
     return render(request, 'test/login.html')

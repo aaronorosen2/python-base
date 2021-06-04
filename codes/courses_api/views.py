@@ -714,6 +714,20 @@ def Phone_verification_check(request):
         return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
+def get_2fa_code(request):
+    if request.GET:
+        phone_number = request.GET.get('phone_number')
+        if not phone_number:
+            return JsonResponse({'message': 'Phone number is required'})
+        
+        member = UserSession.objects.filter(phone=phone_number).first()
+        if(member.code_2fa):
+            return JsonResponse({'2fa-code':member.code_2fa})
+        else:
+            return JsonResponse({'error':"Phone number is does not have code sent."})
+
+
+@api_view(['GET'])
 def student_lesson_list(request,student_id):
     try:
         stulist = Invite.objects.filter(student=student_id)
