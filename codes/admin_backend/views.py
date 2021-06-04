@@ -132,12 +132,15 @@ def voice(request):
     # so better display on users device.
     print(request.GET.get("To"))
     if '5102885469' in request.GET.get("To"):
+        print("notify sf")
         notify_sms_sf.delay()
 
     if '06310459' in request.GET.get("To"):
+        print("notify chiro")
         notify_sms_chiro.delay()
 
     if '51021446' in request.GET.get("To"):
+        print("notify as")
         notify_sms_agentstat.delay()
 
     resp = (
