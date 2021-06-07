@@ -449,20 +449,29 @@ def get_tags(request):
 @csrf_exempt
 @api_view(['POST'])
 def member_session_start(request):
-    member = get_member_from_headers(request.headers)
-    if member:
-        session_create = MemberSession.objects.create(member=member)
-        MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
-                                    longitude=request.data.get("longitude",None))
-    return JsonResponse({'status': 'okay'}, safe=False)
+    try:
+        member = get_member_from_headers(request.headers)
+        if member:
+            session_create = MemberSession.objects.create(member=member)
+            mge = MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
+                                        longitude=request.data.get("longitude",None))
+        return JsonResponse({'status': 'okay'}, safe=False)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 460 ~ e", e)
+        return JsonResponse({'status': 'error'}, safe=False)
 
 @csrf_exempt
 @api_view(['POST'])
 def member_session_stop(request):
-    member = get_member_from_headers(request.headers)
-    if member:
-        session_create = MemberSession.objects.get(member=member)
-        session_create.ended_at = datetime.datetime.now()
-        MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
-                                    longitude=request.data.get("longitude",None))
-    return JsonResponse({'status': 'okay'}, safe=False)
+    try:
+        member = get_member_from_headers(request.headers)
+        if member:
+            session_create = MemberSession.objects.get(member=member)
+            session_create.ended_at = datetime.datetime.now()
+            session_create.save()
+            mge = MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
+                                        longitude=request.data.get("longitude",None))
+        return JsonResponse({'status': 'okay'}, safe=False)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 460 ~ e", e)
+        return JsonResponse({'status': 'error'}, safe=False)

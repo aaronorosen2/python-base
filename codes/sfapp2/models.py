@@ -128,7 +128,7 @@ class MemberSession(models.Model):
     member = models.ForeignKey(to=Member, on_delete=models.CASCADE,
                                default="", blank=True, null=True)
     started_at = models.DateTimeField(auto_now_add=True)
-    ended_at = models.DateTimeField()
+    ended_at = models.DateTimeField(blank=True,null=True)
 
 
 class MemberGpsEntry(models.Model):
@@ -139,5 +139,5 @@ class MemberGpsEntry(models.Model):
                                    blank=True, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6,
                                     blank=True, null=True)
-    device_timestamp = models.DateTimeField()
+    device_timestamp = models.DateTimeField(blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
