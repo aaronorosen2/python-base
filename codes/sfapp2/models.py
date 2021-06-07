@@ -24,9 +24,6 @@ class AdminFeedback(models.Model):
 
 
 class Member(models.Model):
-    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE,
-                             null=True, blank=True,
-                             default=None)
     phone = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=128, blank=True, null=True)
     bio = models.CharField(max_length=255, blank=True, null=True)
@@ -37,7 +34,7 @@ class Member(models.Model):
     question_answers = models.TextField(blank=True, null=True)
 
     class Meta:
-        unique_together = ('user', 'phone')
+        unique_together = ('phone',)
 
 
 class TagEntry(models.Model):

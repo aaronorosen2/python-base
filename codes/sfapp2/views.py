@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from .utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
 from .models import Member, Token, Service, GpsCheckin
-from .models import VideoUpload
+from .models import VideoUpload,MemberSession,MemberGpsEntry
 from .models import MyMed, Question, Choice, AdminFeedback, TagEntry
 from django.conf import settings
 import logging
@@ -23,6 +23,8 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import CheckinActivityAdminSerializer, TagEntrySerializer
 from django.contrib.auth.models import User
 import random
+# from math import sin, cos, sqrt, atan2, radians
+import datetime
 
 def to_list(el):
     if not el:
@@ -95,9 +97,9 @@ def confirm_phone_number(request):
 
     return JsonResponse({'message': '2fa pending'})
 
-def generateOTP():
-    # Generate Randome OTP
-    return random.SystemRandom().randint(100000, 999999)
+# def generateOTP():
+#     # Generate Randome OTP
+#     return random.SystemRandom().randint(100000, 999999)
 
 @csrf_exempt
 def verify_2fa(request):
@@ -423,3 +425,44 @@ def get_tags(request):
             tags = TagEntry.objects.filter(assigned_to=member).select_related('assigned_by')
             tags_serialised = TagEntrySerializer(tags, many=True)
             return JsonResponse({'tags': list(tags_serialised.data)})
+
+# def get_distance(request):
+#     R = 6373.0
+#     lat1 = radians(52.2296756)
+#     lon1 = radians(21.0122287)
+#     lat2 = radians(52.406374)
+#     lon2 = radians(16.9251681)
+
+#     dlon = lon2 - lon1
+#     dlat = lat2 - lat1
+
+#     a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+#     c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+#     distance = R * c
+
+#     print("Result:", distance)
+#     print("Should be:", 278.546, "km")
+    
+#     return distance
+
+@csrf_exempt
+@api_view(['POST'])
+def member_session_start(request):
+    member = get_member_from_headers(request.headers)
+    if member:
+        session_create = MemberSession.objects.create(member=member)
+        MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
+                                    longitude=request.data.get("longitude",None))
+    return JsonResponse({'status': 'okay'}, safe=False)
+
+@csrf_exempt
+@api_view(['POST'])
+def member_session_stop(request):
+    member = get_member_from_headers(request.headers)
+    if member:
+        session_create = MemberSession.objects.get(member=member)
+        session_create.ended_at = datetime.datetime.now()
+        MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
+                                    longitude=request.data.get("longitude",None))
+    return JsonResponse({'status': 'okay'}, safe=False)

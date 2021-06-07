@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from knox.auth import get_user_model
 from .models import AdminFeedback, TagEntry, Member
-
+from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
     user_id = serializers.CharField(source='id')
@@ -16,10 +16,14 @@ class UserSerializer(serializers.ModelSerializer):
 #         fields ='__all__'
 
 class MemberSerializer(serializers.ModelSerializer):
-    
+    # user = UserSerializer(source='user', read_only=True)
     class Meta:
         model = Member
         fields = '__all__'
+    # def create(self, validated_data):
+    #     user = User.objects.create_user(validated_data['email'], password=validated_data['password'],
+    #                                     email=validated_data.get('email'), first_name=validated_data['first_name'])
+    #     return user
 
 class CheckinActivityAdminSerializer(serializers.ModelSerializer):
     uesr_details = UserSerializer(source='user', read_only=True)

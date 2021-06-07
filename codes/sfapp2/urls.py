@@ -23,5 +23,7 @@ urlpatterns = [
 
     path('test-page/login', views.test_login,
         name='test_login'),
+    path('api/member_session_start', views.member_session_start, name="member_session_start"),
+    path('api/member_session_stop', views.member_session_start, name="member_session_stop"),
 
 ]

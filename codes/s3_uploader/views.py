@@ -24,8 +24,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-
+from sfapp2.utils.twilio import send_confirmation_code
+from rest_framework.parsers import FileUploadParser
 from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer
 
@@ -55,6 +55,61 @@ class UserRegister(generics.GenericAPIView):
         except:
             return Response({"msg": f"This email address is already registered with us"},
                             status=status.HTTP_409_CONFLICT)
+
+# class NewUserRegister(generics.GenericAPIView):
+#     serializer_class = NewRegisterSerializer
+#     parser_class = (FileUploadParser,)
+
+#     def get(self, request, *args, **kwargs):
+#         return render(request, "s3_uploader/register.html")
+
+#     def post(self, request, *args, **kwargs):
+#         print("🚀 ~ file: views.py ~ line 67 ~ request.FILES['photo']", type(request.data.get('photo')))
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         phone = serializer.validated_data['phone']
+#         request.session["phone"] = phone
+#         request.session["otp"] = send_confirmation_code(phone)
+#         try:
+#             user = serializer.save()
+#             return Response({
+#                 "user": NewRegisterSerializer(user, context=self.get_serializer_context()).data,
+#                 "token": AuthToken.objects.create(user)[1]
+#             })
+#         except:
+#             return Response({"msg": f"This email address is already registered with us"},
+#                             status=status.HTTP_409_CONFLICT)
+
+
+# class ValidateOTP(APIView):
+#     permission_classes = (permissions.AllowAny, )
+#     def post(self, request, *args, **kwargs):
+#         phone = request.session.get('phone' , False)
+#         otp = request.session.get('otp', False)
+#         get_otp = request.data.get('code', None)
+#         if phone and otp:
+#             if otp.exists():
+#                 if str(otp) == str(get_otp):
+#                     del request.session['otp']
+#                     return Response({
+#                         'status' : True,
+#                         'detail' : 'OTP mactched. Thank you.'
+#                         })
+#                 else: 
+#                     return Response({
+#                         'status' : False,
+#                         'detail' : 'OTP incorrect.'
+#                         })
+#             else:
+#                 return Response({
+#                     'status' : False,
+#                     'detail' : 'First proceed via sending otp request.'
+#                     })
+#         else:
+#             return Response({
+#                 'status' : False,
+#                 'detail' : 'Please provide both phone and otp for validations'
+#                 })
 
 
 # Login User -> Returns a token to make requests

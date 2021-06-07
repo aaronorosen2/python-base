@@ -304,8 +304,8 @@ def lesson_update(request, pk):
                                 )
                     # BrainTreeConfig_obj.save()
                     
-                f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,latitude=latitude,
-                                                        longitude=longitude,image=image,position=position)
+                f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,
+                                                        image=image,position=position)
                 
             else:
                 lesson_type = flashcard["lesson_type"]
@@ -410,8 +410,8 @@ def flashcard_create(request,lessonId):
         image = request.data["image"]
     lesson = Lesson.objects.filter(id=lessonId).get()
 
-    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,latitude=latitude,
-                                longitude=longitude,image=image,position=position)
+    f=FlashCard(lesson=lesson,lesson_type=lesson_type,question=question,options=options,answer=answer,
+                                image=image,position=position)
     f.save()
     return Response("FlashCard Created!")
 
