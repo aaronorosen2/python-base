@@ -21,6 +21,7 @@ import uuid
 import mimetypes
 import urllib.request
 # from .utils import realtime_face_swapping_webcam
+from web.settings import BASE_DIR
 
 
 
@@ -44,12 +45,14 @@ def face_swap_on_a_video(request):
         elif request.FILES["image"]:
             imgget = request.FILES["image"]
         vd = request.FILES["video"]
-        fm = FaceSwap(image=imgget,video=vd)
-        fm.save()
+        # fm = FaceSwap(image=imgget,video=vd)
+        # fm.save()
 
 
         uploaded_img = request.FILES.get('image')
+        print("--------uploaded_img---------",uploaded_img)
         upload_video = request.FILES["video"]
+        print("----------upload_video---------",upload_video)
         uploaded_img = str(uploaded_img)
         upload_video = str(upload_video)
         
@@ -218,8 +221,8 @@ def face_swap_on_a_video(request):
 
                 seamlessclone = cv2.seamlessClone(result, img2, img2_head_mask,
                                                 center_face2, cv2.MIXED_CLONE)
-                cv2.imshow("img2", img2)
-                cv2.imshow("clone", seamlessclone)
+                # cv2.imshow("img2", img2)
+                # cv2.imshow("clone", seamlessclone)
                 cv2.imshow("result", result)
                 frames_array.append(seamlessclone)
                 key = cv2.waitKey(1)
@@ -229,8 +232,9 @@ def face_swap_on_a_video(request):
                 break
         cap.release()
         cv2.destroyAllWindows()
-
-        path = 'python-base/codes/faceswap/media'
+        
+        path = os.path.join(BASE_DIR, 'faceswap/media')
+        print("--------------path---------------",path)
         video = create_video(path, "result1", frames_array,
                         frames_array[0].shape[1], frames_array[0].shape[0], 30)
 
@@ -299,7 +303,7 @@ def realtime_face_swapping_webcam(request):
     img = cv2.imread("barack-obama-12782369-1-402.jpg")
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     mask = np.zeros_like(img_gray)
-    cap = cv2.VideoCapture('-1')
+    cap = cv2.VideoCapture(-1)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     print("🚀 ~ file: views.py ~ line 233 ~ cap", cap)
@@ -461,7 +465,7 @@ def realtime_face_swapping_webcam(request):
             if cv2.waitKey(1) & 0xFF == 27:
                 break
         else:
-            return HttpResponse("Face not captured")
+            return HttpResponse("Can't find camera")
 
     cap.release()
     cv2.destroyAllWindows()
