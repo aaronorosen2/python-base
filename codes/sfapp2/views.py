@@ -23,7 +23,7 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import CheckinActivityAdminSerializer, TagEntrySerializer
 from django.contrib.auth.models import User
 import random
-# from math import sin, cos, sqrt, atan2, radians
+from math import sin, cos, sqrt, atan2, radians
 import datetime
 
 def to_list(el):
@@ -34,7 +34,7 @@ def to_list(el):
 
 @csrf_exempt
 def get_services(request):
-    raise TypeError
+    # raise TypeError
     services = Service.objects.filter().all()
     datas = []
     population_types = []
@@ -426,25 +426,21 @@ def get_tags(request):
             tags_serialised = TagEntrySerializer(tags, many=True)
             return JsonResponse({'tags': list(tags_serialised.data)})
 
-# def get_distance(request):
-#     R = 6373.0
-#     lat1 = radians(52.2296756)
-#     lon1 = radians(21.0122287)
-#     lat2 = radians(52.406374)
-#     lon2 = radians(16.9251681)
+def get_distance(lat1,lon1,lat2,lon2):
+    R = 6373.0
+    lat1 = radians(lat1)
+    lon1 = radians(lon1)
+    lat2 = radians(lat2)
+    lon2 = radians(lon2)
 
-#     dlon = lon2 - lon1
-#     dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
 
-#     a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-#     c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
-#     distance = R * c
-
-#     print("Result:", distance)
-#     print("Should be:", 278.546, "km")
-    
-#     return distance
+    distance = R * c
+    return distance
 
 @csrf_exempt
 @api_view(['POST'])
@@ -472,6 +468,34 @@ def member_session_stop(request):
             mge = MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
                                         longitude=request.data.get("longitude",None))
             return JsonResponse({'status': 'okay'}, safe=False)
+        else:
+            return JsonResponse({'status': 'error'}, safe=False)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 460 ~ e", e)
+        return JsonResponse({'status': 'error'}, safe=False)
+
+@csrf_exempt
+@api_view(['GET'])
+def member_session_distance(request):
+    try:
+        member = get_member_from_headers(request.headers)
+        if member:
+            session_create = MemberSession.objects.filter(member=member).last()
+            datetimeFormat = '%Y-%m-%d %H:%M:%S.%f'
+            start_time = session_create.started_at
+            end_time = session_create.ended_at
+            total_time = end_time - start_time
+            mge = MemberGpsEntry.objects.filter(member_session=session_create)
+            for i in range(0,len(mge)-1):
+                distance = get_distance(mge[i].latitude,mge[i].longitude,mge[i+1].latitude,mge[i+1].longitude)
+                break
+            avg_speed = (distance *1000) / total_time.seconds
+            data = {
+                'distance':distance,
+                'avg_speed':avg_speed,
+                'total_time': total_time.seconds
+            }
+            return JsonResponse(data, safe=False)
         else:
             return JsonResponse({'status': 'error'}, safe=False)
     except Exception as e:
