@@ -34,7 +34,7 @@ def to_list(el):
 
 @csrf_exempt
 def get_services(request):
-    # raise TypeError
+    raise TypeError
     services = Service.objects.filter().all()
     datas = []
     population_types = []
