@@ -127,6 +127,7 @@ INSTALLED_APPS = [
     "fcm_django",
     "calendar_v2",
     # "faceswap",
+    'image_processor',
 ]
 
 FCM_DJANGO_SETTINGS = {
