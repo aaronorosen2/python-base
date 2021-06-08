@@ -461,15 +461,12 @@ def member_session_start(request):
 def member_session_stop(request):
     try:
         member = get_member_from_headers(request.headers)
-        if member:
-            session_create = MemberSession.objects.filter(member=member).last()
-            session_create.ended_at = datetime.datetime.now()
-            session_create.save()
-            mge = MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
-                                        longitude=request.data.get("longitude",None))
-            return JsonResponse({'status': 'okay'}, safe=False)
-        else:
-            return JsonResponse({'status': 'error'}, safe=False)
+        session_create = MemberSession.objects.filter(member=member).last()
+        session_create.ended_at = datetime.datetime.now()
+        session_create.save()
+        mge = MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
+                                    longitude=request.data.get("longitude",None))
+        return JsonResponse({'status': 'okay'}, safe=False)
     except Exception as e:
         print("🚀 ~ file: views.py ~ line 460 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
