@@ -498,3 +498,32 @@ def member_session_distance(request):
     except Exception as e:
         print("🚀 ~ file: views.py ~ line 460 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def member_session_livedata(request):
+    try:
+        member = get_member_from_headers(request.headers)
+        session_create = MemberSession.objects.filter(member=member).last()
+        mge = MemberGpsEntry.objects.filter(member_session=session_create).last()
+        start_lat = mge.latitude
+        start_long = mge.longitude
+        new_lat = request.data.get("latitude",None)
+        new_long = request.data.get("longitude",None)
+        distance = get_distance(start_lat,start_long,new_lat,new_long)
+        print("🚀 ~ file: views.py ~ line 516 ~ datetime.datetime.now().time()", datetime.datetime.now())
+        print("🚀 ~ file: views.py ~ line 516 ~ session_create.started_at.seconds", session_create.started_at.replace(tzinfo=None))
+        total_time = datetime.datetime.now() - session_create.started_at.replace(tzinfo=None)
+        print("🚀 ~ file: views.py ~ line 518 ~ total_time", total_time)
+        avg_speed = (distance *1000) / total_time.seconds
+        print("{:.2f}".format(distance))
+        data = {
+            'distance':"{:.2f}".format(distance),
+            'avg_speed':"{:.2f}".format(avg_speed),
+            'total_time': total_time.seconds
+        }
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 460 ~ e", e)
+        return JsonResponse({'status': 'error'}, safe=False)
