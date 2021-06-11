@@ -15,7 +15,6 @@ class Student(models.Model):
     def __str__(self):
         return self.name
 
-
 class Teacher(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='teachername')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
@@ -23,6 +22,14 @@ class Teacher(models.Model):
 
     def __str__(self):
         return f"{self.teacher} {self.student}"
+
+
+class TeacherAccount(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True, related_name='teacherinfo')
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.teacher} {self.active}"
 
 class Class(models.Model):
     class_name = models.CharField(max_length=128, blank=True, null=True)
