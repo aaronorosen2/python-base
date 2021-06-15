@@ -29,6 +29,9 @@ from rest_framework.parsers import FileUploadParser
 from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer
 
+from classroom.models import TeacherAccount
+from classroom.serializers import TeacherAccountSerializer
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class Home(View):
@@ -119,14 +122,20 @@ class UserLogin(KnoxLoginView):
     def post(self, request, format=None):
         data = request.data
         # Allow login using username/email both
+        teacher_login = False
         try:
             data['username'] = data['email']
+            teacher_login = data.get('teacher_login',False)            
         except:
             pass
 
         serializer = AuthTokenSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+        if teacher_login:
+            teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
+            if not (teacher and teacher['active']):
+                return JsonResponse(data={'msg': 'Account not active'},status=403) 
         login(request, user)
         return super(UserLogin, self).post(request, format=None)
 

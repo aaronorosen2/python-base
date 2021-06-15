@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from knox.auth import get_user_model
 
 class Student(models.Model):
     # XXX NEed to link in user model object
@@ -25,7 +25,7 @@ class Teacher(models.Model):
 
 
 class TeacherAccount(models.Model):
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True, related_name='teacherinfo')
+    teacher = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True, related_name='teacherinfo')
     active = models.BooleanField(default=True)
 
     def __str__(self):
