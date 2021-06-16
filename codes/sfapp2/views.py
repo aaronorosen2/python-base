@@ -490,7 +490,7 @@ def member_session_distance(request):
             data = {
                 'distance':distance,
                 'avg_speed':avg_speed,
-                'total_time': total_time.seconds
+                'total_time': total_time.seconds - 3 
             }
             return JsonResponse(data, safe=False)
         else:
