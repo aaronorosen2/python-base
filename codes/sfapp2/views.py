@@ -486,11 +486,15 @@ def member_session_distance(request):
             for i in range(0,len(mge)-1):
                 distance = get_distance(mge[i].latitude,mge[i].longitude,mge[i+1].latitude,mge[i+1].longitude)
                 break
-            avg_speed = (distance *1000) / (total_time.seconds - 3)
+            if total_time.seconds >= 3:
+                newtime = total_time.seconds - 3
+            else:
+                newtime = total_time.seconds
+            avg_speed = (distance *1000) / newtime
             data = {
                 'distance':distance,
                 'avg_speed':avg_speed,
-                'total_time': total_time.seconds - 3 
+                'total_time': newtime
             }
             return JsonResponse(data, safe=False)
         else:
