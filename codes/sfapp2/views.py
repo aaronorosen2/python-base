@@ -486,15 +486,13 @@ def member_session_distance(request):
             for i in range(0,len(mge)-1):
                 distance = get_distance(mge[i].latitude,mge[i].longitude,mge[i+1].latitude,mge[i+1].longitude)
                 break
-            if total_time.seconds >= 3:
-                newtime = total_time.seconds - 3
-            else:
-                newtime = total_time.seconds
-            avg_speed = (distance *1000) / newtime
+            timme = request.session.get('value')
+            print("🚀 ~ file: views.py ~ line 494 ~ timme", timme)
+            avg_speed = (distance *1000) / timme
             data = {
                 'distance':distance,
                 'avg_speed':avg_speed,
-                'total_time': newtime
+                'total_time': timme
             }
             return JsonResponse(data, safe=False)
         else:
@@ -522,6 +520,8 @@ def member_session_livedata(request):
         print("🚀 ~ file: views.py ~ line 518 ~ total_time", total_time)
         avg_speed = (distance *1000) / total_time.seconds
         print("{:.2f}".format(distance))
+        request.session['value'] = total_time.seconds
+        # x = total_time.seconds
         data = {
             'distance':"{:.2f}".format(distance),
             'avg_speed':"{:.2f}".format(avg_speed),
