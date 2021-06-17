@@ -187,8 +187,8 @@ class LessonTest(unittest.TestCase):
         self.login()
         self.go_to_lesson_builder()
         self.edit_lesson_name("Title Test Test By Bot")
-        self.title_text("Test Title","Test TExt")
-        self.submit()
+        self.title_text("Test Title","Test Text")
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_prompt_text_input(self):
@@ -196,7 +196,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("Prompt Test Input By Bot")
         self.prompt_text_input("Enter Text")
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_iframe_link(self):
@@ -204,7 +204,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("Iframe Link By Bot")
         self.iframe_link("Iframe Title","https://swornim.me")
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_title_text_area(self):
@@ -212,7 +212,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("Title Textarea Test By Bot")
         self.title_textarea("Test Title")
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
     
     def test_verify_phone(self):
@@ -220,7 +220,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("Verify Phone Test By Bot")
         self.verify_phone()
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_signature(self):
@@ -228,7 +228,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("Signature Test By Bot")
         self.signature_image()
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_user_gps(self):
@@ -236,7 +236,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("User GPS Test By Bot")
         self.signature_image()
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_user_video_upload(self):
@@ -244,7 +244,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("User Video Upload Test By Bot")
         self.user_video_upload("Hello There")
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_user_image_upload(self):
@@ -252,7 +252,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("User Image Upload Test By Bot")
         self.user_image_upload("Hello There")
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_chiro_posture_front(self):
@@ -260,7 +260,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("Chiro Posture Front Test By Bot")
         self.chiro_posture_front()
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_chiro_posture_side(self):
@@ -268,7 +268,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("Chiro Posture Side Test By Bot")
         self.chiro_posture_side()
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_jitsi_meet(self):
@@ -276,7 +276,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("Jitsi Meet Test By Bot")
         self.jitsi_meet("Hello There")
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
     def test_record_webcam(self):
@@ -284,7 +284,7 @@ class LessonTest(unittest.TestCase):
         self.go_to_lesson_builder()
         self.edit_lesson_name("Record Webcam Test By Bot")
         self.record_webcam()
-        self.submit()
+        self.submit_and_go_to_slide()
         self.clean_up()
 
 if __name__ == '__main__':
