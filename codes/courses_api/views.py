@@ -697,7 +697,7 @@ def confirm_phone_number(request):
 def verify_2fa(request):
     code = request.data['code_2fa']
     phone = request.data['phone_number']
-    member = UserSession.objects.filter(phone=phone).last()
+    member = UserSession.objects.filter(phone=phone).first()
     if phone == member.phone and code == member.code_2fa:
         member.has_verified_phone=True
         member.save()
@@ -720,7 +720,7 @@ def get_2fa_code(request):
         if not phone_number:
             return JsonResponse({'message': 'Phone number is required'})
         
-        member = UserSession.objects.filter(phone=phone_number).last()
+        member = UserSession.objects.filter(phone=phone_number).first()
         if not member:
             return JsonResponse({"error":"Invalid Number"})
         if(member.code_2fa):
