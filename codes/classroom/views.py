@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Teacher,Student, Class, InviteClass, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert
+from .models import Teacher,Student, Class, InviteClass, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert, TeacherAccount
 from django.contrib.auth.models import User
 from django.http.response import JsonResponse,HttpResponseRedirect
 from django.http import QueryDict
@@ -289,3 +289,18 @@ def isValidEmail(email):
     except Exception as e:
         print(e)
         return False
+
+
+@api_view(['POST'])
+@csrf_exempt
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
+def setTeacherStatus(request):
+    if isinstance(request.data.get('status'), bool):
+        try:
+            t_acc, created = TeacherAccount.objects.update_or_create(teacher_id=request.data.get('userId'),defaults={'active':request.data.get('status')})
+            return JsonResponse({"success":True},status=201)
+        except Exception as e:
+            print(e)
+            return JsonResponse({"success":False},status=400)
+    return JsonResponse({"success":False, 'msg': 'Invalid parameters'},status=422)
