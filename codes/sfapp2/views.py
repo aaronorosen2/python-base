@@ -474,6 +474,8 @@ def member_session_stop(request):
 @csrf_exempt
 @api_view(['GET'])
 def member_session_distance(request):
+    # timme = request.session.get('value')
+    # print("🚀 ~ file: views.py ~ line 494 ~ timme", timme)
     try:
         member = get_member_from_headers(request.headers)
         if member:
@@ -486,14 +488,13 @@ def member_session_distance(request):
             for i in range(0,len(mge)-1):
                 distance = get_distance(mge[i].latitude,mge[i].longitude,mge[i+1].latitude,mge[i+1].longitude)
                 break
-            timme = request.session.get('value')
-            print("🚀 ~ file: views.py ~ line 494 ~ timme", timme)
-            avg_speed = (distance *1000) / timme
+            avg_speed = (distance *1000) / total_time.seconds
             data = {
                 'distance':distance,
                 'avg_speed':avg_speed,
-                'total_time': timme
+                'total_time': total_time.seconds
             }
+            # del request.session['value']
             return JsonResponse(data, safe=False)
         else:
             return JsonResponse({'status': 'error'}, safe=False)
@@ -514,13 +515,13 @@ def member_session_livedata(request):
         new_lat = request.data.get("latitude",None)
         new_long = request.data.get("longitude",None)
         distance = get_distance(start_lat,start_long,new_lat,new_long)
-        print("🚀 ~ file: views.py ~ line 516 ~ datetime.datetime.now().time()", datetime.datetime.now())
         print("🚀 ~ file: views.py ~ line 516 ~ session_create.started_at.seconds", session_create.started_at.replace(tzinfo=None))
+        print("🚀 ~ file: views.py ~ line 516 ~ datetime.datetime.now().time()", datetime.datetime.now())
         total_time = datetime.datetime.now() - session_create.started_at.replace(tzinfo=None)
         print("🚀 ~ file: views.py ~ line 518 ~ total_time", total_time)
         avg_speed = (distance *1000) / total_time.seconds
         print("{:.2f}".format(distance))
-        request.session['value'] = total_time.seconds
+        # request.session['value'] = total_time.seconds
         # x = total_time.seconds
         data = {
             'distance':"{:.2f}".format(distance),
