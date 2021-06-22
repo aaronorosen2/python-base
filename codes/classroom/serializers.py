@@ -8,18 +8,29 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id','username','first_name','date_joined']
 
+
 class TeacherSerializer(UserSerializer):
     teacher = UserSerializer()
+    isActive = serializers.SerializerMethodField('teacherActiveStatus')
     class Meta:
         model = Teacher
         fields = ['teacher','student']
         depth = 1
+    def teacherActiveStatus(self, t):
+        return TeacherAccount.objects.filter(flasteach_card=t).first()
 
-class TeacherAccountSerializer(UserSerializer):
-    teacher = UserSerializer()
+class TeacherAccountSerializer(serializers.ModelSerializer):
+    # teacher = UserSerializer()
     class Meta:
-        fields = '__all__'
         model = TeacherAccount
+        fields = ['active']
+
+class UserTeacherAccountSerializer(serializers.ModelSerializer):
+    # teacherinfo = TeacherAccount.objects.filter().first()
+    accountActive = serializers.BooleanField(read_only=True)
+    class Meta:
+        model = User
+        fields = ['id','username','first_name','date_joined','teacherinfo','accountActive']
 
 class StudentSerializer(UserSerializer):
     user = UserSerializer()

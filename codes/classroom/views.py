@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from .models import Teacher,Student, Class, InviteClass, ClassEnrolled, ClassEmailAlert, ClassSMSAlert, StudentEmailAlert, StudentSMSAlert, TeacherAccount
 from django.contrib.auth.models import User
@@ -5,7 +6,7 @@ from django.http.response import JsonResponse,HttpResponseRedirect
 from django.http import QueryDict
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
-from .serializers import TeacherSerializer,StudentSerializer,UserSerializer, ClassSerializer, ClassEnrolledSerializer, ClassEmailSerializer, ClassSMSSerializer, StudentEmailSerializer, StudentSMSSerializer, InviteLinkSerializer
+from .serializers import TeacherAccountSerializer,TeacherSerializer,StudentSerializer,UserSerializer, ClassSerializer, ClassEnrolledSerializer, ClassEmailSerializer, ClassSMSSerializer, StudentEmailSerializer, StudentSMSSerializer, InviteLinkSerializer,UserTeacherAccountSerializer
 from knox.auth import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -20,6 +21,7 @@ from sfapp2.utils.twilio import send_sms
 import json
 import uuid
 from django.core.validators import validate_email
+from django.db.models import OuterRef, Subquery
 
 # teacher api
 @api_view(['GET','POST','DELETE','PUT'])
@@ -29,8 +31,14 @@ def teacherapi(request):
         return JsonResponse(serializer.data,safe=False)
         
     if request.method == "GET":
-        serializer = UserSerializer(User.objects.all(),many=True)
-        return JsonResponse(serializer.data,safe=False)
+        users = TeacherAccount.objects.filter(teacher=OuterRef('id'))
+        t = get_user_model().objects.annotate(accountActive=Subquery(users.values('active')[:1])).values('id','username','first_name','date_joined','accountActive')
+        teachers = []
+        for teacher in t:
+            teachers.append(teacher)
+        return JsonResponse(teachers,safe=False)
+        # serializer = UserTeacherAccountSerializer(User.objects.all(),many=True)
+        # return JsonResponse(serializer.data,safe=False)
 
     elif request.method == "POST":
         teacher = User.objects.get(id=request.data.get('teacher'))
