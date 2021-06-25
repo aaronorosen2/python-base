@@ -35,6 +35,9 @@ from knox.views import user_logged_in
 from knox.serializers import UserSerializer
 from django.template.loader import render_to_string
 from sfapp.views import get_member_from_headers
+import qrcode
+from io import BytesIO
+import base64
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
@@ -452,7 +455,7 @@ def flashcard_update(request,pk):
     return Response("updated")
 
 @api_view(['DELETE'])
-def flashcard_delete(request,lessonId, flashcardId):
+def flashcard_delete(request,lessonId, flashcardId, pk):
     FlashCard.objects.filter(id=pk).delete()
     return Response("deleted")
 
@@ -854,3 +857,40 @@ def invite_response(request):
 
     invite_response.save()
     return Response("invite Response Recorded", status=200)
+
+@api_view(['GET'])
+def qr_code_response(request, lesson_id):
+    data = {'les_name' : [], 'les_pub' : [], 'fashcard.lesson_type' : [], 'fashcard.question' : [], 
+            'fashcard.options' : [], 'fashcard.answer' : [], 'fashcard.image' : [], 'fashcard.position' : [], 
+            'fashcard.braintree_config' : [], 'fashcard.item_store' : [],}
+    les_= Lesson.objects.get(id=lesson_id)
+    fashcards = FlashCard.objects.filter(lesson=les_)
+    les_name = les_.lesson_name
+    les_pub = les_.lesson_is_public
+    data['les_name'].append(les_name)
+    data['les_pub'].append(les_pub)
+    for fashcard in fashcards:
+        data['fashcard.lesson_type'].append(fashcard.lesson_type)
+        data['fashcard.question'].append(fashcard.question)
+        data['fashcard.options'].append(fashcard.options)
+        data['fashcard.answer'].append(fashcard.answer)
+        data['fashcard.image'].append(fashcard.image)
+        data['fashcard.position'].append(fashcard.position)
+        data['fashcard.braintree_config'].append(fashcard.braintree_config)
+        data['fashcard.item_store'].append(fashcard.item_store)
+
+   
+    # Link for website
+    input_data = data
+    #Creating an instance of qrcode
+    qr = qrcode.QRCode(
+        version=10,
+        box_size=10,
+        border=5)
+    qr.add_data(input_data)
+    qr.make(fit=True)
+    img = qr.make_image(fill='black', back_color='white')
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    return Response(img_str, status=200)

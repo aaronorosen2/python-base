@@ -22,6 +22,7 @@ urlpatterns = [
     path("flashcard/response",
          views.flashcard_response, name="flashcard-response"),
 
+     path("qrcode/<int:lesson_id>", views.qr_code_response, name="qr-code-response"),
      path("session/create/<int:flashcardId>/",
           views.session_create, name="session-create"),
      path("session/list", views.session_list, name="session-list"),
