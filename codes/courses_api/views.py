@@ -455,7 +455,7 @@ def flashcard_update(request,pk):
     return Response("updated")
 
 @api_view(['DELETE'])
-def flashcard_delete(request,lessonId, flashcardId, pk):
+def flashcard_delete(request, pk):
     FlashCard.objects.filter(id=pk).delete()
     return Response("deleted")
 
