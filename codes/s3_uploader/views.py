@@ -125,14 +125,13 @@ class UserLogin(KnoxLoginView):
         teacher_login = False
         try:
             data['username'] = data['email']
-            teacher_login = data.get('teacher_login',False)            
         except:
             pass
-
+        teacher_login = data.get('teacher_login','off')           
         serializer = AuthTokenSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        if teacher_login:
+        if teacher_login == 'on':
             teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
             if not (teacher and teacher['active']):
                 return JsonResponse(data={'msg': 'Account not active'},status=403) 
