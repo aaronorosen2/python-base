@@ -449,7 +449,7 @@ def member_session_start(request):
         member = get_member_from_headers(request.headers)
         if member:
             session_create = MemberSession.objects.create(member=member)
-            mge = MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
+            member_session_start.mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
                                         longitude=request.data.get("longitude",None))
         return JsonResponse({'status': 'okay'}, safe=False)
     except Exception as e:
@@ -464,9 +464,20 @@ def member_session_stop(request):
         session_create = MemberSession.objects.filter(member=member).last()
         session_create.ended_at = datetime.datetime.now()
         session_create.save()
-        mge = MemberGpsEntry.objects.create(member_session=session_create,latitude=request.data.get("latitude",None),
+        mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
                                     longitude=request.data.get("longitude",None))
-        return JsonResponse({'status': 'okay'}, safe=False)
+
+        distance = get_distance(member_session_start.mge.latitude, member_session_start.mge.longitude, 
+                                mge.latitude, mge.longitude)
+        total_time = session_create.ended_at.replace(tzinfo=None) - session_create.started_at.replace(tzinfo=None)
+        avg_speed = (distance *1000) / total_time.seconds
+
+        data = {
+            'distance':distance,
+            'avg_speed':avg_speed,
+            'total_time': total_time.seconds
+        }
+        return JsonResponse(data, safe=False)
     except Exception as e:
         print("🚀 ~ file: views.py ~ line 460 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
