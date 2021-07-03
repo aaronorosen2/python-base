@@ -122,21 +122,24 @@ class UserLogin(KnoxLoginView):
     def post(self, request, format=None):
         data = request.data
         # Allow login using username/email both
-        teacher_login = False
+        # teacher_login = False
         try:
             data['username'] = data['email']
         except:
             pass
-        teacher_login = data.get('teacher_login','off')           
+        # teacher_login = data.get('teacher_login','off')           
         serializer = AuthTokenSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        if teacher_login == 'on':
-            teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
-            if not (teacher and teacher['active']):
-                return JsonResponse(data={'msg': 'Account not active'},status=403) 
+        # if teacher_login == 'on':
+        #     teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
+        #     if not (teacher and teacher['active']):
+        #         return JsonResponse(data={'msg': 'Account not active'},status=403) 
+        teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
         login(request, user)
-        return super(UserLogin, self).post(request, format=None)
+        return_data = super(UserLogin, self).post(request, format=None)
+        return_data.data['is_teacher'] = teacher['active']
+        return return_data
 
 
 # Password reset

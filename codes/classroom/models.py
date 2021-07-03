@@ -20,16 +20,11 @@ class Teacher(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"{self.teacher} {self.student}"
-
 
 class TeacherAccount(models.Model):
     teacher = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, blank=True, related_name='teacherinfo')
     active = models.BooleanField(default=True)
 
-    def __str__(self):
-        return f"{self.teacher} {self.active}"
 
 class Class(models.Model):
     class_name = models.CharField(max_length=128, blank=True, null=True)

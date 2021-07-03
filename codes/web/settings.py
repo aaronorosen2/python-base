@@ -82,6 +82,8 @@ if DEBUG:
 # Application definition
 
 INSTALLED_APPS = [
+    'admin_interface',
+    'colorfield',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -129,6 +131,7 @@ INSTALLED_APPS = [
     # "faceswap",
     'image_processor',
 ]
+X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
 FCM_DJANGO_SETTINGS = {
         "FCM_SERVER_KEY": "AAAA7AcXkTE:APA91bG9YiD2cgEw-lzLJhjxAp0Liw_O3v0nq_BG3gVe_CVUjk2wx4i2u6nkTF6TyjunzwFootO1bZc5TQE0XEf9f1lsJp8CuxKiWQD8PO1H0dnQWW1xmfO4BqqWWBxe6L85AybontQE"
