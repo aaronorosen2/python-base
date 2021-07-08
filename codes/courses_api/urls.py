@@ -51,6 +51,7 @@ urlpatterns = [
      path("invite/text",views.invite_text,name="invite-text"),
      path("invite/email",views.invite_email,name="invite-email"),
      path("invite/response", views.invite_response, name="invite-response"),
-    path('code/get',views.get_2fa_code,
-        name='get_2fa_code'),
+     path('code/get',views.get_2fa_code, name='get_2fa_code'),
+     path('member_session_start', views.member_session_start, name="member_session_start"),
+     path('member_session_stop', views.member_session_stop, name="member_session_stop"),
 ]

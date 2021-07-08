@@ -99,3 +99,22 @@ class LessonEmailNotify(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE,
                                null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
+
+
+class MemberSession(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
+                             null=True, blank=True, default=None)
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(blank=True,null=True)
+
+
+class MemberGpsEntry(models.Model):
+    member_session = models.ForeignKey(to=MemberSession,
+                                       on_delete=models.CASCADE,
+                                       default="", blank=True, null=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6,
+                                   blank=True, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6,
+                                    blank=True, null=True)
+    device_timestamp = models.DateTimeField(blank=True,null=True)
+    created_at = models.DateTimeField(auto_now_add=True)

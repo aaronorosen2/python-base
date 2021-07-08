@@ -31,6 +31,7 @@ from django.shortcuts import get_list_or_404, get_object_or_404
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 from knox.auth import get_user_model, AuthToken
+from .models import MemberSession, MemberGpsEntry
 from knox.views import user_logged_in
 from knox.serializers import UserSerializer
 from django.template.loader import render_to_string
@@ -38,6 +39,7 @@ from sfapp.views import get_member_from_headers
 import qrcode
 from io import BytesIO
 import base64
+from math import sin, cos, sqrt, atan2, radians
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
@@ -227,6 +229,7 @@ def lesson_update(request, pk):
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
+        print("🚀 ~ file: views.py ~ line 232 ~ user", user)
         lesson = Lesson.objects.get(user=user,id=pk)
         lesson_name = request.data['lesson_name']
         lesson_is_public = request.data['lesson_is_public']
@@ -894,3 +897,62 @@ def qr_code_response(request, lesson_id):
     img.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
     return Response(img_str, status=200)
+
+
+def get_distance(lat1,lon1,lat2,lon2):
+    R = 6373.0
+    lat1 = radians(lat1)
+    lon1 = radians(lon1)
+    lat2 = radians(lat2)
+    lon2 = radians(lon2)
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    distance = R * c
+    return distance
+
+
+@csrf_exempt
+@api_view(['POST'])
+def member_session_start(request):
+    try:
+        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = User.objects.get(id=token.user_id)
+        session_create = MemberSession.objects.create(user=user)
+        member_session_start.mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
+                                    longitude=request.data.get("longitude",None))
+        return JsonResponse({'status': 'okay'}, safe=False)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 929 ~ e", e)
+        return JsonResponse({'status': 'error'}, safe=False)
+
+@csrf_exempt
+@api_view(['POST'])
+def member_session_stop(request):
+    try:
+        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        user = User.objects.get(id=token.user_id)
+        session_create = MemberSession.objects.filter(user=user).last()
+        session_create.ended_at = datetime.datetime.now()
+        session_create.save()
+        mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
+                                    longitude=request.data.get("longitude",None))
+
+        distance = get_distance(member_session_start.mge.latitude, member_session_start.mge.longitude, 
+                                mge.latitude, mge.longitude)
+        total_time = session_create.ended_at.replace(tzinfo=None) - session_create.started_at.replace(tzinfo=None)
+        avg_speed = (distance *1000) / total_time.seconds
+
+        data = {
+            'distance': round(distance, 4),
+            'avg_speed': round(avg_speed, 4),
+            'total_time': total_time.seconds
+        }
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        print("🚀 ~ file: views.py ~ line 956 ~ e", e)
+        return JsonResponse({'status': 'error'}, safe=False)
