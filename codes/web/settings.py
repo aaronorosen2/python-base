@@ -232,6 +232,7 @@ ASGI_APPLICATION = 'web.routing.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 db_server = os.environ.get(
     "db", "python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com")
+db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
 
 DATABASES = {
     'default': {
@@ -240,7 +241,7 @@ DATABASES = {
         'USER': 'postgres',
         'HOST': db_server,
         'PORT': '5432',
-        'PASSWORD': 'EhB4bINnDFmzI0Bg'
+        'PASSWORD': db_password,
     }
 }
 # testing
