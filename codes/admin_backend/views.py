@@ -22,7 +22,11 @@ app.autodiscover_tasks()
 
 def parse_question_answers(question_answers):
     response = []
+def parse_question_answers(question_answers):
+    response = []
+  
     for question_id in question_answers.keys():
+        
         question = Question.objects.get(id=int(question_id))
         answer = Choice.objects.get(
             id=int(question_answers[question_id]))
@@ -86,13 +90,12 @@ def get_question_counters(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_members(request):
-    members = Member.objects.all().values()
-
+    members = Member.objects.all().order_by('-id').values()
     for member in members:
         if member.get('question_answers'):
             member['answers'] = parse_question_answers(
                 json.loads(member['question_answers']))
-
+            
     return JsonResponse(list(members), safe=False)
 
 
