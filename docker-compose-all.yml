@@ -1,0 +1,77 @@
+version: '3.3'
+
+services:
+    web:
+        restart: always
+        build: .
+        volumes:
+            - ./codes:/home/web/codes
+            - /opt/pysfapp/media:/home/web/codes/media
+        ports:
+            - 8040:8000
+        command: bash -c "python3 manage.py runserver 0.0.0.0:8000"
+        # command: bash -c "/usr/local/bin/gunicorn --bind :8000 --timeout 999 --workers 8 --env DJANGO_SETTINGS_MODULE=web.settings  web.wsgi:application"
+
+        environment:
+          - db
+        entrypoint: /entrypoint.sh
+        networks:
+            - backend
+
+    redis:
+        restart: always
+        image: redis
+        hostname: redis
+        volumes:
+           - /opt/redis-app:/data
+           - ./codes:/home/web/codes
+        networks:
+            - backend
+    
+    celery:
+#        image: "python_sfapp_celery_worker"
+        restart: always
+        build: .
+#        command: bash -c "cd codes/ && celery -A web worker -l info"
+        command: bash -c "celery -A web worker -l info"
+        volumes:
+            - ./codes:/home/web/codes
+#            - ./codes:/code/codes
+        networks:
+            - backend
+        depends_on:
+            - redis
+
+    celery-beat:
+#        image: "python_sfapp_celery_worker"
+        restart: always
+        build: .
+#        command: celery -A web beat -l info
+#        command: bash -c "cd codes/ && celery -A web beat -l info"
+        command: bash -c "celery -A web beat -l info"
+        volumes:
+            - ./codes:/home/web/codes
+#            - ./codes:/code/codes
+        networks:
+            - backend
+        depends_on:
+            - redis
+    db:
+        image: postgres:12
+        ports:
+            - 5432:5432
+        volumes:
+            - /postgres-python-base:/var/lib/postgresql/data
+        environment:
+            POSTGRES_DB: postgres
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        networks:
+            - backend
+
+
+networks:
+    backend:
+        external:
+             name: api_network
+
