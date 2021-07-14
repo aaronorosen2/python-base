@@ -68,7 +68,7 @@ def lesson_create(request):
         braintree_private_key=""
         braintree_item_name=""
         braintree_item_price=""
-        
+
         lesson_type = flashcard["lesson_type"]
         position =flashcard["position"]
 
@@ -82,22 +82,22 @@ def lesson_create(request):
 
         if "answer" in flashcard:
             answer = flashcard["answer"]
-        
+
         if "image" in flashcard:
             image = flashcard["image"]
-        
+
         if "braintree_merchant_ID" in flashcard:
             braintree_merchant_ID = flashcard["braintree_merchant_ID"]
-        
+
         if "braintree_public_key" in flashcard:
             braintree_public_key = flashcard["braintree_public_key"]
-        
+
         if "braintree_private_key" in flashcard:
             braintree_private_key = flashcard["braintree_private_key"]
-        
+
         if "braintree_item_name" in flashcard:
             braintree_item_name = flashcard["braintree_item_name"]
-        
+
         if "braintree_item_price" in flashcard:
             braintree_item_price = flashcard["braintree_item_price"]
 
@@ -106,7 +106,7 @@ def lesson_create(request):
             item_obj = item(
                         title=braintree_item_name,
                         price=int(braintree_item_price)
-                        ) 
+                        )
             item_obj.save()
         if(braintree_merchant_ID != '' and braintree_public_key != '' and braintree_private_key != ''):
             BrainTreeConfig_obj = BrainTreeConfig(
@@ -115,7 +115,7 @@ def lesson_create(request):
                         braintree_private_key=braintree_private_key,
                         )
             BrainTreeConfig_obj.save()
-        
+
         if(braintree_item_name != '' and braintree_item_price != '' and braintree_merchant_ID != '' 
             and braintree_public_key != '' and braintree_private_key != ''):
             f=FlashCard(lesson=lesson,
@@ -528,7 +528,7 @@ def flashcard_response(request):
     if params:
         student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
     flashcard = FlashCard.objects.get(id=flashcard_id)
-    
+
     user_session = UserSession.objects.get(session_id=session_id)
     print("%s %s %s" % (user_session, flashcard, answer))
 
@@ -566,7 +566,8 @@ def flashcard_response(request):
 def lesson_flashcard_responses(request,lesson_id,session_id):
     user_session = UserSession.objects.get(session_id=session_id)
     lesson = Lesson.objects.get(id=lesson_id)
-    flashcard_responses = FlashCardResponse.objects.filter(user_session=user_session,lesson=lesson)
+    flashcard_responses = FlashCardResponse.objects.filter(
+        user_session=user_session,lesson=lesson)
     return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
 
 @api_view(['GET'])
@@ -577,6 +578,52 @@ def overall_flashcard_responses(request,lesson_id):
         return Response(data.data)
     except Exception as e:
         return Response("error")
+
+
+@api_view(['GET'])
+def overall_flashcard_response_results(request, lesson_id):
+
+    # first load the flash cards
+    flash_cards = FlashCard.objects.filter(
+        lesson=lesson_id
+    ).order_by('position').values()
+    print(flash_cards)
+
+
+    # get user sessions of lesson
+    user_sessions = FlashCardResponse.objects.filter(
+        lesson=lesson_id
+    ).order_by().values('user_session').distinct()
+
+    print(user_sessions)
+    print(len(user_sessions))
+    print("HERE")
+
+
+    user_responses = []
+    for user_session in user_sessions:
+        flash_card_responses = []
+        for flashcard in flash_cards:
+
+            if flashcard['lesson_type'] in ['question_checkboxes',
+                                         'title_input', 'signature']:
+                flash_card_response = FlashCardResponse.objects.filter(
+                    user_session=user_session['user_session'],
+                    lesson=flashcard['lesson_id'],
+                    flashcard=flashcard['id']
+                ).values('flashcard_id', 'answer')
+                print(flash_card_response)
+                flash_card_responses.append(list(flash_card_response))
+        user_responses.append(flash_card_responses)
+
+
+    print("response")
+    return JsonResponse({
+        'flash_cards': list(flash_cards),
+        'user_responses': list(user_responses),
+    })
+
+
 
 
 @api_view(['GET'])
@@ -942,7 +989,7 @@ def member_session_stop(request):
         mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
                                     longitude=request.data.get("longitude",None))
 
-        distance = get_distance(member_session_start.mge.latitude, member_session_start.mge.longitude, 
+        distance = get_distance(member_session_start.mge.latitude, member_session_start.mge.longitude,
                                 mge.latitude, mge.longitude)
         total_time = session_create.ended_at.replace(tzinfo=None) - session_create.started_at.replace(tzinfo=None)
         avg_speed = (distance *1000) / total_time.seconds

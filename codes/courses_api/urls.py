@@ -41,8 +41,14 @@ urlpatterns = [
           views.student_lesson_list, name="student-lesson-list"),
      path("lesson/response/get/<str:lesson_id>/<str:session_id>",
           views.lesson_flashcard_responses, name="get-lesson-response"),
+
+     path("lesson/response_v2/get/<str:lesson_id>/",
+          views.overall_flashcard_response_results,
+          name="get-lesson-response-results"),
+
      path("lesson/response/get/<str:lesson_id>/",
           views.overall_flashcard_responses, name="get-lesson-response"),
+
      path("user/response/get/<str:lesson_id>/",
           views.user_responses, name="get-lesson-response"),     
      path("confirm/phone", views.confirm_phone_number, name="confirm-phone-numer"),

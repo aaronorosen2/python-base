@@ -64,6 +64,7 @@ class UserSessionEvent(models.Model):
 
 
 class FlashCardResponse(models.Model):
+    created_at = models.DateTimeField(auto_now=True)
     user_session = models.ForeignKey(UserSession, on_delete=models.CASCADE,
                                      null=True, blank=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE,
