@@ -27,7 +27,7 @@ from sfapp2.utils.twilio import send_confirmation_code, send_sms
 from form_lead.utils.email_util import send_raw_email
 from classroom.models import Student, Class, ClassEnrolled
 from django.contrib.auth.models import User
-from django.shortcuts import get_list_or_404, get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 from knox.auth import get_user_model, AuthToken
@@ -40,6 +40,7 @@ import qrcode
 from io import BytesIO
 import base64
 from math import sin, cos, sqrt, atan2, radians
+from django.template.loader import render_to_string
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
@@ -908,43 +909,34 @@ def invite_response(request):
     invite_response.save()
     return Response("invite Response Recorded", status=200)
 
-@api_view(['GET'])
-def qr_code_response(request, lesson_id):
-    data = {'les_name' : [], 'les_pub' : [], 'fashcard.lesson_type' : [], 'fashcard.question' : [], 
-            'fashcard.options' : [], 'fashcard.answer' : [], 'fashcard.image' : [], 'fashcard.position' : [], 
-            'fashcard.braintree_config' : [], 'fashcard.item_store' : [],}
-    les_= Lesson.objects.get(id=lesson_id)
-    fashcards = FlashCard.objects.filter(lesson=les_)
-    les_name = les_.lesson_name
-    les_pub = les_.lesson_is_public
-    data['les_name'].append(les_name)
-    data['les_pub'].append(les_pub)
-    for fashcard in fashcards:
-        data['fashcard.lesson_type'].append(fashcard.lesson_type)
-        data['fashcard.question'].append(fashcard.question)
-        data['fashcard.options'].append(fashcard.options)
-        data['fashcard.answer'].append(fashcard.answer)
-        data['fashcard.image'].append(fashcard.image)
-        data['fashcard.position'].append(fashcard.position)
-        data['fashcard.braintree_config'].append(fashcard.braintree_config)
-        data['fashcard.item_store'].append(fashcard.item_store)
+@api_view(['POST'])
+def qr_code_response(request):
 
-   
-    # Link for website
-    input_data = data
-    #Creating an instance of qrcode
-    qr = qrcode.QRCode(
-        version=10,
-        box_size=10,
-        border=5)
-    qr.add_data(input_data)
+    URL = request.scheme + "://" + request.get_host() + "/courses_api/QRcodeData=" + request.data
+
+    qr = qrcode.QRCode(version=10, box_size=10, border=5)
+    qr.add_data(URL)
     qr.make(fit=True)
+
     img = qr.make_image(fill='black', back_color='white')
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    
     return Response(img_str, status=200)
 
+@api_view(['GET'])
+def qr_code_data(request, lesson_id):
+
+    les_= Lesson.objects.get(id=lesson_id)
+    fashcards = FlashCard.objects.filter(lesson=les_)
+
+    for fashcard in fashcards:
+        if fashcard.lesson_type == "user_qr_data":
+            dicti = fashcard.question
+            dictionary = dict(subString.split(":") for subString in dicti.split("\n"))
+    
+    return render(request, "QRcodeData.html", {'dictionary' : dictionary})
 
 def get_distance(lat1,lon1,lat2,lon2):
     R = 6373.0
