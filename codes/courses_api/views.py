@@ -27,7 +27,7 @@ from sfapp2.utils.twilio import send_confirmation_code, send_sms
 from form_lead.utils.email_util import send_raw_email
 from classroom.models import Student, Class, ClassEnrolled
 from django.contrib.auth.models import User
-from django.shortcuts import get_list_or_404, get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 from knox.auth import get_user_model, AuthToken
@@ -40,6 +40,8 @@ import qrcode
 from io import BytesIO
 import base64
 from math import sin, cos, sqrt, atan2, radians
+from django.template.loader import render_to_string
+from .utils.email_util import send_raw_email, send_confirmation_code
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
@@ -68,7 +70,7 @@ def lesson_create(request):
         braintree_private_key=""
         braintree_item_name=""
         braintree_item_price=""
-        
+
         lesson_type = flashcard["lesson_type"]
         position =flashcard["position"]
 
@@ -82,22 +84,22 @@ def lesson_create(request):
 
         if "answer" in flashcard:
             answer = flashcard["answer"]
-        
+
         if "image" in flashcard:
             image = flashcard["image"]
-        
+
         if "braintree_merchant_ID" in flashcard:
             braintree_merchant_ID = flashcard["braintree_merchant_ID"]
-        
+
         if "braintree_public_key" in flashcard:
             braintree_public_key = flashcard["braintree_public_key"]
-        
+
         if "braintree_private_key" in flashcard:
             braintree_private_key = flashcard["braintree_private_key"]
-        
+
         if "braintree_item_name" in flashcard:
             braintree_item_name = flashcard["braintree_item_name"]
-        
+
         if "braintree_item_price" in flashcard:
             braintree_item_price = flashcard["braintree_item_price"]
 
@@ -106,7 +108,7 @@ def lesson_create(request):
             item_obj = item(
                         title=braintree_item_name,
                         price=int(braintree_item_price)
-                        ) 
+                        )
             item_obj.save()
         if(braintree_merchant_ID != '' and braintree_public_key != '' and braintree_private_key != ''):
             BrainTreeConfig_obj = BrainTreeConfig(
@@ -115,7 +117,7 @@ def lesson_create(request):
                         braintree_private_key=braintree_private_key,
                         )
             BrainTreeConfig_obj.save()
-        
+
         if(braintree_item_name != '' and braintree_item_price != '' and braintree_merchant_ID != '' 
             and braintree_public_key != '' and braintree_private_key != ''):
             f=FlashCard(lesson=lesson,
@@ -528,7 +530,7 @@ def flashcard_response(request):
     if params:
         student = Student.objects.get(id=Invite.objects.get(params=params).student_id)
     flashcard = FlashCard.objects.get(id=flashcard_id)
-    
+
     user_session = UserSession.objects.get(session_id=session_id)
     print("%s %s %s" % (user_session, flashcard, answer))
 
@@ -566,7 +568,8 @@ def flashcard_response(request):
 def lesson_flashcard_responses(request,lesson_id,session_id):
     user_session = UserSession.objects.get(session_id=session_id)
     lesson = Lesson.objects.get(id=lesson_id)
-    flashcard_responses = FlashCardResponse.objects.filter(user_session=user_session,lesson=lesson)
+    flashcard_responses = FlashCardResponse.objects.filter(
+        user_session=user_session,lesson=lesson)
     return Response(FlashcardResponseSerializer(flashcard_responses,many=True).data)
 
 @api_view(['GET'])
@@ -577,6 +580,52 @@ def overall_flashcard_responses(request,lesson_id):
         return Response(data.data)
     except Exception as e:
         return Response("error")
+
+
+@api_view(['GET'])
+def overall_flashcard_response_results(request, lesson_id):
+
+    # first load the flash cards
+    flash_cards = FlashCard.objects.filter(
+        lesson=lesson_id
+    ).order_by('position').values()
+    print(flash_cards)
+
+
+    # get user sessions of lesson
+    user_sessions = FlashCardResponse.objects.filter(
+        lesson=lesson_id
+    ).order_by().values('user_session').distinct()
+
+    print(user_sessions)
+    print(len(user_sessions))
+    print("HERE")
+
+
+    user_responses = []
+    for user_session in user_sessions:
+        flash_card_responses = []
+        for flashcard in flash_cards:
+
+            if flashcard['lesson_type'] in ['question_checkboxes',
+                                         'title_input', 'signature']:
+                flash_card_response = FlashCardResponse.objects.filter(
+                    user_session=user_session['user_session'],
+                    lesson=flashcard['lesson_id'],
+                    flashcard=flashcard['id']
+                ).values('flashcard_id', 'answer')
+                print(flash_card_response)
+                flash_card_responses.append(list(flash_card_response))
+        user_responses.append(flash_card_responses)
+
+
+    print("response")
+    return JsonResponse({
+        'flash_cards': list(flash_cards),
+        'user_responses': list(user_responses),
+    })
+
+
 
 
 @api_view(['GET'])
@@ -708,6 +757,37 @@ def verify_2fa(request):
         member.has_verified_phone=True
         member.save()
         return Response({'message': 'success'})
+    return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def confirm_email_address(request):
+    email = request.data['email_address']
+    session_id = request.data['session_id']
+
+    if not email:
+        raise HttpResponseBadRequest()
+    if not session_id:
+        raise HttpResponseBadRequest()
+
+    session = UserSession.objects.filter(session_id=session_id)
+    code_2fa = send_confirmation_code()
+    send_raw_email(email)
+
+    session.update(email=email, code_2fa=code_2fa)
+    
+    return Response({'message': 'pending 2fa'})
+
+@api_view(['POST'])
+def verify_email_2fa(request):
+    code = request.data['code_2fa']
+    session_id = request.data['session_id']
+    member = UserSession.objects.filter(session_id=session_id).first()
+    
+    if session_id == member.session_id and code == member.code_2fa:
+        member.has_verified_email=True
+        member.save()
+        return Response({'message': 'success'})
+    
     return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
@@ -861,43 +941,34 @@ def invite_response(request):
     invite_response.save()
     return Response("invite Response Recorded", status=200)
 
-@api_view(['GET'])
-def qr_code_response(request, lesson_id):
-    data = {'les_name' : [], 'les_pub' : [], 'fashcard.lesson_type' : [], 'fashcard.question' : [], 
-            'fashcard.options' : [], 'fashcard.answer' : [], 'fashcard.image' : [], 'fashcard.position' : [], 
-            'fashcard.braintree_config' : [], 'fashcard.item_store' : [],}
-    les_= Lesson.objects.get(id=lesson_id)
-    fashcards = FlashCard.objects.filter(lesson=les_)
-    les_name = les_.lesson_name
-    les_pub = les_.lesson_is_public
-    data['les_name'].append(les_name)
-    data['les_pub'].append(les_pub)
-    for fashcard in fashcards:
-        data['fashcard.lesson_type'].append(fashcard.lesson_type)
-        data['fashcard.question'].append(fashcard.question)
-        data['fashcard.options'].append(fashcard.options)
-        data['fashcard.answer'].append(fashcard.answer)
-        data['fashcard.image'].append(fashcard.image)
-        data['fashcard.position'].append(fashcard.position)
-        data['fashcard.braintree_config'].append(fashcard.braintree_config)
-        data['fashcard.item_store'].append(fashcard.item_store)
+@api_view(['POST'])
+def qr_code_response(request):
 
-   
-    # Link for website
-    input_data = data
-    #Creating an instance of qrcode
-    qr = qrcode.QRCode(
-        version=10,
-        box_size=10,
-        border=5)
-    qr.add_data(input_data)
+    URL = request.scheme + "://" + request.get_host() + "/courses_api/QRcodeData=" + request.data
+
+    qr = qrcode.QRCode(version=10, box_size=10, border=5)
+    qr.add_data(URL)
     qr.make(fit=True)
+
     img = qr.make_image(fill='black', back_color='white')
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    
     return Response(img_str, status=200)
 
+@api_view(['GET'])
+def qr_code_data(request, lesson_id):
+
+    les_= Lesson.objects.get(id=lesson_id)
+    fashcards = FlashCard.objects.filter(lesson=les_)
+
+    for fashcard in fashcards:
+        if fashcard.lesson_type == "user_qr_data":
+            dicti = fashcard.question
+            dictionary = dict(subString.split(":") for subString in dicti.split("\n"))
+    
+    return render(request, "QRcodeData.html", {'dictionary' : dictionary})
 
 def get_distance(lat1,lon1,lat2,lon2):
     R = 6373.0
@@ -942,7 +1013,7 @@ def member_session_stop(request):
         mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
                                     longitude=request.data.get("longitude",None))
 
-        distance = get_distance(member_session_start.mge.latitude, member_session_start.mge.longitude, 
+        distance = get_distance(member_session_start.mge.latitude, member_session_start.mge.longitude,
                                 mge.latitude, mge.longitude)
         total_time = session_create.ended_at.replace(tzinfo=None) - session_create.started_at.replace(tzinfo=None)
         avg_speed = (distance *1000) / total_time.seconds

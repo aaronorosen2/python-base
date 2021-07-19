@@ -22,7 +22,8 @@ urlpatterns = [
     path("flashcard/response",
          views.flashcard_response, name="flashcard-response"),
 
-     path("qrcode/<int:lesson_id>", views.qr_code_response, name="qr-code-response"),
+     path("qrcode", views.qr_code_response, name="qr-code-response"),
+     path("QRcodeData=<int:lesson_id>", views.qr_code_data, name="qr-code-data"),
      path("session/create/<int:flashcardId>/",
           views.session_create, name="session-create"),
      path("session/list", views.session_list, name="session-list"),
@@ -41,8 +42,14 @@ urlpatterns = [
           views.student_lesson_list, name="student-lesson-list"),
      path("lesson/response/get/<str:lesson_id>/<str:session_id>",
           views.lesson_flashcard_responses, name="get-lesson-response"),
+
+     path("lesson/response_v2/get/<str:lesson_id>/",
+          views.overall_flashcard_response_results,
+          name="get-lesson-response-results"),
+
      path("lesson/response/get/<str:lesson_id>/",
           views.overall_flashcard_responses, name="get-lesson-response"),
+
      path("user/response/get/<str:lesson_id>/",
           views.user_responses, name="get-lesson-response"),     
      path("confirm/phone", views.confirm_phone_number, name="confirm-phone-numer"),
@@ -54,4 +61,6 @@ urlpatterns = [
      path('code/get',views.get_2fa_code, name='get_2fa_code'),
      path('member_session_start', views.member_session_start, name="member_session_start"),
      path('member_session_stop', views.member_session_stop, name="member_session_stop"),
+     path("confirm/email", views.confirm_email_address, name="confirm-phone-numer"),
+     path("verify/email", views.verify_email_2fa, name="verify-2fa"),
 ]
