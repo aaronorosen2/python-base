@@ -7,7 +7,7 @@ from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause, Numb
 from twilio.rest import Client
 import uuid
 from knox.auth import AuthToken
-from .models import Phone, assigned_numbers, User_leads
+from .models import Phone, assigned_numbers, User_leads, Sms_details
 from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer,UserLeadsSerializer
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
@@ -89,9 +89,9 @@ def send_sms_file_api(request):
 
 @csrf_exempt
 def list_sms_api(request):
-    messages = list_sms(request.POST.get("to_number"))
-    return JsonResponse({'messages': messages}, safe=False)
-
+    messages = list_sms(request.POST.get('to_number'))
+    return JsonResponse({'messages': messages}, safe = False)
+    
 
 @csrf_exempt
 def twilio_call_status(request):
