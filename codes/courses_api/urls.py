@@ -61,4 +61,6 @@ urlpatterns = [
      path('code/get',views.get_2fa_code, name='get_2fa_code'),
      path('member_session_start', views.member_session_start, name="member_session_start"),
      path('member_session_stop', views.member_session_stop, name="member_session_stop"),
+     path("confirm/email", views.confirm_email_address, name="confirm-phone-numer"),
+     path("verify/email", views.verify_email_2fa, name="verify-2fa"),
 ]

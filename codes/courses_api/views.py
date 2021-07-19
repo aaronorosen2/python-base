@@ -41,6 +41,7 @@ from io import BytesIO
 import base64
 from math import sin, cos, sqrt, atan2, radians
 from django.template.loader import render_to_string
+from .utils.email_util import send_raw_email, send_confirmation_code
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
@@ -756,6 +757,37 @@ def verify_2fa(request):
         member.has_verified_phone=True
         member.save()
         return Response({'message': 'success'})
+    return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def confirm_email_address(request):
+    email = request.data['email_address']
+    session_id = request.data['session_id']
+
+    if not email:
+        raise HttpResponseBadRequest()
+    if not session_id:
+        raise HttpResponseBadRequest()
+
+    session = UserSession.objects.filter(session_id=session_id)
+    code_2fa = send_confirmation_code()
+    send_raw_email(email)
+
+    session.update(email=email, code_2fa=code_2fa)
+    
+    return Response({'message': 'pending 2fa'})
+
+@api_view(['POST'])
+def verify_email_2fa(request):
+    code = request.data['code_2fa']
+    session_id = request.data['session_id']
+    member = UserSession.objects.filter(session_id=session_id).first()
+    
+    if session_id == member.session_id and code == member.code_2fa:
+        member.has_verified_email=True
+        member.save()
+        return Response({'message': 'success'})
+    
     return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
