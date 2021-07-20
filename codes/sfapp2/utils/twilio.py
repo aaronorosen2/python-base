@@ -43,39 +43,14 @@ def list_sms(to_number):
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
     twilio_number = settings.TWILIO['TWILIO_NUMBER']
     client = Client(account_sid, auth_token)
-    
     smss = client.api.messages.list(to=to_number)
-    # print("smssmsmsmsmsmsmsmsmsmmsmsmsmsmmsmsmsmmsmsmsmsmsmms",smss)
-    print("length",len(smss))
     resps = []
-    len_of_smss = len(smss)
 
     for sms in smss:
-        # resps.append({
-            
-        #     'body': sms.body,
-        #     'date_created': sms.date_created,
-        #     'date_created': sms.date_created,
-        #     'direction': sms.direction,
-        #     'from': sms.from_,
-        #     'to': sms.to,
-        # })
-        # data = Sms_details(
-        #     from_number = sms.from_, 
-        #     to_number = sms.to,
-        #     msg_body = sms.body,
-        #     direction = sms.direction,
-        #     created_at = sms.date_created
-        # )
-        # data.save()
-    #     # resps.append(re)         
-    #     # print(dir(sms))
-    #     # print(sms.body, sms.date_created)
-    # #return resps
         try:
-            print("this is first try catch @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+           
             try:
-                print("second try catch ohhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh")
+                
                 record = Sms_details.objects.get(
                     from_number = sms.from_, 
                     to_number = sms.to,
@@ -83,7 +58,7 @@ def list_sms(to_number):
                     direction = sms.direction,
                     created_at = sms.date_created
                 )
-                print("seeeee now recordsssssssssssssssssssssssss",record)
+                
                 resps.append({
                 
                 'body': record.msg_body,
@@ -93,7 +68,7 @@ def list_sms(to_number):
                 'to': record.to_number,
             })
             except Sms_details.MultipleObjectsReturned:  
-                print("first except--------------------------------------") 
+                
                 records = Sms_details.objects.filter(
                     from_number = sms.from_, 
                     to_number = sms.to,
@@ -113,7 +88,7 @@ def list_sms(to_number):
                 })
 
         except Sms_details.DoesNotExist:
-            print("last excpet **********************************************")
+            
             record = Sms_details(
                 from_number = sms.from_, 
                 to_number = sms.to,

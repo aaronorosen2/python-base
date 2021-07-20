@@ -90,7 +90,7 @@ def get_question_counters(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_members(request):
-    members = Member.objects.all().order_by('-id').values()
+    members = Member.objects.all().order_by('-created_at').values()
     for member in members:
         if member.get('question_answers'):
             member['answers'] = parse_question_answers(
