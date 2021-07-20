@@ -607,8 +607,7 @@ def overall_flashcard_response_results(request, lesson_id):
         flash_card_responses = []
         for flashcard in flash_cards:
 
-            if flashcard['lesson_type'] in ['question_checkboxes',
-                                         'title_input', 'signature']:
+            if flashcard['lesson_type'] in ['question_checkboxes','title_input', 'signature', 'email_verify']:
                 flash_card_response = FlashCardResponse.objects.filter(
                     user_session=user_session['user_session'],
                     lesson=flashcard['lesson_id'],
