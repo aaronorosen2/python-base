@@ -270,26 +270,26 @@ def join_conference(request):
     your_number = request.POST.get("your_number")
     print("🚀 ~ file: views.py ~ line 260 ~ your_number", your_number)
 
-    try:
-        twilio_client = get_client()
-        # session_id = get_session_id(source_number, dest_number)
-        session_id = "confernce"
-        sessionID_to_destNo[session_id] = dest_number
-        call = twilio_client.calls.create(record=True,
-                                          from_= settings.TWILIO['TWILIO_NUMBER'],
-                                          to = your_number,
-                                          url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
-                                        #   url='https://03ec2bac2d29.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
-                                          status_callback_event=['completed'],
-                                          status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id),
-                                        #   status_callback='https://03ec2bac2d29.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
-                                        )
+    # try:
+    twilio_client = get_client()
+    # session_id = get_session_id(source_number, dest_number)
+    session_id = "confernce"
+    sessionID_to_destNo[session_id] = dest_number
+    call = twilio_client.calls.create(record=True,
+                                        from_= settings.TWILIO['TWILIO_NUMBER'],
+                                        to = your_number,
+                                        url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
+                                    #   url='https://03ec2bac2d29.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
+                                        status_callback_event=['completed'],
+                                        status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id),
+                                    #   status_callback='https://03ec2bac2d29.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
+                                    )
 
-        global sessionID_to_callsid    
-        sessionID_to_callsid[session_id] = call.sid
-    except Exception as e:
-        # message = e.msg if hasattr(e, 'msg') else str(e)
-        return JsonResponse({'error': "fail"})
+    global sessionID_to_callsid    
+    sessionID_to_callsid[session_id] = call.sid
+    # except Exception as e:
+    #     # message = e.msg if hasattr(e, 'msg') else str(e)
+    #     return JsonResponse({'error': "fail"})
     return JsonResponse({'message': 'Success!'}, status=200)
 
 
