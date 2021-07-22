@@ -147,13 +147,12 @@ def classapi(request):
         return JsonResponse(data={"result":False,"error":"Please include class id like ?id=1"},status=400)
 
 @api_view(['GET','POST','DELETE','PUT'])
-# @authentication_classes([TokenAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def classenrolledapi(request):
-
     if request.method == 'GET':
-        serializer = ClassEnrolledSerializer(ClassEnrolled.objects.filter(class_enrolled__in=Class.objects.filter(user=request.user)),many=True)
-        
+        serializer = ClassEnrolledSerializer(ClassEnrolled.objects.filter(student=Student.objects.filter(user=request.user).first()),many=True)
+        #Need to discuss and change this later, because student is not valid knox user.
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'DELETE':
