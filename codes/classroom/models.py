@@ -13,7 +13,7 @@ class Student(models.Model):
                              null=True, blank=True, related_name='usernames')
 
     def __str__(self):
-        return self.name
+        return f"{self.name} {self.user}"
 
 class Teacher(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='teachername')
@@ -44,7 +44,10 @@ class InviteClass(models.Model):
 class ClassEnrolled(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     class_enrolled = models.ForeignKey(Class, on_delete=models.CASCADE)
-
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['student', 'class_enrolled'], name='Unique enrollment')
+        ]
     def __str__(self):
         return f"{self.student} {self.class_enrolled}"
 

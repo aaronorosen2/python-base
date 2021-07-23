@@ -48,11 +48,13 @@ class ClassSerializer(serializers.ModelSerializer):
         depth = 1
 
 class ClassEnrolledSerializer(serializers.ModelSerializer):
-
+    students_enrolled = serializers.SerializerMethodField('student_count')
     class Meta:
         model= ClassEnrolled
         fields = '__all__'
         depth = 1
+    def student_count(self, classEnr):
+        return ClassEnrolled.objects.filter(class_enrolled=classEnr.class_enrolled).count()
 
 class ClassEmailSerializer(serializers.ModelSerializer):
     class_enrolled_id = serializers.IntegerField(write_only=True)
