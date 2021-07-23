@@ -11,7 +11,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.core import serializers
 from voip.models import CallList
-from sfapp2.utils.twilio import send_sms
+from sfapp2.utils.twilio import send_sms, list_call
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 
@@ -105,9 +105,8 @@ def get_members(request):
 @permission_classes([IsAuthenticated])
 def list_calls(request):
     # records = twilio.list_calls()
-    records = CallList.objects.all()
-    # return JsonResponse(records,safe=False)
-    return JsonResponse(serializers.serialize("json", records), safe=False)
+    records = list_call()
+    return JsonResponse(list(records), safe=False) 
 
 
 @app.task()

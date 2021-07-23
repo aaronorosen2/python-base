@@ -36,15 +36,16 @@ class AdminGroupMember(models.Model):
 
 class CallList(models.Model):
     date = models.DateTimeField()
-    from_number = models.CharField(max_length=20,null=True)
-    to_number = models.CharField(max_length=20,null=True)
-    recording_url = models.CharField(max_length=500,null=True)
-    duration = models.CharField(max_length=10,null=True)
+    from_number = models.CharField(max_length=20, null=True)
+    to_number = models.CharField(max_length=20, null=True)
+    recording_url = models.CharField(max_length=500, null=True)
+    duration = models.CharField(max_length=10, null=True)
+    direction = models.CharField(max_length=30, null=True)
 
     class Meta:
         db_table = 'CallList'
         constraints = [
-            models.UniqueConstraint(fields=['date', 'from_number', "to_number" , "recording_url","duration"], name='unique appversion')
+            models.UniqueConstraint(fields=['date', 'from_number', "to_number" , "recording_url","duration","direction"], name='unique appversion')
         ]
 
 class assigned_numbers(models.Model):

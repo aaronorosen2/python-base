@@ -108,7 +108,7 @@ def list_sms(to_number):
 
     return resps
 
-def list_calls():
+def list_call():
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
     client = Client(account_sid, auth_token)
@@ -120,7 +120,7 @@ def list_calls():
         try:
             try:
                 record = CallList.objects.get(
-                    from_number=call.from_, to_number=call.to, duration=call.duration, date=call.date_created)
+                    from_number=call.from_, to_number=call.to, duration=call.duration, date=call.date_created, direction=call.direction)
 
                 resps.append({
                     'date_created': record.date,
@@ -128,12 +128,13 @@ def list_calls():
                     'duration': record.duration,
                     'from': record.from_number,
                     'to': record.to_number,
+                    'direction': record.direction,
                 })
 
             except CallList.MultipleObjectsReturned:
 
                 records = CallList.objects.filter(
-                    from_number=call.from_, to_number=call.to, duration=call.duration, date=call.date_created)
+                    from_number=call.from_, to_number=call.to, duration=call.duration, date=call.date_created,direction=call.direction)
                 for record in records:
                     resps.append({
                         'date_created': record.date,
@@ -141,6 +142,7 @@ def list_calls():
                         'duration': record.duration,
                         'from': record.from_number,
                         'to': record.to_number,
+                        'direction': record.direction,
                     })
 
         except CallList.DoesNotExist:
@@ -154,7 +156,7 @@ def list_calls():
                 url = ''
 
             record = CallList(from_number=call.from_, to_number=call.to,
-                              duration=call.duration, date=call.date_created, recording_url=url)
+                              duration=call.duration, date=call.date_created, recording_url=url,direction=call.direction)
             record.save()
             resps.append({
                 'date_created': call.date_created,
@@ -162,6 +164,7 @@ def list_calls():
                 'duration': call.duration,
                 'from': call.from_,
                 'to': call.to,
+                'direction': record.direction,
             })
 
     return resps
