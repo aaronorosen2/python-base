@@ -157,7 +157,7 @@ def lesson_read(request, pk):
         less_serialized = LessonSerializer(les_)
         data = less_serialized.data
         for card in data["flashcards"]:
-            if (card['lesson_type'] == "BrainTree"):
+            if (card['lesson_type'] == "braintree_Config"):
                 if card['braintree_config']:
                     obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
                     card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
@@ -175,7 +175,7 @@ def lesson_read(request, pk):
         data = less_serialized.data
         if data['lesson_is_public'] == True:
             for card in data["flashcards"]:
-                if (card['lesson_type'] == "BrainTree"):
+                if (card['lesson_type'] == "braintree_Config"):
                     if card['braintree_config']:
                         obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
                         card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
@@ -379,7 +379,7 @@ def slide_read(request, pk):
     less_serialized = LessonSerializer(les_)
     data = less_serialized.data
     for card in data["flashcards"]:
-        if (card['lesson_type'] == "BrainTree"):
+        if (card['lesson_type'] == "braintree_Config"):
             if card['braintree_config']:
                 obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
                 card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
@@ -390,6 +390,7 @@ def slide_read(request, pk):
                 obj_item = item.objects.get(id=card['item_store'])
                 card['braintree_item_name'] = obj_item.title
                 card['braintree_item_price'] = obj_item.price
+                card['braintree_item_id'] = obj_item.id
     return Response(data)
    
 

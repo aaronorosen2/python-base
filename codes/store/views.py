@@ -19,6 +19,7 @@ from django.db import connection
 
 from django.core import serializers
 
+import braintree
 import base64
 import six
 import uuid
@@ -271,7 +272,59 @@ def UserCheckout(request, **kwargs):
             obj.save()
             return JsonResponse({"success":False}, status=status.HTTP_404_NOT_FOUND)
 
+# segment builder
+@api_view(['GET', 'POST'])
+def segment_client_token(request, pk):
+    print(request.data['BT_MERCHANT_ID'])
+    gateway = braintree.BraintreeGateway(
+        braintree.Configuration(
+            environment='sandbox',
+            merchant_id=request.data['BT_MERCHANT_ID'],
+            public_key=request.data['BT_PUBLIC_KEY'],
+            private_key=request.data['BT_PRIVATE_KEY']
+        )
+    )
+    try:
+        itemDataPK = item.objects.get(pk=pk)
+        client_token = gateway.client_token.generate()
+        print("client_token", client_token,"id" , itemDataPK.id,"price" , itemDataPK.price)
+        return JsonResponse({"success":True,"client_token": client_token,"id" : itemDataPK.id,"price" : itemDataPK.price,
+                                "title" : itemDataPK.title},status=201)
+    except item.DoesNotExist:
+        return JsonResponse({'message': 'item does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['GET', 'POST'])
+def segment_checkout(request, **kwargs):
+    gateway = braintree.BraintreeGateway(
+        braintree.Configuration(
+            environment='sandbox',
+            merchant_id=request.POST['BT_MERCHANT_ID'],
+            public_key=request.POST['BT_PUBLIC_KEY'],
+            private_key=request.POST['BT_PRIVATE_KEY']
+        )
+    )
+    if request.method == 'POST':
+        result = gateway.transaction.sale({
+            'amount': request.POST['itemPrice'],
+            'payment_method_nonce': request.POST['payment_method_nonce'],
+            'options': {
+                "submit_for_settlement": True
+            }
+        })
+
+        if result.is_success or result.transaction:
+            obj = order(is_ordered=True,
+                        braintreeID=result.transaction.id,
+                        item_ID=item.objects.get(pk=request.POST['item_ID']))
+            obj.save()
+            return JsonResponse({"success":True,"ID": result.transaction.id},status=201)
+        else:
+            obj = order(is_ordered=False,
+                        braintreeID="",
+                        item_ID=item.objects.get(pk=request.POST['item_ID']))
+            obj.save()
+            return JsonResponse({"success":False,"ID": ""}, status=201)
+            
 @api_view(['GET', 'POST'])
 def Subscribe(request):
     # GET / PUT / DELETE item by pk (id)
