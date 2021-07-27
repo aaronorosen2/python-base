@@ -5,9 +5,9 @@ import random
 def generate_code():
     return str(random.randrange(1000, 9999))
 
-def send_confirmation_code():
-    send_confirmation_code.verification_code = generate_code()
-    return send_confirmation_code.verification_code
+def send_email_code():
+    send_email_code.verification_code = generate_code()
+    return send_email_code.verification_code
 
 def send_raw_email(to_email):
     SENDER = "DreamPotential <lead@dreampotential.org>"
@@ -44,7 +44,7 @@ def send_raw_email(to_email):
                 'Body': {
                     'Html': {
                         'Charset': CHARSET,
-                        'Data': BODY_HTML.format(verification_code=send_confirmation_code.verification_code),
+                        'Data': BODY_HTML.format(verification_code=send_email_code.verification_code),
                     },
                 },
                 'Subject': {

@@ -41,7 +41,7 @@ from io import BytesIO
 import base64
 from math import sin, cos, sqrt, atan2, radians
 from django.template.loader import render_to_string
-from .utils.email_util import send_raw_email, send_confirmation_code
+from .utils.email_util import send_raw_email, send_email_code
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
@@ -770,7 +770,7 @@ def confirm_email_address(request):
         raise HttpResponseBadRequest()
 
     session = UserSession.objects.filter(session_id=session_id)
-    code_2fa = send_confirmation_code()
+    code_2fa = send_email_code()
     send_raw_email(email)
 
     session.update(email=email, code_2fa=code_2fa)
