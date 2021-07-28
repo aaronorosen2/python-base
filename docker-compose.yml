@@ -15,6 +15,7 @@ services:
         environment:
           - db
           - db_password
+          - db_user
         entrypoint: /entrypoint.sh
         networks:
             - backend
