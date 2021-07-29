@@ -41,7 +41,7 @@ from io import BytesIO
 import base64
 from math import sin, cos, sqrt, atan2, radians
 from django.template.loader import render_to_string
-from .utils.email_util import send_raw_email, send_email_code
+from .utils.email_util import send_email, send_email_code
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
@@ -635,15 +635,12 @@ def email_responses(request,lessonId):
         print("🚀 ~ file: views.py ~ line 551 ~ notify", notify)
         flash_obj = FlashCardResponse.objects.filter(lesson=notify.lesson.id)
         print("🚀 ~ file: views.py ~ line 553 ~ flash_obj", flash_obj)
-        # data = FlashcardResponseSerializer(flash_obj,many=True)
         
         subject = f'User Response'
         body = ''
         html_message = render_to_string(
             'email.html', {"data": flash_obj})
-        # recipient_list = [email]
-        # send_mail(subject=subject, message=None, from_email=email_from,
-        #           recipient_list=recipient_list, html_message=html_message)
+
         send_raw_email(to_email=[notify.email],reply_to=None,
                             subject=subject,
                             message_text=body,
@@ -771,7 +768,7 @@ def confirm_email_address(request):
 
     session = UserSession.objects.filter(session_id=session_id)
     code_2fa = send_email_code()
-    send_raw_email(email)
+    send_email(email)
 
     session.update(email=email, code_2fa=code_2fa)
     
