@@ -10,6 +10,7 @@ urlpatterns = [
     path("lesson/read/<int:pk>", views.lesson_read, name="lesson-read"),
     path("lesson/update/<int:pk>/", views.lesson_update, name="lesson-update"),
     path("lesson/delete/<int:pk>/", views.lesson_delete, name="lesson-delete"),
+    path("lesson/add_to_class", views.add_to_class, name="lesson-add-to-class"),
     path("slide/read/<int:pk>", views.slide_read, name="slide-read"),
     path("flashcard/create/<str:lessonId>",
          views.flashcard_create, name="flashcard-create"),
@@ -63,4 +64,5 @@ urlpatterns = [
      path('member_session_stop', views.member_session_stop, name="member_session_stop"),
      path("confirm/email", views.confirm_email_address, name="confirm-phone-numer"),
      path("verify/email", views.verify_email_2fa, name="verify-2fa"),
+     path("student_lessons", views.student_lesson_list_with_progress, name="student_lesson_list_with_progress"),
 ]

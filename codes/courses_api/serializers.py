@@ -7,6 +7,7 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields ='__all__'
+        depth=1
     
     def get_flashcards(self,lesson):
         return FlashCardSerializer(FlashCard.objects.filter(lesson=lesson),many=True).data
@@ -69,6 +70,20 @@ class StudentLessonSerializer(serializers.ModelSerializer):
         model = Invite
         fields = '__all__'
         depth = 1
+
+class StudentLessonProgressSerializer(serializers.ModelSerializer):
+    fc_count = serializers.SerializerMethodField('get_fc_count')
+    fc_res_count = serializers.SerializerMethodField('get_fc_res_count')
+    # student = serializers.CharField(source='student.name', read_only=True)
+    class Meta:
+        model = Invite
+        fields = ['fc_count', 'fc_res_count', 'id', 'invite_type' ,'lesson']
+        depth = 1
+    def get_fc_count(self, invite):
+        return FlashCard.objects.filter(lesson=invite.lesson).count()
+
+    def get_fc_res_count(self, invite):
+        return FlashCardResponse.objects.filter(lesson=invite.lesson, student=invite.student).count()
 
 class LessonEmailNotifySerializer(serializers.ModelSerializer):
     class Meta:

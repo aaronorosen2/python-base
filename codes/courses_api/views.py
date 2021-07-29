@@ -1,3 +1,4 @@
+from inspect import classify_class_attrs
 from django.core.files import File
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -9,7 +10,7 @@ from django.http import JsonResponse
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer,LessonEmailNotifySerializer
 from .serializers import UserSessionEventSerializer,UserSessionSerializer
-from .serializers import FlashcardResponseSerializer,StudentLessonSerializer
+from .serializers import FlashcardResponseSerializer,StudentLessonSerializer,StudentLessonProgressSerializer
 from .models import Lesson,LessonEmailNotify
 from .models import FlashCard
 from .models import UserSessionEvent
@@ -190,6 +191,27 @@ def lesson_read(request, pk):
         else:
             return Response({'msg':"you do not has access to view this lesson"},status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_to_class(request):
+    class_id = request.POST.get('class_id')
+    lesson_id = request.POST.get('lesson_id')
+    if class_id and classify_class_attrs.isnumeric() and lesson_id and lesson_id.isnumeric():
+        valid_cls = Class.objects.filter(user=request.user, id=class_id).first()
+        if valid_cls:
+            valid_less = Lesson.objects.filter(id=lesson_id, user=request.user)
+            if valid_less:
+                valid_less.update(_class=class_id)
+            else:
+                return JsonResponse({'msg': 'Lesson not found'})
+        else:
+            return JsonResponse({'msg': 'Class not found'})
+    else:
+        return JsonResponse({'msg': 'invalid Parameters'}),400
+
+
+
 @api_view(['GET','POST','PUT','DELETE'])
 @csrf_exempt
 def lesson_all(request):
@@ -197,7 +219,7 @@ def lesson_all(request):
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
         if 'Authorization' in request.headers:
-            les_= Lesson.objects.filter(user=token.user_id)
+            # les_= Lesson.objects.filter(user=token.user_id)
             # less_serialized = LessonSerializer(les_,many=True)
             less_serialized = LessonSerializer(
                 Lesson.objects.filter(user=token.user_id), many=True)
@@ -1026,3 +1048,20 @@ def member_session_stop(request):
     except Exception as e:
         print("🚀 ~ file: views.py ~ line 956 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
+
+from django.db.models import OuterRef, Subquery
+
+@api_view(['GET'])
+def student_lesson_list_with_progress(request):
+    try:
+        invite = None
+        if request.GET.get('params'):
+            invite = Invite.objects.get(params=request.GET['params'])
+        fc = FlashCard.objects.filter(lesson=OuterRef('lesson'))
+        # t = get_user_model().objects.annotate(accountActive=Subquery(users.values('active')[:1])).values('id','username','first_name','date_joined','accountActive')
+        stulist = Invite.objects.filter(student_id=invite.student).distinct('lesson')
+        serializer = StudentLessonProgressSerializer(stulist,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
