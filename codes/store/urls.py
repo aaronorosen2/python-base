@@ -10,6 +10,8 @@ urlpatterns = [
         path('Checkout', views.Checkout, name="Checkout"),
         path('UserOrderItem/<int:pk>', views.UserOrderItem, name="UserOrderItem"),
         path('UserCheckout', views.UserCheckout, name="UserCheckout"),
+        path('segment_client_token/<int:pk>', views.segment_client_token, name="segment_client_token"),
+        path('segment_checkout', views.segment_checkout, name="segment_checkout"),
         path('Subscribe', views.Subscribe, name="Subscribe"),
         path('brainTreeSubscription', views.brainTreeSubscription,
                 name="brainTreeSubscription"),

@@ -1,5 +1,5 @@
 from rest_framework.serializers import Serializer
-from sfapp2.utils.twilio import list_sms, send_sms_file
+from sfapp2.utils.twilio import list_sms, send_sms_file, send_sms
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -60,7 +60,7 @@ def twilio_inbound_sms(request):
     send_sms("18434259777",
              request.POST.get("Body"))
 
-    return JsonResponse({'message': 'success'})
+    return JsonResponse({'message': 'Success'})
 
 # fatching the all twilio phon numbers
 @api_view(['GET'])
@@ -73,9 +73,10 @@ def getNumber(request):
 
 @csrf_exempt
 def send_sms_api(request):
-    send_sms(request.POST.get("to_number"),
-             request.POST.get("msg"))
-    return JsonResponse({'message': 'success'})
+    to_num = request.POST.get("to_number")
+    msg = request.POST.get("msg")
+    send_sms(to_num,msg)    
+    return JsonResponse({'message': 'Success'})
 
 
 @csrf_exempt
@@ -323,19 +324,19 @@ def make_call(request):
     return JsonResponse({'message': 'Success!'})
 
 
-@api_view(['post'])
-def send_sms(request):
-    from_num = request.data['from_num']
-    to_num = request.data['to_num']
-    text = request.data['body']
-    client = get_client()
-    sms = client.messages.create(
-        body=text,
-        from_=from_num,
-        to=to_num,
-    )
-    print(sms.sid)
-    return JsonResponse({'message': 'Success!'})
+# @api_view(['post'])
+# def send_sms(request):
+#     from_num = request.data['from_num']
+#     to_num = request.data['to_num']
+#     text = request.data['body']
+#     client = get_client()
+#     sms = client.messages.create(
+#         body=text,
+#         from_=from_num,
+#         to=to_num,
+#     )
+#     print(sms.sid)
+#     return JsonResponse({'message': 'Success!'})
 
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])

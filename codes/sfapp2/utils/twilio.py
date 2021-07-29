@@ -23,7 +23,6 @@ def send_sms(to_number, body, twilio_number=None):
 
     client.api.messages.create(to_number, from_=twilio_number, body=body)
 
-
 def send_sms_file(to_number, media_url):
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
@@ -47,7 +46,7 @@ def list_sms(to_number):
     resps = []
 
     for sms in smss:
-        try:
+        try: 
            
             try:
                 

@@ -42,7 +42,7 @@ from io import BytesIO
 import base64
 from math import sin, cos, sqrt, atan2, radians
 from django.template.loader import render_to_string
-from .utils.email_util import send_raw_email, send_confirmation_code
+from .utils.email_util import send_email, send_email_code
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
@@ -158,7 +158,7 @@ def lesson_read(request, pk):
         less_serialized = LessonSerializer(les_)
         data = less_serialized.data
         for card in data["flashcards"]:
-            if (card['lesson_type'] == "BrainTree"):
+            if (card['lesson_type'] == "braintree_Config"):
                 if card['braintree_config']:
                     obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
                     card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
@@ -176,7 +176,7 @@ def lesson_read(request, pk):
         data = less_serialized.data
         if data['lesson_is_public'] == True:
             for card in data["flashcards"]:
-                if (card['lesson_type'] == "BrainTree"):
+                if (card['lesson_type'] == "braintree_Config"):
                     if card['braintree_config']:
                         obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
                         card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
@@ -401,7 +401,7 @@ def slide_read(request, pk):
     less_serialized = LessonSerializer(les_)
     data = less_serialized.data
     for card in data["flashcards"]:
-        if (card['lesson_type'] == "BrainTree"):
+        if (card['lesson_type'] == "braintree_Config"):
             if card['braintree_config']:
                 obj_braintree_config = BrainTreeConfig.objects.get(id=card['braintree_config'])
                 card['braintree_merchant_ID'] = obj_braintree_config.braintree_merchant_ID
@@ -412,6 +412,7 @@ def slide_read(request, pk):
                 obj_item = item.objects.get(id=card['item_store'])
                 card['braintree_item_name'] = obj_item.title
                 card['braintree_item_price'] = obj_item.price
+                card['braintree_item_id'] = obj_item.id
     return Response(data)
    
 
@@ -656,15 +657,12 @@ def email_responses(request,lessonId):
         print("🚀 ~ file: views.py ~ line 551 ~ notify", notify)
         flash_obj = FlashCardResponse.objects.filter(lesson=notify.lesson.id)
         print("🚀 ~ file: views.py ~ line 553 ~ flash_obj", flash_obj)
-        # data = FlashcardResponseSerializer(flash_obj,many=True)
         
         subject = f'User Response'
         body = ''
         html_message = render_to_string(
             'email.html', {"data": flash_obj})
-        # recipient_list = [email]
-        # send_mail(subject=subject, message=None, from_email=email_from,
-        #           recipient_list=recipient_list, html_message=html_message)
+
         send_raw_email(to_email=[notify.email],reply_to=None,
                             subject=subject,
                             message_text=body,
@@ -791,8 +789,8 @@ def confirm_email_address(request):
         raise HttpResponseBadRequest()
 
     session = UserSession.objects.filter(session_id=session_id)
-    code_2fa = send_confirmation_code()
-    send_raw_email(email)
+    code_2fa = send_email_code()
+    send_email(email)
 
     session.update(email=email, code_2fa=code_2fa)
     
