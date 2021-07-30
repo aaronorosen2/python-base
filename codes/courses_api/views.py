@@ -1,4 +1,3 @@
-from inspect import classify_class_attrs
 from django.core.files import File
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -191,24 +190,25 @@ def lesson_read(request, pk):
         else:
             return Response({'msg':"you do not has access to view this lesson"},status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['GET'])
+@api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def add_to_class(request):
     class_id = request.POST.get('class_id')
     lesson_id = request.POST.get('lesson_id')
-    if class_id and classify_class_attrs.isnumeric() and lesson_id and lesson_id.isnumeric():
+    if class_id and class_id.isnumeric() and lesson_id and lesson_id.isnumeric():
         valid_cls = Class.objects.filter(user=request.user, id=class_id).first()
         if valid_cls:
             valid_less = Lesson.objects.filter(id=lesson_id, user=request.user)
             if valid_less:
-                valid_less.update(_class=class_id)
+                valid_less.update(_class=valid_cls)
+                return JsonResponse({'msg': 'Lesson updated Successfully', 'status':True})
             else:
-                return JsonResponse({'msg': 'Lesson not found'})
+                return JsonResponse({'msg': 'Lesson not found'}, status=400)
         else:
-            return JsonResponse({'msg': 'Class not found'})
+            return JsonResponse({'msg': 'Class not found'}, status=400)
     else:
-        return JsonResponse({'msg': 'invalid Parameters'}),400
+        return JsonResponse({'msg': 'invalid Parameters'}, status=400)
 
 
 

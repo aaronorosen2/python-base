@@ -1,13 +1,19 @@
 from rest_framework import serializers
 from .models import Lesson, FlashCard, UserSessionEvent, FlashCardResponse,UserSession,Invite
 from .models import Student,LessonEmailNotify
+from classroom.models import Class
+
+class classSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Class
+        fields ='__all__'
 
 class LessonSerializer(serializers.ModelSerializer):
     flashcards = serializers.SerializerMethodField('get_flashcards')
+    _class = classSerializer()
     class Meta:
         model = Lesson
         fields ='__all__'
-        depth=1
     
     def get_flashcards(self,lesson):
         return FlashCardSerializer(FlashCard.objects.filter(lesson=lesson),many=True).data
