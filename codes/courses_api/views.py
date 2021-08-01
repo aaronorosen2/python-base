@@ -210,6 +210,14 @@ def add_to_class(request):
     else:
         return JsonResponse({'msg': 'invalid Parameters'}, status=400)
 
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def lessons_in_class(request):
+    class_id = request.GET.get('class_id')
+    if class_id and class_id is not None:
+        lessons = Lesson.objects.filter(_class=class_id).all()
+        print(lessons)
 
 
 @api_view(['GET','POST','PUT','DELETE'])

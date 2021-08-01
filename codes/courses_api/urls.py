@@ -11,6 +11,7 @@ urlpatterns = [
     path("lesson/update/<int:pk>/", views.lesson_update, name="lesson-update"),
     path("lesson/delete/<int:pk>/", views.lesson_delete, name="lesson-delete"),
     path("lesson/add_to_class", views.add_to_class, name="lesson-add-to-class"),
+    path("class/lessons", views.lessons_in_class, name="lesson-add-to-class"),
     path("slide/read/<int:pk>", views.slide_read, name="slide-read"),
     path("flashcard/create/<str:lessonId>",
          views.flashcard_create, name="flashcard-create"),

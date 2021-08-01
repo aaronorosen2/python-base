@@ -49,12 +49,18 @@ class ClassSerializer(serializers.ModelSerializer):
 
 class ClassEnrolledSerializer(serializers.ModelSerializer):
     students_enrolled = serializers.SerializerMethodField('student_count')
+    # lessons_count = serializers.SerializerMethodField('lesson_count')
     class Meta:
         model= ClassEnrolled
         fields = '__all__'
         depth = 1
     def student_count(self, classEnr):
         return ClassEnrolled.objects.filter(class_enrolled=classEnr.class_enrolled).count()
+
+    # def lesson_count(self, clsEnr):
+    #     from courses_api.models import Lesson
+    #     return Lesson.objects.filter(_class=clsEnr.class_enrolled).count()
+
 
 class ClassEmailSerializer(serializers.ModelSerializer):
     class_enrolled_id = serializers.IntegerField(write_only=True)

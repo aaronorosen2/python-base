@@ -151,8 +151,9 @@ def classapi(request):
 @permission_classes([IsAuthenticated])
 def classenrolledapi(request):
     if request.method == 'GET':
-        serializer = ClassEnrolledSerializer(ClassEnrolled.objects.filter(student=Student.objects.filter(user=request.user).first()),many=True)
+        serializer = ClassEnrolledSerializer(ClassEnrolled.objects.filter(student__in=Student.objects.filter(email=request.user.email)),many=True)
         #Need to discuss and change this later, because student is not valid knox user.
+        # used email to points right student
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'DELETE':
@@ -167,12 +168,41 @@ def classenrolledapi(request):
         return JsonResponse(data={"result":False,"error":"Please include class id like ?id=1"},status=400)
     
     elif request.method == 'POST':
-        student = Student.objects.get(name=request.POST['student'])
+        print(request.POST['student'])
+        student = Student.objects.get(id=request.POST['student'])
         class_ = Class.objects.get(id=request.POST['class'])
 
         enroll = ClassEnrolled(student=student,class_enrolled=class_)
         enroll.save()
-        return JsonResponse(data=request.data,status=200)
+        return JsonResponse(data={},status=200)
+
+@csrf_exempt
+@api_view(['GET','POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def student_classes(request):
+    from courses_api.models import Lesson,FlashCard,FlashCardResponse
+    classes_info = []
+    for cls in ClassEnrolled.objects.filter(student__in=Student.objects.filter(email=request.user.email)):
+        lesson_count = 0
+        completed_lesson = 0
+        for lessn in Lesson.objects.filter(_class = cls.class_enrolled):
+                #.annotate(fc_answered=FlashCardResponse.objects.filter(flashcard=OuterRef('pk')).first())))
+            FCTYPES = ['datepicker','user_gps','name_type','signature','title_textarea','title_input','user_image_upload','question_choices', 'user_video_upload','question_checkboxes']
+            fc_count = FlashCard.objects.filter(lesson=lessn, lesson_type__in=FCTYPES).count()
+            # student__email=request.user.email
+            # add this filter
+            fcr_count = FlashCardResponse.objects.filter(lesson=lessn).distinct('flashcard__id').count()#.prefetch_related('flashcard').values('flashcard')
+            lesson_count+=1
+            if(fc_count==fcr_count):
+                completed_lesson+=1
+        singleCls = ClassEnrolledSerializer(cls).data
+        singleCls['percent_completed'] = (completed_lesson/(lesson_count if lesson_count > 0 else 1))*100
+        singleCls['lesson_count'] = lesson_count
+        singleCls['lesson_completed'] = completed_lesson
+        classes_info.append(singleCls)
+    return JsonResponse(classes_info,safe=False)
+
 
 @csrf_exempt
 @api_view(['GET','POST'])
