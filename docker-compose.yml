@@ -29,7 +29,7 @@ services:
            - ./codes:/home/web/codes
         networks:
             - backend
-    
+
     celery:
 #        image: "python_sfapp_celery_worker"
         restart: always

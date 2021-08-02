@@ -23,11 +23,11 @@ class Migration(migrations.Migration):
             model_name='flashcardresponse',
             name='user',
         ),
-        migrations.AddField(
-            model_name='flashcardresponse',
-            name='signature',
-            field=models.TextField(blank=True, default='', null=True),
-        ),
+        # migrations.AddField(
+        #     model_name='flashcardresponse',
+        #     name='signature',
+        #     field=models.TextField(blank=True, default='', null=True),
+        # ),
         migrations.AddField(
             model_name='flashcardresponse',
             name='user_session',

@@ -1,0 +1,21 @@
+version: '3.3'
+
+services:
+    db:
+        image: postgres:12
+        ports:
+            - 5432:5432
+        volumes:
+            - ../postgres-python-base-dev:/var/lib/postgresql/data
+        environment:
+            POSTGRES_DB: postgres
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        networks:
+            - backend
+
+networks:
+    backend:
+        external:
+            name: chiroposture_network
+
