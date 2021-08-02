@@ -258,6 +258,7 @@ from termcolor import cprint
 
 @api_view(['POST'])
 def lesson_update(request, pk):
+    print("🚀 ~ file: views.py ~ line 261 ~ request", request.data['flashcards'])
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
@@ -375,15 +376,8 @@ def lesson_update(request, pk):
                                 )
                     f.save()
                 else:
-                    f=FlashCard(lesson=lesson,
-                                lesson_type=lesson_type,
-                                question=question,
-                                options=options,
-                                answer=answer,
-                                image=image,
-                                position=position
-                                )
-                    f.save()
+                    f=FlashCard.objects.filter(lesson_type=lesson_type).update(question=question,options=options,answer=answer,
+                                                        image=image,position=position)
                 
         return Response(LessonSerializer(lesson).data)
     except Exception as e:
@@ -530,18 +524,6 @@ def session_update(request, flashcardId, pk):
     UserSessionEvent.objects.filter(id=pk).update(end_time=now, view_duration=durate)
     return Response("Move slide")
 
-# @api_view(['POST'])
-# def record_webcam(request):
-#     uploaded_file = request.FILES.get('video')
-#     if uploaded_file:
-#             # Get unique filename using UUID
-#             file_name = uploaded_file.name
-#             file_name_uuid = uuid_file_path(file_name)
-#             s3_key = 'Test/teacherui/{0}'.format(file_name_uuid)
-
-#             content_type, file_url = upload_to_s3(s3_key, uploaded_file)
-#             return Response({'video_url': file_url},status=200)
-
 
 @api_view(['POST'])
 def flashcard_response(request):
@@ -616,46 +598,32 @@ def overall_flashcard_responses(request,lesson_id):
 @api_view(['GET'])
 def overall_flashcard_response_results(request, lesson_id):
 
-    # first load the flash cards
-    flash_cards = FlashCard.objects.filter(
-        lesson=lesson_id
-    ).order_by('position').values()
-    print(flash_cards)
+    flash_cards = FlashCard.objects.filter(lesson=lesson_id).order_by('position').values()
 
-
-    # get user sessions of lesson
-    user_sessions = FlashCardResponse.objects.filter(
-        lesson=lesson_id
-    ).order_by().values('user_session').distinct()
-
-    print(user_sessions)
-    print(len(user_sessions))
-    print("HERE")
-
+    user_sessions = FlashCardResponse.objects.filter(lesson=lesson_id).order_by().values('user_session').distinct()
 
     user_responses = []
     for user_session in user_sessions:
         flash_card_responses = []
         for flashcard in flash_cards:
 
-            if flashcard['lesson_type'] in ['question_checkboxes','title_input', 'signature', 'email_verify']:
+            if flashcard['lesson_type'] in ['question_choices', 'question_checkboxes',
+                                            'title_input', 'signature', 'email_verify', 'verify_phone']:
+                
                 flash_card_response = FlashCardResponse.objects.filter(
                     user_session=user_session['user_session'],
                     lesson=flashcard['lesson_id'],
                     flashcard=flashcard['id']
                 ).values('flashcard_id', 'answer')
-                print(flash_card_response)
+                
                 flash_card_responses.append(list(flash_card_response))
+                
         user_responses.append(flash_card_responses)
 
-
-    print("response")
     return JsonResponse({
         'flash_cards': list(flash_cards),
         'user_responses': list(user_responses),
     })
-
-
 
 
 @api_view(['GET'])
@@ -738,24 +706,7 @@ def user_session_event(request,flashcard_id,session_id):
                             create_at = created_at,
                             )
     session_event_oject.save()
-    # try:
-    #     user_session = UserSession.objects.get(session_id=session_id)
-    #     print(flashcard_id, session_id,user_session.id)
-    #     session_event_oject = UserSessionEvent.objects.get(flash_card=flashcard_id, user_session = user_session)
-    #     print(session_event_oject.start_time )
-    #     session_event_oject.save()
-    # except:
-        # created_at = UserSession.objects.get(session_id=session_id).created_at
-        # session_event_oject = UserSessionEvent(
-        #                         flash_card = FlashCard.objects.get(pk=flashcard_id),
-        #                         user_session = UserSession.objects.get(session_id=session_id),
-        #                         ip_address = request.data['ip_address'],
-        #                         user_device = request.data['user_device'],
-        #                         create_at = created_at,
-        #                         )
-        # session_event_oject.save()
     return Response({'message': 'success'})
-
 
 
 @api_view(['POST'])
@@ -771,15 +722,16 @@ def confirm_phone_number(request):
     session = UserSession.objects.filter(session_id=session_id)
     code_2fa = send_confirmation_code(phone_number)
 
-    session.update(phone=phone_number,code_2fa=code_2fa)
+    session.update(phone=phone_number, code_2fa=code_2fa)
     
     return Response({'message': 'pending 2fa'})
 
 @api_view(['POST'])
 def verify_2fa(request):
     code = request.data['code_2fa']
+    session_id = request.data['session_id']
     phone = request.data['phone_number']
-    member = UserSession.objects.filter(phone=phone).first()
+    member = UserSession.objects.filter(session_id=session_id).first()
     if phone == member.phone and code == member.code_2fa:
         member.has_verified_phone=True
         member.save()
@@ -954,7 +906,6 @@ def invite_response(request):
     lesson = Lesson.objects.get(id = lesson_id)
     params = request.data['params']
     flashcard = FlashCard.objects.filter(lesson_type = lesson_type).first()
-    # flashcard = FlashCard.objects.filter(lesson_type = lesson_type or lesson_id = (lesson.id)).first()
     answer = request.data['answer']
     student = Student.objects.get(
         id=Invite.objects.get(params=params).student_id)
@@ -1049,10 +1000,9 @@ def member_session_stop(request):
             'distance': round(distance, 4),
             'avg_speed': round(avg_speed, 4),
             'total_time': total_time.seconds
-        }
+        }    
         return JsonResponse(data, safe=False)
     except Exception as e:
-        print("🚀 ~ file: views.py ~ line 956 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
 
 from django.db.models import OuterRef, Subquery
