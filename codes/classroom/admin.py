@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student, Teacher, TeacherAccount
+from .models import Student, Teacher, TeacherAccount, Class
 
 # Register your models here.
 @admin.register(Student)
@@ -16,6 +16,13 @@ class TeacherAdmin(admin.ModelAdmin):
 class TeacherAccountAdmin(admin.ModelAdmin):
     list_display = ('teacher', 'active')
     fields = ['teacher', 'active']
+
+@admin.register(Class)
+class classAdmin(admin.ModelAdmin):
+    list_display = ('class_name', 'public')
+    fields = ['class_name', 'public']
+
+
 
 # admin.site.register(Student)
 # admin.site.register(Teacher)

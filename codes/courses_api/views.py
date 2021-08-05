@@ -298,11 +298,9 @@ from termcolor import cprint
 
 @api_view(['POST'])
 def lesson_update(request, pk):
-    print("🚀 ~ file: views.py ~ line 261 ~ request", request.data['flashcards'])
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
-        print("🚀 ~ file: views.py ~ line 232 ~ user", user)
         lesson = Lesson.objects.get(user=user,id=pk)
         lesson_name = request.data['lesson_name']
         lesson_is_public = request.data['lesson_is_public']
@@ -416,9 +414,15 @@ def lesson_update(request, pk):
                                 )
                     f.save()
                 else:
-                    f=FlashCard.objects.filter(lesson_type=lesson_type).update(question=question,options=options,answer=answer,
-                                                        image=image,position=position)
-                
+                    f=FlashCard(lesson=lesson,
+                                lesson_type=lesson_type,
+                                question=question,
+                                options=options,
+                                answer=answer,
+                                image=image,
+                                position=position
+                                )
+                    f.save()
         return Response(LessonSerializer(lesson).data)
     except Exception as e:
         print("🚀 ~ file: views.py ~ line 374 ~ e", e)

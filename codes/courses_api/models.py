@@ -14,7 +14,8 @@ class Lesson(models.Model):
                              default=None)
     meta_attributes = models.CharField(max_length=100, blank=True, default='')
     lesson_is_public = models.BooleanField(default=False)
-    _class = models.ForeignKey(Class, on_delete=models.CASCADE, null=True,blank=True)
+    _class = models.ForeignKey(Class, on_delete=models.CASCADE, null=True,
+                               blank=True)
 
     def __str__(self):
         return self.lesson_name
