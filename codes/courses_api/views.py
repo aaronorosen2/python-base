@@ -216,8 +216,48 @@ def add_to_class(request):
 def lessons_in_class(request):
     class_id = request.GET.get('class_id')
     if class_id and class_id is not None:
-        lessons = Lesson.objects.filter(_class=class_id).all()
-        print(lessons)
+        lessonsResponse = []
+        # lessons = LessonSerializer(Lesson.objects.filter(_class=class_id), many=True)
+        lessons = Lesson.objects.filter(_class=class_id)
+        FCTYPES = ['datepicker','user_gps','name_type','signature','title_textarea','title_input','user_image_upload','question_choices', 'user_video_upload','question_checkboxes']
+        for lessn in lessons:
+            singleLesson = {}
+            singleLesson['name'] = lessn.lesson_name
+            singleLesson['id'] = lessn.id
+            singleLesson['isPublic'] = lessn.lesson_is_public
+            singleLesson['fc_count'] = FlashCard.objects.filter(lesson=lessn, lesson_type__in=FCTYPES).count()
+            # student__email=request.user.email
+            # add this filter
+            singleLesson['classInfo'] = {'id':lessn._class.id, 'class_name': lessn._class.class_name}
+            singleLesson['fcr_count'] = FlashCardResponse.objects.filter(lesson=lessn).distinct('flashcard__id').count()#.prefetch_related('flashcard').values('flashcard')
+            if singleLesson['fcr_count'] == singleLesson['fc_count']:
+                singleLesson['percent_completed'] = 100
+            else:
+                singleLesson['percent_completed'] = (singleLesson['fcr_count']/(singleLesson['fc_count'] if singleLesson['fc_count'] > 0 else 1))*100
+            lessonsResponse.append(singleLesson)
+        return JsonResponse(lessonsResponse, safe=False)
+    classes = ClassEnrolled.objects.filter(student__in=Student.objects.filter(email=request.user.email)).values('class_enrolled')
+    # lessons = LessonSerializer(Lesson.objects.filter(_class__in=classes).all(), many=True)
+    lessons = Lesson.objects.filter(_class__in=classes).select_related('_class').all()
+    FCTYPES = ['datepicker','user_gps','name_type','signature','title_textarea','title_input','user_image_upload','question_choices', 'user_video_upload','question_checkboxes']
+    lessonsResponse = []
+    for lessn in lessons:
+        singleLesson = {}
+        singleLesson['name'] = lessn.lesson_name
+        singleLesson['id'] = lessn.id
+        singleLesson['isPublic'] = lessn.lesson_is_public
+        singleLesson['fc_count'] = FlashCard.objects.filter(lesson=lessn, lesson_type__in=FCTYPES).count()
+        # student__email=request.user.email
+        # add this filter
+        singleLesson['classInfo'] = {'id':lessn._class.id, 'class_name': lessn._class.class_name}
+        singleLesson['fcr_count'] = FlashCardResponse.objects.filter(lesson=lessn).distinct('flashcard__id').count()#.prefetch_related('flashcard').values('flashcard')
+        if singleLesson['fcr_count'] == singleLesson['fc_count']:
+            singleLesson['percent_completed'] = 100
+        else:
+            singleLesson['percent_completed'] = (singleLesson['fcr_count']/(singleLesson['fc_count'] if singleLesson['fc_count'] > 0 else 1))*100
+        lessonsResponse.append(singleLesson)
+    return JsonResponse(lessonsResponse, safe=False)
+    # return JsonResponse(lessons.data,safe=False)
 
 
 @api_view(['GET','POST','PUT','DELETE'])
