@@ -9,7 +9,7 @@ def send_email_code():
     send_email_code.verification_code = generate_code()
     return send_email_code.verification_code
 
-def send_raw_email(to_email):
+def send_email(to_email):
     SENDER = "DreamPotential <lead@dreampotential.org>"
     RECIPIENT = to_email
     AWS_REGION = "us-west-1"

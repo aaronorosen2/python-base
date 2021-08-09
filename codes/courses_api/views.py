@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer,LessonEmailNotifySerializer
 from .serializers import UserSessionEventSerializer,UserSessionSerializer
-from .serializers import FlashcardResponseSerializer,StudentLessonSerializer
+from .serializers import FlashcardResponseSerializer,StudentLessonSerializer,StudentLessonProgressSerializer
 from .models import Lesson,LessonEmailNotify
 from .models import FlashCard
 from .models import UserSessionEvent
@@ -41,7 +41,7 @@ from io import BytesIO
 import base64
 from math import sin, cos, sqrt, atan2, radians
 from django.template.loader import render_to_string
-from .utils.email_util import send_raw_email, send_email_code
+from .utils.email_util import send_email, send_email_code
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 
 @api_view(['GET'])
@@ -190,6 +190,76 @@ def lesson_read(request, pk):
         else:
             return Response({'msg':"you do not has access to view this lesson"},status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_to_class(request):
+    class_id = request.POST.get('class_id')
+    lesson_id = request.POST.get('lesson_id')
+    if class_id and class_id.isnumeric() and lesson_id and lesson_id.isnumeric():
+        valid_cls = Class.objects.filter(user=request.user, id=class_id).first()
+        if valid_cls:
+            valid_less = Lesson.objects.filter(id=lesson_id, user=request.user)
+            if valid_less:
+                valid_less.update(_class=valid_cls)
+                return JsonResponse({'msg': 'Lesson updated Successfully', 'status':True})
+            else:
+                return JsonResponse({'msg': 'Lesson not found'}, status=400)
+        else:
+            return JsonResponse({'msg': 'Class not found'}, status=400)
+    else:
+        return JsonResponse({'msg': 'invalid Parameters'}, status=400)
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def lessons_in_class(request):
+    class_id = request.GET.get('class_id')
+    if class_id and class_id is not None:
+        lessonsResponse = []
+        # lessons = LessonSerializer(Lesson.objects.filter(_class=class_id), many=True)
+        lessons = Lesson.objects.filter(_class=class_id)
+        FCTYPES = ['datepicker','user_gps','name_type','signature','title_textarea','title_input','user_image_upload','question_choices', 'user_video_upload','question_checkboxes']
+        for lessn in lessons:
+            singleLesson = {}
+            singleLesson['name'] = lessn.lesson_name
+            singleLesson['id'] = lessn.id
+            singleLesson['isPublic'] = lessn.lesson_is_public
+            singleLesson['fc_count'] = FlashCard.objects.filter(lesson=lessn, lesson_type__in=FCTYPES).count()
+            # student__email=request.user.email
+            # add this filter
+            singleLesson['classInfo'] = {'id':lessn._class.id, 'class_name': lessn._class.class_name}
+            singleLesson['fcr_count'] = FlashCardResponse.objects.filter(lesson=lessn).distinct('flashcard__id').count()#.prefetch_related('flashcard').values('flashcard')
+            if singleLesson['fcr_count'] == singleLesson['fc_count']:
+                singleLesson['percent_completed'] = 100
+            else:
+                singleLesson['percent_completed'] = (singleLesson['fcr_count']/(singleLesson['fc_count'] if singleLesson['fc_count'] > 0 else 1))*100
+            lessonsResponse.append(singleLesson)
+        return JsonResponse(lessonsResponse, safe=False)
+    classes = ClassEnrolled.objects.filter(student__in=Student.objects.filter(email=request.user.email)).values('class_enrolled')
+    # lessons = LessonSerializer(Lesson.objects.filter(_class__in=classes).all(), many=True)
+    lessons = Lesson.objects.filter(_class__in=classes).select_related('_class').all()
+    FCTYPES = ['datepicker','user_gps','name_type','signature','title_textarea','title_input','user_image_upload','question_choices', 'user_video_upload','question_checkboxes']
+    lessonsResponse = []
+    for lessn in lessons:
+        singleLesson = {}
+        singleLesson['name'] = lessn.lesson_name
+        singleLesson['id'] = lessn.id
+        singleLesson['isPublic'] = lessn.lesson_is_public
+        singleLesson['fc_count'] = FlashCard.objects.filter(lesson=lessn, lesson_type__in=FCTYPES).count()
+        # student__email=request.user.email
+        # add this filter
+        singleLesson['classInfo'] = {'id':lessn._class.id, 'class_name': lessn._class.class_name}
+        singleLesson['fcr_count'] = FlashCardResponse.objects.filter(lesson=lessn).distinct('flashcard__id').count()#.prefetch_related('flashcard').values('flashcard')
+        if singleLesson['fcr_count'] == singleLesson['fc_count']:
+            singleLesson['percent_completed'] = 100
+        else:
+            singleLesson['percent_completed'] = (singleLesson['fcr_count']/(singleLesson['fc_count'] if singleLesson['fc_count'] > 0 else 1))*100
+        lessonsResponse.append(singleLesson)
+    return JsonResponse(lessonsResponse, safe=False)
+    # return JsonResponse(lessons.data,safe=False)
+
+
 @api_view(['GET','POST','PUT','DELETE'])
 @csrf_exempt
 def lesson_all(request):
@@ -197,7 +267,7 @@ def lesson_all(request):
     token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
         if 'Authorization' in request.headers:
-            les_= Lesson.objects.filter(user=token.user_id)
+            # les_= Lesson.objects.filter(user=token.user_id)
             # less_serialized = LessonSerializer(les_,many=True)
             less_serialized = LessonSerializer(
                 Lesson.objects.filter(user=token.user_id), many=True)
@@ -231,7 +301,6 @@ def lesson_update(request, pk):
     try:
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
-        print("🚀 ~ file: views.py ~ line 232 ~ user", user)
         lesson = Lesson.objects.get(user=user,id=pk)
         lesson_name = request.data['lesson_name']
         lesson_is_public = request.data['lesson_is_public']
@@ -354,7 +423,6 @@ def lesson_update(request, pk):
                                 position=position
                                 )
                     f.save()
-                
         return Response(LessonSerializer(lesson).data)
     except Exception as e:
         print("🚀 ~ file: views.py ~ line 374 ~ e", e)
@@ -500,18 +568,6 @@ def session_update(request, flashcardId, pk):
     UserSessionEvent.objects.filter(id=pk).update(end_time=now, view_duration=durate)
     return Response("Move slide")
 
-# @api_view(['POST'])
-# def record_webcam(request):
-#     uploaded_file = request.FILES.get('video')
-#     if uploaded_file:
-#             # Get unique filename using UUID
-#             file_name = uploaded_file.name
-#             file_name_uuid = uuid_file_path(file_name)
-#             s3_key = 'Test/teacherui/{0}'.format(file_name_uuid)
-
-#             content_type, file_url = upload_to_s3(s3_key, uploaded_file)
-#             return Response({'video_url': file_url},status=200)
-
 
 @api_view(['POST'])
 def flashcard_response(request):
@@ -586,46 +642,32 @@ def overall_flashcard_responses(request,lesson_id):
 @api_view(['GET'])
 def overall_flashcard_response_results(request, lesson_id):
 
-    # first load the flash cards
-    flash_cards = FlashCard.objects.filter(
-        lesson=lesson_id
-    ).order_by('position').values()
-    print(flash_cards)
+    flash_cards = FlashCard.objects.filter(lesson=lesson_id).order_by('position').values()
 
-
-    # get user sessions of lesson
-    user_sessions = FlashCardResponse.objects.filter(
-        lesson=lesson_id
-    ).order_by().values('user_session').distinct()
-
-    print(user_sessions)
-    print(len(user_sessions))
-    print("HERE")
-
+    user_sessions = FlashCardResponse.objects.filter(lesson=lesson_id).order_by().values('user_session').distinct()
 
     user_responses = []
     for user_session in user_sessions:
         flash_card_responses = []
         for flashcard in flash_cards:
 
-            if flashcard['lesson_type'] in ['question_checkboxes','title_input', 'signature', 'email_verify']:
+            if flashcard['lesson_type'] in ['question_choices', 'question_checkboxes',
+                                            'title_input', 'signature', 'email_verify', 'verify_phone']:
+                
                 flash_card_response = FlashCardResponse.objects.filter(
                     user_session=user_session['user_session'],
                     lesson=flashcard['lesson_id'],
                     flashcard=flashcard['id']
                 ).values('flashcard_id', 'answer')
-                print(flash_card_response)
+                
                 flash_card_responses.append(list(flash_card_response))
+                
         user_responses.append(flash_card_responses)
 
-
-    print("response")
     return JsonResponse({
         'flash_cards': list(flash_cards),
         'user_responses': list(user_responses),
     })
-
-
 
 
 @api_view(['GET'])
@@ -635,15 +677,12 @@ def email_responses(request,lessonId):
         print("🚀 ~ file: views.py ~ line 551 ~ notify", notify)
         flash_obj = FlashCardResponse.objects.filter(lesson=notify.lesson.id)
         print("🚀 ~ file: views.py ~ line 553 ~ flash_obj", flash_obj)
-        # data = FlashcardResponseSerializer(flash_obj,many=True)
         
         subject = f'User Response'
         body = ''
         html_message = render_to_string(
             'email.html', {"data": flash_obj})
-        # recipient_list = [email]
-        # send_mail(subject=subject, message=None, from_email=email_from,
-        #           recipient_list=recipient_list, html_message=html_message)
+
         send_raw_email(to_email=[notify.email],reply_to=None,
                             subject=subject,
                             message_text=body,
@@ -711,24 +750,7 @@ def user_session_event(request,flashcard_id,session_id):
                             create_at = created_at,
                             )
     session_event_oject.save()
-    # try:
-    #     user_session = UserSession.objects.get(session_id=session_id)
-    #     print(flashcard_id, session_id,user_session.id)
-    #     session_event_oject = UserSessionEvent.objects.get(flash_card=flashcard_id, user_session = user_session)
-    #     print(session_event_oject.start_time )
-    #     session_event_oject.save()
-    # except:
-        # created_at = UserSession.objects.get(session_id=session_id).created_at
-        # session_event_oject = UserSessionEvent(
-        #                         flash_card = FlashCard.objects.get(pk=flashcard_id),
-        #                         user_session = UserSession.objects.get(session_id=session_id),
-        #                         ip_address = request.data['ip_address'],
-        #                         user_device = request.data['user_device'],
-        #                         create_at = created_at,
-        #                         )
-        # session_event_oject.save()
     return Response({'message': 'success'})
-
 
 
 @api_view(['POST'])
@@ -744,15 +766,16 @@ def confirm_phone_number(request):
     session = UserSession.objects.filter(session_id=session_id)
     code_2fa = send_confirmation_code(phone_number)
 
-    session.update(phone=phone_number,code_2fa=code_2fa)
+    session.update(phone=phone_number, code_2fa=code_2fa)
     
     return Response({'message': 'pending 2fa'})
 
 @api_view(['POST'])
 def verify_2fa(request):
     code = request.data['code_2fa']
+    session_id = request.data['session_id']
     phone = request.data['phone_number']
-    member = UserSession.objects.filter(phone=phone).first()
+    member = UserSession.objects.filter(session_id=session_id).first()
     if phone == member.phone and code == member.code_2fa:
         member.has_verified_phone=True
         member.save()
@@ -771,7 +794,7 @@ def confirm_email_address(request):
 
     session = UserSession.objects.filter(session_id=session_id)
     code_2fa = send_email_code()
-    send_raw_email(email)
+    send_email(email)
 
     session.update(email=email, code_2fa=code_2fa)
     
@@ -927,7 +950,6 @@ def invite_response(request):
     lesson = Lesson.objects.get(id = lesson_id)
     params = request.data['params']
     flashcard = FlashCard.objects.filter(lesson_type = lesson_type).first()
-    # flashcard = FlashCard.objects.filter(lesson_type = lesson_type or lesson_id = (lesson.id)).first()
     answer = request.data['answer']
     student = Student.objects.get(
         id=Invite.objects.get(params=params).student_id)
@@ -1022,8 +1044,24 @@ def member_session_stop(request):
             'distance': round(distance, 4),
             'avg_speed': round(avg_speed, 4),
             'total_time': total_time.seconds
-        }
+        }    
         return JsonResponse(data, safe=False)
     except Exception as e:
-        print("🚀 ~ file: views.py ~ line 956 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
+
+from django.db.models import OuterRef, Subquery
+
+@api_view(['GET'])
+def student_lesson_list_with_progress(request):
+    try:
+        invite = None
+        if request.GET.get('params'):
+            invite = Invite.objects.get(params=request.GET['params'])
+        fc = FlashCard.objects.filter(lesson=OuterRef('lesson'))
+        # t = get_user_model().objects.annotate(accountActive=Subquery(users.values('active')[:1])).values('id','username','first_name','date_joined','accountActive')
+        stulist = Invite.objects.filter(student_id=invite.student).distinct('lesson')
+        serializer = StudentLessonProgressSerializer(stulist,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)

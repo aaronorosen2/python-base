@@ -1,9 +1,16 @@
 from rest_framework import serializers
 from .models import Lesson, FlashCard, UserSessionEvent, FlashCardResponse,UserSession,Invite
 from .models import Student,LessonEmailNotify
+from classroom.models import Class
+
+class classSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Class
+        fields ='__all__'
 
 class LessonSerializer(serializers.ModelSerializer):
     flashcards = serializers.SerializerMethodField('get_flashcards')
+    _class = classSerializer()
     class Meta:
         model = Lesson
         fields ='__all__'
@@ -69,6 +76,20 @@ class StudentLessonSerializer(serializers.ModelSerializer):
         model = Invite
         fields = '__all__'
         depth = 1
+
+class StudentLessonProgressSerializer(serializers.ModelSerializer):
+    fc_count = serializers.SerializerMethodField('get_fc_count')
+    fc_res_count = serializers.SerializerMethodField('get_fc_res_count')
+    # student = serializers.CharField(source='student.name', read_only=True)
+    class Meta:
+        model = Invite
+        fields = ['fc_count', 'fc_res_count', 'id', 'invite_type' ,'lesson']
+        depth = 1
+    def get_fc_count(self, invite):
+        return FlashCard.objects.filter(lesson=invite.lesson).count()
+
+    def get_fc_res_count(self, invite):
+        return FlashCardResponse.objects.filter(lesson=invite.lesson, student=invite.student).count()
 
 class LessonEmailNotifySerializer(serializers.ModelSerializer):
     class Meta:
