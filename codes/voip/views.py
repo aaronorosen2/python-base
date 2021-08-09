@@ -1,3 +1,4 @@
+from django.core.checks import messages
 from rest_framework.serializers import Serializer
 from sfapp2.utils.twilio import list_sms, send_sms_file, send_sms
 from django.views.decorators.csrf import csrf_exempt
@@ -92,7 +93,34 @@ def send_sms_file_api(request):
 def list_sms_api(request):
     messages = list_sms(request.POST.get('to_number'))
     return JsonResponse({'messages': messages}, safe = False)
-    
+
+@csrf_exempt    
+def filter_list_sms_api(request):
+    num = request.POST.get('num')
+    #messages = list_sms(request.POST.get('to_number'))
+    filter_messages = []
+    if num:
+        messages = Sms_details.objects.filter(from_number=num) | Sms_details.objects.filter(to_number=num)
+        for record in messages:
+            filter_messages.append({
+                'body': record.msg_body,
+                'date_created': record.created_at,
+                'direction': record.direction,
+                'from': record.from_number,
+                'to': record.to_number,
+            })
+    else:
+        messages = Sms_details.objects.all()
+        for record in messages:
+            filter_messages.append({
+                'body': record.msg_body,
+                'date_created': record.created_at,
+                'direction': record.direction,
+                'from': record.from_number,
+                'to': record.to_number,
+            })
+
+    return JsonResponse({'messages': filter_messages}, safe = False)    
 
 @csrf_exempt
 def twilio_call_status(request):
