@@ -1,3 +1,4 @@
+from django.db.models import OuterRef, Subquery
 from django.core.files import File
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -898,7 +899,6 @@ def invite_email(request):
             return JsonResponse({"sucess":True},status=200)
         else:
             return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
-    
 
 @api_view(['POST'])
 def invite_text(request):
@@ -937,11 +937,12 @@ def invite_text(request):
                     invite.save()
                     unique_id = invite.params
                 send_sms(to_number=std.student.phone,body=subject +"\n\n"+ f"{body}&params={unique_id}")
-            return JsonResponse({"sucess":True},status=200)
+            return JsonResponse({"success":True},status=200)
         else:
-            return JsonResponse({"sucess":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
+            return JsonResponse({
+                "success":False,"msg":f"Class {Class.objects.get(id=request.data.get('class')).class_name} doesn't have any enrolled student"},status=404)
 
-    return JsonResponse({"sucess":True},status=200)
+    return JsonResponse({"success": True}, status=200)
 
 @api_view(['POST'])
 def invite_response(request):
@@ -976,23 +977,25 @@ def qr_code_response(request):
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    
+
     return Response(img_str, status=200)
+
 
 @api_view(['GET'])
 def qr_code_data(request, lesson_id):
 
-    les_= Lesson.objects.get(id=lesson_id)
+    les_ = Lesson.objects.get(id=lesson_id)
     fashcards = FlashCard.objects.filter(lesson=les_)
 
     for fashcard in fashcards:
         if fashcard.lesson_type == "user_qr_data":
             dicti = fashcard.question
-            dictionary = dict(subString.split(":") for subString in dicti.split("\n"))
-    
-    return render(request, "QRcodeData.html", {'dictionary' : dictionary})
+            dictionary = dict(subString.split(":")
+                              for subString in dicti.split("\n"))
+    return render(request, "QRcodeData.html", {'dictionary': dictionary})
 
-def get_distance(lat1,lon1,lat2,lon2):
+
+def get_distance(lat1, lon1, lat2, lon2):
     R = 6373.0
     lat1 = radians(lat1)
     lon1 = radians(lon1)
@@ -1013,43 +1016,51 @@ def get_distance(lat1,lon1,lat2,lon2):
 @api_view(['POST'])
 def member_session_start(request):
     try:
-        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        token = AuthToken.objects.get(
+            token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
         session_create = MemberSession.objects.create(user=user)
-        member_session_start.mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
-                                    longitude=request.data.get("longitude",None))
+        member_session_start.mge = MemberGpsEntry.objects.create(
+            member_session=session_create,
+            latitude=request.data.get("latitude", None),
+            longitude=request.data.get("longitude", None))
         return JsonResponse({'status': 'okay'}, safe=False)
     except Exception as e:
         print("🚀 ~ file: views.py ~ line 929 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
 
+
 @csrf_exempt
 @api_view(['POST'])
 def member_session_stop(request):
     try:
-        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+        token = AuthToken.objects.get(
+            token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
         session_create = MemberSession.objects.filter(user=user).last()
         session_create.ended_at = datetime.datetime.now()
         session_create.save()
-        mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
-                                    longitude=request.data.get("longitude",None))
+        mge = MemberGpsEntry.objects.create(
+            member_session=session_create,
+            latitude=request.data.get("latitude", None),
+            longitude=request.data.get("longitude", None))
 
-        distance = get_distance(member_session_start.mge.latitude, member_session_start.mge.longitude,
+        distance = get_distance(member_session_start.mge.latitude,
+                                member_session_start.mge.longitude,
                                 mge.latitude, mge.longitude)
-        total_time = session_create.ended_at.replace(tzinfo=None) - session_create.started_at.replace(tzinfo=None)
-        avg_speed = (distance *1000) / total_time.seconds
+        total_time = (session_create.ended_at.replace(tzinfo=None) -
+                      session_create.started_at.replace(tzinfo=None))
+        avg_speed = (distance * 1000) / total_time.seconds
 
         data = {
             'distance': round(distance, 4),
             'avg_speed': round(avg_speed, 4),
             'total_time': total_time.seconds
-        }    
+        }
         return JsonResponse(data, safe=False)
     except Exception as e:
         return JsonResponse({'status': 'error'}, safe=False)
 
-from django.db.models import OuterRef, Subquery
 
 @api_view(['GET'])
 def student_lesson_list_with_progress(request):
@@ -1058,10 +1069,11 @@ def student_lesson_list_with_progress(request):
         if request.GET.get('params'):
             invite = Invite.objects.get(params=request.GET['params'])
         fc = FlashCard.objects.filter(lesson=OuterRef('lesson'))
-        # t = get_user_model().objects.annotate(accountActive=Subquery(users.values('active')[:1])).values('id','username','first_name','date_joined','accountActive')
-        stulist = Invite.objects.filter(student_id=invite.student).distinct('lesson')
-        serializer = StudentLessonProgressSerializer(stulist,many=True)
+        stulist = Invite.objects.filter(
+            student_id=invite.student).distinct('lesson')
+        serializer = StudentLessonProgressSerializer(stulist, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
-        return Response({'message': 'error'},status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'error'},
+                        status=status.HTTP_404_NOT_FOUND)
