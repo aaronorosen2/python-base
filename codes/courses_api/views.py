@@ -216,7 +216,7 @@ def add_to_class(request):
 @permission_classes([IsAuthenticated])
 def lessons_in_class(request):
     class_id = request.GET.get('class_id')
-    if class_id and class_id is not None:
+    if class_id and class_id is not None and class_id.isnumeric():
         lessonsResponse = []
         # lessons = LessonSerializer(Lesson.objects.filter(_class=class_id), many=True)
         lessons = Lesson.objects.filter(_class=class_id)
@@ -234,7 +234,7 @@ def lessons_in_class(request):
             if singleLesson['fcr_count'] == singleLesson['fc_count']:
                 singleLesson['percent_completed'] = 100
             else:
-                singleLesson['percent_completed'] = (singleLesson['fcr_count']/(singleLesson['fc_count'] if singleLesson['fc_count'] > 0 else 1))*100
+                singleLesson['percent_completed'] = "{0:.2f}".format((singleLesson['fcr_count']/(singleLesson['fc_count'] if singleLesson['fc_count'] > 0 else 1))*100)
             lessonsResponse.append(singleLesson)
         return JsonResponse(lessonsResponse, safe=False)
     classes = ClassEnrolled.objects.filter(student__in=Student.objects.filter(email=request.user.email)).values('class_enrolled')

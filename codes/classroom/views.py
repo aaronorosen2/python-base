@@ -287,7 +287,11 @@ def student_text(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_invitation_link(request):
-    invite = InviteClass.objects.get(class_invited_id=Class.objects.get(id=request.GET.get('class_id')))
+    invite = None
+    try:
+        invite = InviteClass.objects.get(class_invited_id=Class.objects.get(id=request.GET.get('class_id')))
+    except Exception as e:
+        pass
     if invite and invite is not None:
         invite = InviteLinkSerializer(invite).data
         return JsonResponse({'uuid': invite['uuid'], 'class_id': invite['class_invited']['id']}, safe=False)
