@@ -117,7 +117,7 @@ def classapi(request):
     elif request.method == 'POST':
         try:
             user = User.objects.get(id=token.user_id)
-            class_ = Class(class_name=request.data['class_name'],user=user)
+            class_ = Class(class_name=request.data['class_name'],public=request.data['class_is_public'],user=user)
             class_.save()
             return JsonResponse({"success":True},status=201)
         except:
@@ -128,6 +128,7 @@ def classapi(request):
             user = User.objects.get(id=token.user_id)
             class_ = Class.objects.get(pk=request.data['id'])
             class_.class_name = request.data['class_name']
+            class_.public = request.data['class_is_public']
             class_.user = user
             class_.save()
             return JsonResponse({"success":True},status=201)
@@ -145,6 +146,14 @@ def classapi(request):
             except Class.DoesNotExist:
                 return JsonResponse(data={"result":False,"error":"Class does not exist"},status=404)
         return JsonResponse(data={"result":False,"error":"Please include class id like ?id=1"},status=400)
+
+
+@api_view(['GET'])
+def publicclass(request):
+    if request.method == 'GET':
+        serializer = ClassSerializer(Class.objects.filter(public=True), many=True)
+        return JsonResponse(serializer.data, safe=False)
+
 
 @api_view(['GET','POST','DELETE','PUT'])
 @authentication_classes([TokenAuthentication])
@@ -278,7 +287,11 @@ def student_text(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_invitation_link(request):
-    invite = InviteClass.objects.get(class_invited_id=Class.objects.get(id=request.GET.get('class_id')))
+    invite = None
+    try:
+        invite = InviteClass.objects.get(class_invited_id=Class.objects.get(id=request.GET.get('class_id')))
+    except Exception as e:
+        pass
     if invite and invite is not None:
         invite = InviteLinkSerializer(invite).data
         return JsonResponse({'uuid': invite['uuid'], 'class_id': invite['class_invited']['id']}, safe=False)
