@@ -12,9 +12,10 @@ from rest_framework.permissions import IsAuthenticated
 from django.core import serializers
 from voip.models import CallList
 from sfapp2.utils.twilio import send_sms, list_call
-
+from twilio.rest import Client
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 from django.db import connection
+from django.conf import settings
 app = Celery('web')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
@@ -90,13 +91,8 @@ def get_question_counters(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_members(request):
-    cursor = connection.cursor()    
-    cursor.execute("select * from sfapp2_member a inner join voip_sms_details b on a.phone=b.from_number or a.phone=b.to_number")
-    row = cursor.fetchall()
-    print("roww ==============",row)
-    print(" row count ",len(row))
     members = Member.objects.all().order_by('-created_at').values()
-    print("count all the members", len(members))
+
     for member in members:
         if member.get('question_answers'):
             member['answers'] = parse_question_answers(
@@ -165,3 +161,6 @@ def voice(request):
 @csrf_exempt
 def add_phone_number(request):
     pass
+
+
+

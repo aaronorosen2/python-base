@@ -23,8 +23,6 @@ import io
 import codecs
 import requests
 
-
-
 # To store session variables
 sessionID_to_callsid = {}
 sessionID_to_confsid = {}
@@ -93,6 +91,22 @@ def send_sms_file_api(request):
 def list_sms_api(request):
     messages = list_sms(request.POST.get('to_number'))
     return JsonResponse({'messages': messages}, safe = False)
+
+@csrf_exempt
+@api_view(['GET'])
+def get_all_active_numbers(request):
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token  = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+
+    incoming_phone_numbers = client.incoming_phone_numbers.list(limit=20)
+    active_numbers = list()
+    for record in incoming_phone_numbers:
+        print(record.phone_number)    
+        active_numbers.append(record.phone_number)    
+    print("active numbers", active_numbers)
+    return JsonResponse({'active':active_numbers}, safe = False) 
+
 
 @csrf_exempt    
 def filter_list_sms_api(request):

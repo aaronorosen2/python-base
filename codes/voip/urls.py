@@ -26,5 +26,6 @@ urlpatterns = [
     path('api_voip/recording/<str:sid>', views.recording_by_sid),
     # path('api_voip/handleDialCallStatus', views.handleDialCallStatus),
     path('api_voip/retrieving_call_logs', views.retrieving_call_logs),
+    path('api_voip/active', views.get_all_active_numbers),
 ]
 
