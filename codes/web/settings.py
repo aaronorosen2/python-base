@@ -230,8 +230,8 @@ ASGI_APPLICATION = 'web.routing.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-db_server = os.environ.get(
-    "db", "python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com")
+#db_server = os.environ.get(
+#    "db", "python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com")
 db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
 db_user = os.environ.get('db_user', 'postgres')
 
@@ -240,8 +240,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
         'USER': db_user,
-        'HOST': db_server,
-        'PORT': '5432',
+        'HOST': '3.143.215.43',
+        'PORT': '5433',
         'PASSWORD': db_password,
     }
 }
