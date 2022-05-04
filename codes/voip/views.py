@@ -190,7 +190,7 @@ def voip_callback(request, session_id):
         # Get user input
         gather = Gather(
             num_digits=1,
-            action='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/'
+            action='https://api.dreampotential.org/voip/api_voip/voip_callback/'
                     + session_id)
             # action='https://03ec2bac2d29.ngrok.io/voip/api_voip/voip_callback/'
                 # + session_id)
@@ -200,7 +200,7 @@ def voip_callback(request, session_id):
 
     # If the user didn't choose 1 or 2 (or anything), repeat the message
     resp.redirect(
-        'https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id))
+        'https://api.dreampotential.org/voip/api_voip/voip_callback/' + str(session_id))
         # 'https://03ec2bac2d29.ngrok.io/voip/api_voip/voip_callback/' + str(session_id))
 
     print(str(resp))
@@ -225,7 +225,7 @@ def add_user_to_conf(request, session_id):
         record=True,
         from_=settings.TWILIO['TWILIO_NUMBER'],
         to=destination_number,
-        conference_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/leave_conf/' + str(session_id) +"/" + str(destination_number),
+        conference_status_callback='https://api.dreampotential.org/voip/api_voip/leave_conf/' + str(session_id) +"/" + str(destination_number),
         # conference_status_callback='https://03ec2bac2d29.ngrok.io/voip/api_voip/leave_conf/' + str(session_id) +"/" + str(destination_number),
         conference_status_callback_event="leave")
 
@@ -322,10 +322,10 @@ def join_conference(request):
     call = twilio_client.calls.create(record=True,
                                         from_= settings.TWILIO['TWILIO_NUMBER'],
                                         to = your_number,
-                                        url='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/voip_callback/' + str(session_id),
+                                        url='https://api.dreampotential.org/voip/api_voip/voip_callback/' + str(session_id),
                                     #   url='https://03ec2bac2d29.ngrok.io/voip/api_voip/voip_callback/' + str(session_id),
                                         status_callback_event=['completed'],
-                                        status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/complete_call/' + str(session_id),
+                                        status_callback='https://api.dreampotential.org/voip/api_voip/complete_call/' + str(session_id),
                                     #   status_callback='https://03ec2bac2d29.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
                                     )
 
@@ -547,7 +547,7 @@ def handle_incoming_call(request):
     response.append(dial)
     response.say("Hi, I can't come to the phone right now, please leave a message after the beep",voice="alice")
     response.record(
-        recording_status_callback='https://sfapp-api.dreamstate-4-all.org/voip/api_voip/recording_status_callback',
+        recording_status_callback='https://api.dreampotential.org/voip/api_voip/recording_status_callback',
         recording_status_callback_event='completed')
     response.hangup()
     return HttpResponse(response)
