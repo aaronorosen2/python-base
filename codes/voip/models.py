@@ -59,6 +59,7 @@ class User_leads(models.Model):
     ask = models.CharField(max_length=255, blank=True,null=True)
     state = models.CharField(max_length=255,blank=True,null=True)
     last_call = models.DateField(blank=True,null=True)
+    last_dial_number = models.CharField(max_length=255, blank=True, null=True)
     recording_url = models.CharField(max_length=256,blank=True,null=True)
     url = models.CharField(max_length=300,blank=True,null=True)
     notes = models.TextField(blank=True,default="")
@@ -67,6 +68,8 @@ class User_leads(models.Model):
     city = models.CharField(max_length=255,blank=True,null=True)
     zipcode = models.CharField(max_length=255,blank=True,null=True)
     address = models.CharField(max_length=255,blank=True,null=True)
+    tax_overdue = models.CharField(max_length=255,blank=True,null=True)
+    contact_id = models.CharField(max_length=255,blank=True,null=True)
 
     class Meta:
         db_table = 'User_leads'

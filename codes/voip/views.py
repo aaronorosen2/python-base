@@ -22,6 +22,7 @@ from django.shortcuts import redirect
 import io
 import codecs
 import requests
+import datetime
 
 # To store session variables
 sessionID_to_callsid = {}
@@ -436,6 +437,8 @@ def get_lead(request):
             lead = User_leads.objects.get(pk=request.data['pk'])
             lead.notes = request.data['notes']
             lead.status = request.data['status']
+            lead.last_call = datetime.datetime.now()
+            lead.last_dial_number = request.data['last_dial_number']
             lead.save()
             return JsonResponse({'message': 'success'}, status=200)
 
@@ -487,9 +490,9 @@ def csvUploder(request):
     token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
     user = User.objects.get(id=token.user_id)
     # print("🚀 ~ file: views.py ~ line 431 ~ user", user)
-    common_header = ['Name', 'Phone', 'Email', 'State', 'Ask', 'Notes', 'Website', 'City', 'Zipcode', 'Address']
+    common_header = ['url', 'address_text', 'city', 'zipcode', 'state', 'tax_overdue', 'Contact ID', 'First Name', 'Last Name', 'Phone']
     csv_file = request.data['csvFile']
-    reader = csv.reader(codecs.iterdecode(csv_file, 'utf-8'))
+    reader = csv.reader(codecs.iterdecode(csv_file, 'unicode_escape'))
     for j,i in enumerate(reader):
         if j == 0:
             # print("🚀 ~ file: views.py ~ line 430 ~ common_header != i", common_header != i)
@@ -498,22 +501,19 @@ def csvUploder(request):
                             "message": "error csv format"}, safe=False, status=406)
         if j != 0:
             # print("🚀 ~ file: views.py ~ line 441 ~ i", i)
-            name = i[0]
-            phone = i[1]
-            email = i[2]
-            state = i[3]
-            ask = i[4]
-            notes = i[5]
-            url = i[6]
-            city = i[7]
-            zipcode= i[8]
-            address = i[9]
+            url = i[0]
+            address = i[1]
+            city = i[2]
+            zipcode= i[3]
+            state = i[4]
+            tax_overdue = i[5]
+            contact_id = i[6]
+            name = i[7] + i[8]
+            phone = i[9]
             try:
-                lead = User_leads(user=user, name=name, phone=phone,
-                                  email=email, ask=ask, state=state,
-                                  notes=notes,
+                lead = User_leads(user=user, name=name, phone=phone, state=state,
                                   url=url, city=city, zipcode=zipcode,
-                                  address=address)
+                                  address=address, tax_overdue=tax_overdue, contact_id=contact_id)
                 lead.save()
             except:
                 continue
