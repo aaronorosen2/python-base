@@ -367,19 +367,13 @@ def make_call(request):
     return JsonResponse({'message': 'Success!'})
 
 
-# @api_view(['post'])
-# def send_sms(request):
-#     from_num = request.data['from_num']
-#     to_num = request.data['to_num']
-#     text = request.data['body']
-#     client = get_client()
-#     sms = client.messages.create(
-#         body=text,
-#         from_=from_num,
-#         to=to_num,
-#     )
-#     print(sms.sid)
-#     return JsonResponse({'message': 'Success!'})
+@api_view(['post'])
+def send_sms_(request):
+    to_num = request.POST.get('to_num')
+    text = request.POST.get('body')
+    send_sms(to_num, text) 
+    # print(sms.sid)
+    return JsonResponse({'message': 'Success!'})
 
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])

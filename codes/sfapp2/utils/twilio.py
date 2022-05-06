@@ -2,6 +2,7 @@ from django.conf import settings
 from twilio.rest import Client
 from voip.models import CallList, Sms_details
 import random
+from django.views.decorators.csrf import csrf_exempt
 
 
 def send_confirmation_code(to_number):
@@ -23,6 +24,7 @@ def send_sms(to_number, body, twilio_number=None):
 
     client.api.messages.create(to_number, from_=twilio_number, body=body)
 
+csrf_exempt
 def send_sms_file(to_number, media_url):
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
