@@ -130,6 +130,7 @@ def lesson_create(request):
                         position=position,
                         braintree_config=BrainTreeConfig.objects.get(id=BrainTreeConfig_obj.id),
                         item_store=item.objects.get(id=item_obj.id),
+                        is_required=flashcard.get('is_required'),
                         )
             f.save()
         else:
@@ -139,7 +140,8 @@ def lesson_create(request):
                         options=options,
                         answer=answer,
                         image=image,
-                        position=position
+                        position=position,
+                        is_required=flashcard.get('is_required'),
                         )
             f.save()
     return Response(LessonSerializer(les_).data)
@@ -411,7 +413,8 @@ def lesson_update(request, pk):
                                 image=image,
                                 position=position,
                                 braintree_config=BrainTreeConfig.objects.get(id=BrainTreeConfig_obj.id),
-                                item_store=item.objects.get(id=item_obj.id)
+                                item_store=item.objects.get(id=item_obj.id),
+                                is_required=flashcard.get('is_required'),
                                 )
                     f.save()
                 else:
@@ -421,7 +424,8 @@ def lesson_update(request, pk):
                                 options=options,
                                 answer=answer,
                                 image=image,
-                                position=position
+                                position=position,
+                                is_required=flashcard.get('is_required'),
                                 )
                     f.save()
         return Response(LessonSerializer(lesson).data)
