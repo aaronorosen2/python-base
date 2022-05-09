@@ -72,7 +72,7 @@ google-resumable-media==1.1.0
 googleapis-common-protos==1.52.0
 greenlet==1.0.0
 grpcio
-gunicorn==20.0.4
+gunicorn
 h5py==2.10.0
 hiredis==1.1.0
 html5lib==1.1

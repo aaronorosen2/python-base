@@ -9,14 +9,13 @@ services:
             - /opt/pysfapp/media:/home/web/codes/media
         ports:
             - 8040:8000
-        command: bash -c "python3 manage.py runserver 0.0.0.0:8000"
-        # command: bash -c "/usr/local/bin/gunicorn --bind :8000 --timeout 999 --workers 8 --env DJANGO_SETTINGS_MODULE=web.settings  web.wsgi:application"
+        command: /usr/local/bin/gunicorn --env DJANGO_SETTINGS_MODULE=web.settings web.wsgi --workers 8 --timeout 999 --bind=0.0.0.0:8000
+
 
         environment:
           - db
           - db_password
           - db_user
-        entrypoint: /entrypoint.sh
         networks:
             - backend
 
