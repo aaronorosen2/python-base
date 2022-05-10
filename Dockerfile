@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:focal
 #FROM python:3.6
 
 ENV PYTHONUNBUFFERED=1
@@ -19,12 +19,12 @@ WORKDIR /home/web/codes
 #
 RUN apt-get update --fix-missing
 RUN apt-get install -y software-properties-common
-# # RUN add-apt-repository ppa:deadsnakes/ppa
 #
 # RUN apt-get update --fix-missing
 RUN apt-get install -y python3 python3-pip
 RUN apt-get install -y cmake
 RUN pip3 install --upgrade pip
+
 COPY ./requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
 
