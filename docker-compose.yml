@@ -9,8 +9,8 @@ services:
             - /opt/pysfapp/media:/home/web/codes/media
         ports:
             - 8040:8000
-        command: bash -c "python3 manage.py runserver 0.0.0.0:8000"
-        # command: /usr/local/bin/gunicorn --env DJANGO_SETTINGS_MODULE=web.settings web.wsgi --workers 8 --timeout 999 --bind=0.0.0.0:8000
+        # command: bash -c "python3 manage.py runserver 0.0.0.0:8000"
+        command: /usr/local/bin/gunicorn --env DJANGO_SETTINGS_MODULE=web.settings web.wsgi --workers 8 --timeout 999 --bind=0.0.0.0:8000
 
 
         environment:
