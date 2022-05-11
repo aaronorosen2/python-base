@@ -82,4 +82,4 @@ class Sms_details(models.Model):
     to_number = models.CharField(max_length=20, blank=True, null=True)
     msg_body = models.TextField(blank=True, null=True)
     direction = models.CharField(max_length=500, blank=True, null=True)
-    created_at = models.DateTimeField(blank=True, null=True)        
+    created_at = models.DateTimeField(blank=True, null=True)

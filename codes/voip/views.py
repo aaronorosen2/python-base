@@ -90,6 +90,7 @@ def send_sms_file_api(request):
 
 @csrf_exempt
 def list_sms_api(request):
+    print(request.POST.get("to_number"))
     messages = list_sms(request.POST.get('to_number'))
     return JsonResponse({'messages': messages}, safe = False)
 
