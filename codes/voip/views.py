@@ -51,7 +51,9 @@ def twilio_inbound_sms(request):
     print(request.POST)
     print(request)
 
+    # here we need to popualte our cache
     # XXX populate voip.model.SMS and voip.model.Phone
+
     send_sms("18434259777",
              request.POST.get("Body"))
 

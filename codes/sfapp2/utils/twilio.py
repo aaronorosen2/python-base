@@ -89,69 +89,40 @@ def list_sms(to_number):
 
     return sorted(messages, key=lambda d: d['date_created'], reverse=True)
 
+
+
+def get_and_create_message(sms):
+    print(dir(sms))
+    print(sms)
+    print(sms.sid)
+
+    sms_message = Sms_details.objects.filter(sid=sms.sid).first()
+    if not sms_message:
+        sms_message = Sms_details()
+
+    sms_message.from_number = sms.from_
+    sms_message.to_number = sms.to
+    sms_message.msg_body = sms.body
+    sms_message.direction = sms.direction
+    sms_message.created_at = sms.date_created
+    sms_message.sid= sms.sid
+    sms_message.save()
+
+    return {
+        'sid': sms_message.sid,
+        'body': sms.body,
+        'date_created': sms.date_created,
+        'direction': sms.direction,
+        'from': sms.from_,
+        'to': sms.to,
+    }
+
+
+
 def cache_smss(smss, to_number):
+    resps = []
     for sms in smss:
-        resps = []
-        print("TO number is: %s" % to_number)
-        if sms.to == to_number or sms.from_ == to_number:
-            print("Is our message: %s" % sms.body)
-            # we are in thread
-            pass
-        else:
-            print("Message outside thread")
-            continue
-        try:
-            try:
-                # XXX need to understand integration here we have
-                record = Sms_details.objects.get(
-                    from_number=sms.from_,
-                    to_number=sms.to,
-                    msg_body=sms.body,
-                    direction=sms.direction,
-                    created_at=sms.date_created
-                )
-                resps.append({
-                    'body': record.msg_body,
-                    'date_created': record.created_at,
-                    'direction': record.direction,
-                    'from': record.from_number,
-                    'to': record.to_number,
-                })
-            except Sms_details.MultipleObjectsReturned:
-                records = Sms_details.objects.filter(
-                    from_number=sms.from_,
-                    to_number=sms.to,
-                    msg_body=sms.body,
-                    direction=sms.direction,
-                    created_at=sms.date_created
-                )
-
-                for record in records:
-                    resps.append({
-                        'body': record.msg_body,
-                        'date_created': record.created_at,
-                        'direction': record.direction,
-                        'from': record.from_number,
-                        'to': record.to_number,
-                    })
-
-        except Sms_details.DoesNotExist:
-            record = Sms_details(
-                from_number=sms.from_,
-                to_number=sms.to,
-                msg_body=sms.body,
-                direction=sms.direction,
-                created_at=sms.date_created
-            )
-            record.save()
-            resps.append({
-                'body': record.msg_body,
-                'date_created': record.created_at,
-                'direction': record.direction,
-                'from': record.from_number,
-                'to': record.to_number,
-            })
-
+        resps.append(get_and_create_message(sms))
     return resps
 
 def list_call():
