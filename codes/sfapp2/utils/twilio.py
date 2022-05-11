@@ -46,9 +46,6 @@ def list_contacted_sms(to_number):
 
     contacts = {}
     for sms in smss:
-        print(sms)
-        print(dir(sms))
-
         if sms.to != to_number:
             if sms.to not in contacts:
                 contacts[sms.to] = {'created_at': sms.date_created}
@@ -60,7 +57,6 @@ def list_contacted_sms(to_number):
                 contacts[sms.from_] = {'created_at': sms.date_created}
             elif contacts[sms.from_]['created_at'] < sms.date_created:
                 contacts[sms.from_] = {'created_at': sms.date_created}
-
 
     response = []
     for contact in contacts.keys():
@@ -82,19 +78,23 @@ def list_sms(to_number):
     # twilio_number = settings.TWILIO['TWILIO_NUMBER']
     client = Client(account_sid, auth_token)
 
+    # XXX Fix me...
+    smss = client.api.messages.list(to=to_number)
+    messages = cache_smss(smss, to_number)
 
-    # XXX todo -> Need to also get messages
-    # smss = client.api.messages.list(from_=to_number)
-    # join together and sort correctly.
-    # smss = client.api.messages.list(to=to_number)
+    smss = client.api.messages.list(from_=to_number)
+    messages += cache_smss(smss, to_number)
 
-    # Do this so we can get full converstaion.
-    smss = client.api.messages.list()
-    resps = []
+    print(messages)
 
+    return sorted(messages, key=lambda d: d['date_created'], reverse=True)
+
+def cache_smss(smss, to_number):
     for sms in smss:
+        resps = []
         print("TO number is: %s" % to_number)
         if sms.to == to_number or sms.from_ == to_number:
+            print("Is our message: %s" % sms.body)
             # we are in thread
             pass
         else:
