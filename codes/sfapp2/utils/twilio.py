@@ -38,8 +38,36 @@ def send_sms_file(to_number, media_url):
     # print(message)
 
 
+def list_contacted_sms(to_number):
+
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    twilio_number = settings.TWILIO['TWILIO_NUMBER']
+    client = Client(account_sid, auth_token)
+    smss = client.api.messages.list(to=to_number)
+
+    contacts = {}
+    for sms in smss:
+        if sms.to != to_number:
+            contacts[sms.to] = {}
+
+        if sms.from_ != to_number:
+            contacts[sms.from_] = {}
+
+
+
+    response = []
+    for contact in contacts.keys():
+       response.append({
+            'name': 'test name',
+            'phone': contact,
+            'created_at': 0,
+        })
+    return response
+
+
+
 def list_sms(to_number):
-    
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
     twilio_number = settings.TWILIO['TWILIO_NUMBER']
@@ -48,30 +76,25 @@ def list_sms(to_number):
     resps = []
 
     for sms in smss:
-        try: 
-           
+        try:
             try:
-                
                 record = Sms_details.objects.get(
-                    from_number = sms.from_, 
+                    from_number = sms.from_,
                     to_number = sms.to,
                     msg_body = sms.body,
                     direction = sms.direction,
                     created_at = sms.date_created
                 )
-                
                 resps.append({
-                
                 'body': record.msg_body,
                 'date_created': record.created_at,
                 'direction': record.direction,
                 'from': record.from_number,
                 'to': record.to_number,
             })
-            except Sms_details.MultipleObjectsReturned:  
-                
+            except Sms_details.MultipleObjectsReturned:
                 records = Sms_details.objects.filter(
-                    from_number = sms.from_, 
+                    from_number = sms.from_,
                     to_number = sms.to,
                     msg_body = sms.body,
                     direction = sms.direction,
@@ -80,7 +103,6 @@ def list_sms(to_number):
 
                 for record in records:
                     resps.append({
-                    
                     'body': record.msg_body,
                     'date_created': record.created_at,
                     'direction': record.direction,
@@ -89,9 +111,8 @@ def list_sms(to_number):
                 })
 
         except Sms_details.DoesNotExist:
-            
             record = Sms_details(
-                from_number = sms.from_, 
+                from_number = sms.from_,
                 to_number = sms.to,
                 msg_body = sms.body,
                 direction = sms.direction,
@@ -99,7 +120,6 @@ def list_sms(to_number):
             )
             record.save()
             resps.append({
-                
                 'body': record.msg_body,
                 'date_created': record.created_at,
                 'direction': record.direction,
