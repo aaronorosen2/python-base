@@ -46,21 +46,33 @@ def list_contacted_sms(to_number):
 
     contacts = {}
     for sms in smss:
+        print(sms)
+        print(dir(sms))
+
         if sms.to != to_number:
-            contacts[sms.to] = {}
+            if sms.to not in contacts:
+                contacts[sms.to] = {'created_at': sms.date_created}
+            elif contacts[sms.to]['created_at'] < sms.date_created:
+                contacts[sms.to] = {'created_at': sms.date_created}
 
         if sms.from_ != to_number:
-            contacts[sms.from_] = {}
+            if sms.from_ not in contacts:
+                contacts[sms.from_] = {'created_at': sms.date_created}
+            elif contacts[sms.from_]['created_at'] < sms.date_created:
+                contacts[sms.from_] = {'created_at': sms.date_created}
+
 
     response = []
     for contact in contacts.keys():
+
         response.append({
              # XXX do something
             'name': 'test name',
             'phone': contact,
-            'created_at': 0,
+            'created_at': contacts[contact]['created_at'],
         })
-    return response
+
+    return sorted(response, key=lambda d: d['created_at'], reverse=True)
 
 
 
