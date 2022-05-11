@@ -72,24 +72,32 @@ def list_contacted_sms(to_number):
 
 
 
-def list_sms(to_number):
+def list_sms_cache(to_number):
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
     # twilio_number = settings.TWILIO['TWILIO_NUMBER']
     client = Client(account_sid, auth_token)
 
     # XXX Fix me...
-    smss = client.api.messages.list(to=to_number)
-    messages = cache_smss(smss, to_number)
-
-    smss = client.api.messages.list(from_=to_number)
-    messages += cache_smss(smss, to_number)
+    smss = client.api.messages.list()
+    messages = []
+    for sms in smss:
+        messages.append(get_and_create_message(sms))
 
     print(messages)
 
     return sorted(messages, key=lambda d: d['date_created'], reverse=True)
 
+def list_sms(to_number):
 
+    print("Getting messages from number: %s" % to_number)
+
+    messages = Sms_details.objects.filter(
+        to_number=to_number
+    ).union(Sms_details.objects.filter(from_number=to_number)).values()
+    print("Number of messages: %s" % len(messages))
+
+    return sorted(messages, key=lambda d: d['created_at'], reverse=True)
 
 def get_and_create_message(sms):
     print(dir(sms))
@@ -118,12 +126,6 @@ def get_and_create_message(sms):
     }
 
 
-
-def cache_smss(smss, to_number):
-    resps = []
-    for sms in smss:
-        resps.append(get_and_create_message(sms))
-    return resps
 
 def list_call():
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
