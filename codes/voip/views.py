@@ -8,7 +8,7 @@ from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause, Numb
 from twilio.rest import Client
 import uuid
 from knox.auth import AuthToken
-from .models import Phone, assigned_numbers, User_leads, Sms_details
+from .models import Phone, assigned_numbers, User_leads, Sms_details, TwilioSession
 from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer,UserLeadsSerializer
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
@@ -23,11 +23,6 @@ import io
 import codecs
 import requests
 import datetime
-
-# To store session variables
-sessionID_to_callsid = {}
-sessionID_to_confsid = {}
-sessionID_to_destNo = {}
 
 
 # Generate a session id for conference
@@ -211,7 +206,8 @@ def voip_callback(request, session_id):
 def add_user_to_conf(request, session_id):
     print("🚀 ~ file: views.py ~ line 399 ~ session_id", session_id)
     # print(request.POST)
-    destination_number = sessionID_to_destNo.get(session_id)
+    destination_number = TwilioSession.objects.filter(session_id=session_id).first().dest_number
+
     print("🚀 ~ file: views.py ~ line 162 ~ destination_number", destination_number)
     print("Attemtping to add phone number to call: " + destination_number)
 
@@ -240,7 +236,10 @@ def leave_conf(request, session_id, destination_number):
     event = request.POST.get('SequenceNumber')
     conference_sid = request.POST.get('ConferenceSid')
 
-    sessionID_to_confsid[session_id] = conference_sid
+    twilio_session = TwilioSession.objects.filter(session_id=session_id).first()
+    twilio_session.confsid = conference_sid
+    twilio_session.save()
+
     # print("Leave call request:", conference_sid, event, session_id)
 
     if request.POST.get('StatusCallbackEvent') == 'participant-leave':
@@ -253,10 +252,9 @@ def leave_conf(request, session_id, destination_number):
             # print("Call ended")
         # ends conference call if original caller leaves before callee picks up
         elif len(participants.list()) == 0 and event == '2':
-            client.calls(sessionID_to_callsid.get(
-                session_id)).update(status='completed')
-        # print("Call ended")
-
+            twilio_session = TwilioSession.objects.filter(session_id=session_id).first()
+            print("HERE %s" % twilio_session.callsid)
+            client.calls(twilio_session.callsid).update(status="completed")
 
 
         # adding url and last call to db
@@ -287,18 +285,19 @@ def leave_conf(request, session_id, destination_number):
 def complete_call(request, session_id):
     # print(request.POST)
     # print("## Ending conference call, callee rejected call")
-    global sessionID_to_confsid
 
     try:
         client = get_client()
+        
         participants = client.conferences(
-            sessionID_to_confsid.get(session_id)).participants
-        # print('participants:', participants)
+            TwilioSession.objects.filter(session_id=session_id).first().confsid
+        ).participants
 
         # only does so if 1 participant left in the conference call (i.e. the caller)
         if participants and len(participants.list()) == 1:
-            client.conferences(sessionID_to_confsid.get(
-                session_id)).update(status='completed')
+            client.conferences(
+                TwilioSession.objects.filter(session_id=session_id).first().confsid
+            ).update(status='completed')
     finally:
         print("Call ended")
 
@@ -307,7 +306,6 @@ def complete_call(request, session_id):
 
 @csrf_exempt
 def join_conference(request):
-    global sessionID_to_destNo
     source_number = request.POST.get("source_number")    
     print("🚀 ~ file: views.py ~ line 256 ~ source_number", source_number)
     dest_number = request.POST.get("dest_number")
@@ -317,9 +315,14 @@ def join_conference(request):
 
     # try:
     twilio_client = get_client()
-    # session_id = get_session_id(source_number, dest_number)
-    session_id = "confernce"
-    sessionID_to_destNo[session_id] = dest_number
+    session_id = str(uuid.uuid4())
+
+    twilio_session = TwilioSession()
+    twilio_session.session_id = session_id
+    twilio_session.dest_number = dest_number
+    twilio_session.save()
+
+
     call = twilio_client.calls.create(record=True,
                                         from_= settings.TWILIO['TWILIO_NUMBER'],
                                         to = your_number,
@@ -330,8 +333,9 @@ def join_conference(request):
                                     #   status_callback='https://03ec2bac2d29.ngrok.io/voip/api_voip/complete_call/' + str(session_id)
                                     )
 
-    global sessionID_to_callsid    
-    sessionID_to_callsid[session_id] = call.sid
+
+    twilio_session.callsid = call.sid
+    twilio_session.save()
     # except Exception as e:
     #     # message = e.msg if hasattr(e, 'msg') else str(e)
     #     return JsonResponse({'error': "fail"})

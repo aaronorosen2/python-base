@@ -83,3 +83,16 @@ class Sms_details(models.Model):
     msg_body = models.TextField(blank=True, null=True)
     direction = models.CharField(max_length=500, blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
+
+class TwilioSession(models.Model):
+    session_id = models.CharField(max_length=512, blank=True, null=True, unique=True)
+    dest_number = models.CharField(max_length=40, blank=True, null=True)
+    callsid = models.CharField(max_length=512, blank=True, null=True, unique=True)
+    confsid = models.CharField(max_length=512, blank=True, null=True, unique=True)
+
+    created_at = models.DateTimeField(blank=True, null=True)
+
+
+
+
+
