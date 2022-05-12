@@ -71,8 +71,7 @@ def list_contacted_sms(to_number):
     return sorted(response, key=lambda d: d['created_at'], reverse=True)
 
 
-
-def list_sms_cache(to_number):
+def list_sms_cache():
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
     # twilio_number = settings.TWILIO['TWILIO_NUMBER']

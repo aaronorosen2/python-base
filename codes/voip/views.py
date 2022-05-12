@@ -1,6 +1,6 @@
 from django.core.checks import messages
 from rest_framework.serializers import Serializer
-from sfapp2.utils.twilio import list_sms, send_sms_file, send_sms
+from sfapp2.utils.twilio import list_sms, send_sms_file, send_sms, list_sms_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -52,7 +52,7 @@ def twilio_inbound_sms(request):
     print(request)
 
     # here we need to popualte our cache
-    # XXX populate voip.model.SMS and voip.model.Phone
+    list_sms_cache() 
 
     send_sms("18434259777",
              request.POST.get("Body"))
