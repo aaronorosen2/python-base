@@ -72,6 +72,8 @@ def getNumber(request):
 def send_sms_api(request):
     to_num = request.POST.get("to_number")
     msg = request.POST.get("msg")
+    data = Sms_details(to_number=to_num,msg_body=msg,created_at =  datetime.datetime.now())
+    data.save()
     send_sms(to_num,msg)    
     return JsonResponse({'message': 'Success'})
 
@@ -88,8 +90,19 @@ def send_sms_file_api(request):
 @csrf_exempt
 def list_sms_api(request):
     print(request.POST.get("to_number"))
-    messages = list_sms(request.POST.get('to_number'))
-    return JsonResponse({'messages': messages}, safe = False)
+    num = request.POST.get('to_number')
+    filter_messages = []
+    if num:
+        messages = Sms_details.objects.filter(from_number=num) | Sms_details.objects.filter(to_number=num)
+        for record in messages:
+            filter_messages.append({
+                'body': record.msg_body,
+                'date_created': record.created_at,
+                'direction': record.direction,
+                'from': record.from_number,
+                'to': record.to_number,
+            })
+    return JsonResponse({'messages': filter_messages}, safe = False)
 
 @csrf_exempt
 @api_view(['GET'])
@@ -378,6 +391,8 @@ def make_call(request):
 def send_sms_(request):
     to_num = request.POST.get('to_num')
     text = request.POST.get('body')
+    data = Sms_details(to_number=to_num,msg_body=text,created_at =  datetime.datetime.now())
+    data.save()
     send_sms(to_num, text) 
     # print(sms.sid)
     return JsonResponse({'message': 'Success!'})
