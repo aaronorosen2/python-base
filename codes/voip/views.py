@@ -270,7 +270,7 @@ def leave_conf(request, session_id, destination_number):
         elif len(participants.list()) == 0 and event == '2':
             twilio_session = TwilioSession.objects.filter(session_id=session_id).first()
             print("HERE %s" % twilio_session.callsid)
-            client.calls(twilio_session.callsid).update(status="completed")
+            # client.calls(twilio_session.callsid).update(status="completed")
 
         # adding url and last call to db
         calls = client.api.calls.list(from_ = settings.TWILIO['TWILIO_NUMBER'],
@@ -552,6 +552,7 @@ def csvUploder(request):
 #     response.dial('+18434259777')
 #     # response.redirect('https://830ecbd6a5d9.ngrok.io/voip/api_voip/recording_status_callback', method='POST')
 #     return HttpResponse(response)
+
 @csrf_exempt
 def handle_incoming_call(request):
     response = VoiceResponse()
