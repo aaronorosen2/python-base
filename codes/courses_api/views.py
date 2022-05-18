@@ -11,7 +11,8 @@ from .serializers import LessonSerializer
 from .serializers import FlashCardSerializer,LessonEmailNotifySerializer
 from .serializers import UserSessionEventSerializer,UserSessionSerializer
 from .serializers import FlashcardResponseSerializer,StudentLessonSerializer,StudentLessonProgressSerializer
-from .models import Lesson,LessonEmailNotify
+from .models import Lesson
+from lesson_notifications.models import LessonEmailNotify
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
