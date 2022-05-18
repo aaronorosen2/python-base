@@ -263,14 +263,14 @@ def leave_conf(request, session_id, destination_number):
         # ends conference call if only 1 participant left
         participants = client.conferences(conference_sid).participants
         if participants and len(participants.list()) == 1:
-            client.conferences(conference_sid).update(status='completed')
+            # client.conferences(conference_sid).update(status='completed')
             # print("Call ended")
+            print("only one person in call keep conference call open...")
         # ends conference call if original caller leaves before callee picks up
         elif len(participants.list()) == 0 and event == '2':
             twilio_session = TwilioSession.objects.filter(session_id=session_id).first()
             print("HERE %s" % twilio_session.callsid)
             client.calls(twilio_session.callsid).update(status="completed")
-
 
         # adding url and last call to db
         calls = client.api.calls.list(from_ = settings.TWILIO['TWILIO_NUMBER'],
@@ -303,16 +303,16 @@ def complete_call(request, session_id):
 
     try:
         client = get_client()
-        
+
         participants = client.conferences(
             TwilioSession.objects.filter(session_id=session_id).first().confsid
         ).participants
 
         # only does so if 1 participant left in the conference call (i.e. the caller)
-        if participants and len(participants.list()) == 1:
-            client.conferences(
-                TwilioSession.objects.filter(session_id=session_id).first().confsid
-            ).update(status='completed')
+        # if participants and len(participants.list()) == 1:
+        #    client.conferences(
+        #        TwilioSession.objects.filter(session_id=session_id).first().confsid
+        #    ).update(status='completed')
     finally:
         print("Call ended")
 
