@@ -101,12 +101,6 @@ class InviteResponse(models.Model):
     answer = models.TextField(null=True, blank=True)
 
 
-class LessonEmailNotify(models.Model):
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE,
-                               null=True, blank=True)
-    email = models.EmailField(null=True, blank=True)
-
-
 class MemberSession(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True, default=None)

@@ -1,5 +1,8 @@
+import imp
+from tokenize import Name
 from django.core.checks import messages
 from rest_framework.serializers import Serializer
+from setuptools import Command
 from sfapp2.utils.twilio import list_sms, send_sms_file, send_sms, list_sms_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
@@ -23,6 +26,7 @@ import io
 import codecs
 import requests
 import datetime
+import pandas as pd
 
 
 # Generate a session id for conference
@@ -72,6 +76,8 @@ def getNumber(request):
 def send_sms_api(request):
     to_num = request.POST.get("to_number")
     msg = request.POST.get("msg")
+    data = Sms_details(to_number=to_num,msg_body=msg,created_at =  datetime.datetime.now())
+    data.save()
     send_sms(to_num,msg)    
     return JsonResponse({'message': 'Success'})
 
@@ -88,8 +94,19 @@ def send_sms_file_api(request):
 @csrf_exempt
 def list_sms_api(request):
     print(request.POST.get("to_number"))
-    messages = list_sms(request.POST.get('to_number'))
-    return JsonResponse({'messages': messages}, safe = False)
+    num = request.POST.get('to_number')
+    filter_messages = []
+    if num:
+        messages = Sms_details.objects.filter(from_number=num) | Sms_details.objects.filter(to_number=num)
+        for record in messages:
+            filter_messages.append({
+                'body': record.msg_body,
+                'date_created': record.created_at,
+                'direction': record.direction,
+                'from': record.from_number,
+                'to': record.to_number,
+            })
+    return JsonResponse({'messages': filter_messages}, safe = False)
 
 @csrf_exempt
 @api_view(['GET'])
@@ -378,6 +395,8 @@ def make_call(request):
 def send_sms_(request):
     to_num = request.POST.get('to_num')
     text = request.POST.get('body')
+    data = Sms_details(to_number=to_num,msg_body=text,created_at =  datetime.datetime.now())
+    data.save()
     send_sms(to_num, text) 
     # print(sms.sid)
     return JsonResponse({'message': 'Success!'})
@@ -491,33 +510,30 @@ def csvUploder(request):
     token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
     user = User.objects.get(id=token.user_id)
     # print("🚀 ~ file: views.py ~ line 431 ~ user", user)
-    common_header = ['url', 'address_text', 'city', 'zipcode', 'state', 'tax_overdue', 'Contact ID', 'First Name', 'Last Name', 'Phone']
+    common_header = ['Name', 'Phone', "Email" , "State","Ask" ,'url', "Notes"]
     csv_file = request.data['csvFile']
-    reader = csv.reader(codecs.iterdecode(csv_file, 'unicode_escape'))
-    for j,i in enumerate(reader):
-        if j == 0:
-            # print("🚀 ~ file: views.py ~ line 430 ~ common_header != i", common_header != i)
-            if common_header != i:
-                return JsonResponse({
-                            "message": "error csv format"}, safe=False, status=406)
-        if j != 0:
-            # print("🚀 ~ file: views.py ~ line 441 ~ i", i)
-            url = i[0]
-            address = i[1]
-            city = i[2]
-            zipcode= i[3]
-            state = i[4]
-            tax_overdue = i[5]
-            contact_id = i[6]
-            name = i[7] + i[8]
-            phone = i[9]
-            try:
-                lead = User_leads(user=user, name=name, phone=phone, state=state,
-                                  url=url, city=city, zipcode=zipcode,
-                                  address=address, tax_overdue=tax_overdue, contact_id=contact_id)
-                lead.save()
-            except:
-                continue
+    reader = pd.read_csv(csv_file)
+    csv_head = reader.head() 
+    csv_data = reader.values.tolist()
+    # reader = csv.reader(codecs.iterdecode(csv_file, 'unicode_escape'))
+    if common_header != list(csv_head):
+          return JsonResponse({
+                        "message": "error csv format"}, safe=False, status=406)
+    for i in csv_data:
+        name = i[0]
+        phone = i[1]
+        email = i[2]
+        ask= i[3]
+        state = i[4]
+        url = i[5]
+        notes = i[6]
+        try:
+            lead = User_leads(user=user, name=name, phone=phone, email=email,
+                            ask=ask, state=state, url=url,
+                            notes=notes)
+            lead.save()
+        except:
+            continue
     return JsonResponse({'message': 'lead save successfully'}, status=200)
 
 # @csrf_exempt
