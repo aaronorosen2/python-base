@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import item, order, userProfile
+from .models import StripeConfig, item, order, userProfile
 
 class itemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,3 +35,8 @@ class orderSerializer(serializers.ModelSerializer):
 #                     'user',
 #                     'Neighborhood'
 #                     )
+
+class StripeConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StripeConfig
+        fields = ('id', 'STRIPE_PUBLISHABLE_KEY', 'STRIPE_SECRET_KEY')

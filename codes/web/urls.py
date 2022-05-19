@@ -34,6 +34,7 @@ urlpatterns = [
         ('vconf.urls', 'vconf_api'),
         namespace='vconf_api')),
     path('courses_api/', include("courses_api.urls")),
+    path('store_stripe/', include("store_stripe.urls")),
     path('notification/', notification),
     path('admin/', admin.site.urls),
 

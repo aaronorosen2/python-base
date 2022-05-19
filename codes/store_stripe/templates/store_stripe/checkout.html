@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <form onSubmit=handleSubmit()>
+        <div id="element-form"></div>
+        <button id="button-form" type="submit">Submit</button>
+    </form>
+    <script>
+        var stripe = new Stripe(
+            "pk_test_51KylweHaMyWhiYQ5Il0Xb13KJU8kkzRSxVYLcDrTYosRX7RUrl69hHRgWE5Uhh4Bii9NrCYxHNmJhFBTSnAXYADF00PZkCFBc4"
+        );
+        var elements = stripe.elements({
+            fonts: [
+                {
+                    cssSrc: "https://fonts.googleapis.com/css?family=Roboto",
+                },
+            ],
+            locale: "en",
+        });
+        
+        var card = elements.create("card");
+        card.mount("#element-form");
+
+        const handleSubmit = (event) => {
+            event.preventDefault();
+            console.log('hello')
+            stripe.confirmPayment({
+                elements, 
+                confirmParams: {
+                    return_url: 'https:127.0.0.1:8000/store_stripe/'
+                }
+            })
+        }
+    </script>
+</body>
+</html>

@@ -163,8 +163,8 @@ if DEBUG:
     # stripe
     # STRIPE_SECRET_KEY = 'sk_test_51ITdUjGOkE0UauzQJwYtyRsqkRYL1M77Fn6QppwqhacQvdLCJOGyc2TdJAhcm8o1tpXgN3Owor4RvAFYGfavG9h6000tqQCYWF'
     # STRIPE_PUBLISHABLE_KEY = 'pk_test_51ITdUjGOkE0UauzQPEu8J9aFw5RmWOVXwkY3NRIXwvnzDMFo3C5pDwfuYmiSLHNhr6o6lzvBF0552ODdE45BbIch00QTrejIEN'
-    STRIPE_TEST_PUBLISHABLE_KEY = 'pk_test_x97eNoQQtQDTurBY7lrq1yME005Ntt2hOK'
-    STRIPE_TEST_SECRET_KEY = 'sk_test_51GPZU2Gq4mM9DwWGVtsyD1imIC3xNNEfNqYzGuWryfWT8ok25STRDnb4XORmCOv2sqDOYhKRbdowt1SAhjmGyFYT00kNM75J9r'
+    # STRIPE_TEST_PUBLISHABLE_KEY = 'pk_test_x97eNoQQtQDTurBY7lrq1yME005Ntt2hOK'
+    # STRIPE_TEST_SECRET_KEY = 'sk_test_51GPZU2Gq4mM9DwWGVtsyD1imIC3xNNEfNqYzGuWryfWT8ok25STRDnb4XORmCOv2sqDOYhKRbdowt1SAhjmGyFYT00kNM75J9r'
     STRIPE_LIVE_MODE = False  # Change to True in production
 
     # live keys
@@ -232,6 +232,7 @@ ASGI_APPLICATION = 'web.routing.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 #db_server = os.environ.get(
 #    "db", "python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com")
+
 db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
 db_user = os.environ.get('db_user', 'postgres')
 
@@ -245,6 +246,21 @@ DATABASES = {
         'PASSWORD': db_password,
     }
 }
+
+# db_password = os.environ.get('db_password', 'codingislife')
+# db_user = os.environ.get('db_user', 'postgres')
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'store',
+#         'USER': 'postgres',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#         'PASSWORD': 'hellothere',
+#     }
+# }
+
 # testing
 # DATABASES = {
 #     'default': {
@@ -366,3 +382,7 @@ DEFAULT_FROM_EMAIL = 'mail-api@dreampotential.org'
 # output. PLEASE REMOVE FOLLOWING LINE TO SEND REAL EMAILS
 
 APPEND_SLASH=False
+
+
+STRIPE_TEST_PUBLISHABLE_KEY='pk_test_51Kycp9I0iCCc2SMWQAXTYzlcYg4FeexqIwsPywXpqqbACoVDnmpH3JP7pZPjLUqh9ktRAnlOigvn4gpi3yhcnU8E00bHXBUNJT'
+STRIPE_TEST_SECRET_KEY='sk_test_51Kycp9I0iCCc2SMWh6qqLSzvjUD9CSaSF8XE5DLN75mx2hHcEP0AnPafx3BFQAlSc1kYcrf2bXJfb4FDnqFAl5Kp00FH3NGI9X'
