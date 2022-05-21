@@ -19,6 +19,7 @@ class LessonSerializer(serializers.ModelSerializer):
     def get_flashcards(self,lesson):
         return FlashCardSerializer(FlashCard.objects.filter(lesson=lesson),many=True).data
 
+
 class FlashCardSerializer(serializers.ModelSerializer):
     usersessionevent = serializers.SerializerMethodField('get_usersession')
     class Meta:
