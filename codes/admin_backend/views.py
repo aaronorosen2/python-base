@@ -9,9 +9,11 @@ from knox.auth import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import Response
 from django.core import serializers
 from voip.models import CallList
-from sfapp2.utils.twilio import send_sms, list_call, list_contacted_sms
+from sfapp2.utils.twilio import send_sms, list_call, list_contacted_sms, list_call_2, update_list_call
+from .serializers import CallListSerializer
 from twilio.rest import Client
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 from django.db import connection
@@ -106,8 +108,11 @@ def get_members(request):
 @permission_classes([IsAuthenticated])
 def list_calls(request):
     # records = twilio.list_calls()
-    records = list_call()
-    return JsonResponse(list(records), safe=False) 
+    # records = list_call()
+    update_list_call()
+    calls = CallList.objects.all()
+    serializer = CallListSerializer(calls, many=True)
+    return Response(serializer.data)
 
 
 @app.task()
