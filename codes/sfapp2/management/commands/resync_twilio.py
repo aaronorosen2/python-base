@@ -145,7 +145,7 @@ class Command(BaseCommand):
 
 
         for call in calls:
-            if not CallList.objects.filter(from_number=call.from_,to_number=call.to,duration=call.duration,date=call.date_created).exists():
+            if not CallList.objects.filter(sid=call.sid).exists():
                 print('not exist ----------------------------------------------------------------->>>>>>>>>>>>>>>>..')
                 if call.recordings.list():
                     url = (
@@ -155,5 +155,6 @@ class Command(BaseCommand):
                 else:
                     url = ''
                 
-                record = CallList(from_number=call.from_,to_number=call.to,duration=call.duration,date=call.date_created,recording_url=url)
+                record = CallList(from_number=call.from_, to_number=call.to, duration=call.duration,
+                                  date=call.date_created, recording_url=url, sid=call.sid)
                 record.save()

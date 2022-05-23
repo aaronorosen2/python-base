@@ -16,7 +16,7 @@ from lesson_notifications.models import LessonEmailNotify
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
-from store.models import BrainTreeConfig, item
+from store.models import BrainTreeConfig, item, StripeConfig
 from .models import FlashCard
 from .models import UserSession
 from .models import Invite

@@ -70,8 +70,8 @@ class BrainTreeConfig(models.Model):
     
 class StripeConfig(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True)
-    STRIPE_SECRET_KEY = models.CharField(max_length=70, blank=False)
-    STRIPE_PUBLISHABLE_KEY = models.CharField(max_length=70, blank=False)
+    STRIPE_SECRET_KEY = models.CharField(max_length=255, blank=False)
+    STRIPE_PUBLISHABLE_KEY = models.CharField(max_length=255, blank=False)
     STRIPE_LIVE_MODE = models.BooleanField(default=True)
     STRIPE_date = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE,

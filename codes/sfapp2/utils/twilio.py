@@ -147,6 +147,7 @@ def list_call():
                     'from': record.from_number,
                     'to': record.to_number,
                     'direction': record.direction,
+                    'sid': record.sid
                 })
 
             except CallList.MultipleObjectsReturned:
@@ -186,3 +187,61 @@ def list_call():
             })
 
     return resps
+
+
+def list_call_2():
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+
+    reps = []
+    calls = client.api.calls.list()
+    for call in calls:
+        record = CallList.objects.filter(sid=call.sid).first()
+
+        if not record:
+            if call.recordings.list():
+                url = (
+                        'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+                        (call.recordings.list()[0].account_sid,
+                         call.recordings.list()[0].sid))
+            else:
+                url = ''
+            record = CallList(from_number=call.from_, to_number=call.to,
+                              duration=call.duration, date=call.date_created, recording_url=url,
+                              direction=call.direction, sid=call.sid)
+            record.save()
+
+        reps.append({
+            'date_created': record.date,
+            'recording': record.recording_url,
+            'duration': record.duration,
+            'from': record.from_number,
+            'to': record.to_number,
+            'direction': record.direction,
+        })
+    return reps
+
+def update_list_call():
+    """ this only to update the database """
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
+
+    calls = client.api.calls.list()
+    for call in calls:
+        record = CallList.objects.filter(sid=call.sid).first()
+        if record:
+            # since we already have that record and calls that are returned are ordered by date then there is no need to continue checking
+            return
+        if call.recordings.list():
+            url = (
+                    'https://api.twilio.com/2010-04-01/Accounts/%s/Recordings/%s.mp3' %
+                    (call.recordings.list()[0].account_sid,
+                     call.recordings.list()[0].sid))
+        else:
+            url = ''
+        record = CallList(from_number=call.from_, to_number=call.to,
+                          duration=call.duration, date=call.date_created, recording_url=url,
+                          direction=call.direction, sid=call.sid)
+        record.save()
