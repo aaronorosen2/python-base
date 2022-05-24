@@ -16,6 +16,8 @@ from rest_framework.pagination import PageNumberPagination
 from voip.models import CallList, Sms_details
 from sfapp2.utils.twilio import send_sms, list_call, list_contacted_sms, list_call_2, update_list_call
 from .serializers import CallListSerializer, ContactEventSerializer, SmsSerializer
+from itertools import chain
+import operator
 from twilio.rest import Client
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 from django.db import connection
@@ -117,8 +119,6 @@ def list_calls(request):
     return Response(serializer.data)
 
 
-from itertools import chain
-import operator
 @api_view(['POST'])
 def get_number_history(request):
     serializer = ContactEventSerializer(data=request.data)
