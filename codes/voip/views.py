@@ -1,5 +1,4 @@
 import imp
-from tokenize import Name
 from django.core.checks import messages
 from rest_framework.serializers import Serializer
 from setuptools import Command
@@ -425,14 +424,15 @@ def get_lead(request):
     elif request.method == 'POST':
         token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = User.objects.get(id=token.user_id)
-        name = request.data.get('name')
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
         phone = request.data.get('phone')
         email = request.data.get('email')
         state = request.data.get('state')
         ask = request.data.get('ask')
         notes = request.data.get('notes')
         new_url = request.data.get('new_url')
-        lead = User_leads(user=user,name=name, phone=phone,  email=email,
+        lead = User_leads(user=user,first_name=first_name,last_name=last_name, phone=phone,  email=email,
                                 ask=ask, state=state, notes=notes,
                                 url=new_url)
 
@@ -440,9 +440,10 @@ def get_lead(request):
         return JsonResponse({'message': "sucess !"}, status=200)
 
     elif request.method == 'PUT':
-        if 'name' in request.data:
+        if 'first_name' in request.data:
             lead = User_leads.objects.get(pk=request.data['pk'])
-            lead.name = request.data.get('name')
+            lead.first_name = request.data.get('first_name')
+            lead.last_name = request.data.get('last_name')
             lead.phone = request.data.get('phone')
             lead.email = request.data.get('email')
             lead.state = request.data.get('state')
@@ -509,31 +510,68 @@ def csvUploder(request):
     # print("🚀 ~ file: views.py ~ line 429 ~ token", request.headers.get('Authorization')[:8])
     token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
     user = User.objects.get(id=token.user_id)
-    # print("🚀 ~ file: views.py ~ line 431 ~ user", user)
-    common_header = ['Name', 'Phone', "Email" , "State","Ask" ,'url', "Notes"]
+    # common_header = ['Name', 'Phone', "Email" , "State","Ask" ,'url', "Notes","tax_overdue"]
     csv_file = request.data['csvFile']
     reader = pd.read_csv(csv_file)
-    csv_head = reader.head() 
+    csv_head = list(reader.head())
     csv_data = reader.values.tolist()
+    for i in csv_data:      
+        if 'tax_overdue' in csv_head:
+            loc= csv_head.index('tax_overdue')
+            tax_overdue= i[loc]
+
+        if 'State' in csv_head:
+            loc= csv_head.index('State')
+            state= i[loc]
+
+        if 'Phone' in csv_head:
+            loc= csv_head.index('Phone')
+            phone= i[loc]
+        
+        if 'Status' in csv_head:
+            loc= csv_head.index('Status')
+            status= i[loc]
+
+        if 'Notes' in csv_head:
+            loc= csv_head.index('Notes')
+            notes= i[loc]
+            
+        if 'Contact ID' in csv_head:
+            loc= csv_head.index('Contact ID')
+            contact_id= i[loc]
+
+        if 'Last Name' in csv_head:
+            loc= csv_head.index('Last Name')
+            last_Name= i[loc]
+
+        if 'First Name' in csv_head:
+            loc= csv_head.index('First Name')
+            first_name= i[loc]
+        lead = User_leads(user=user,first_name=first_name,last_name=last_Name,state=state,tax_overdue=tax_overdue,phone=phone,status=status,notes=notes,contact_id=contact_id)
+        lead.save()
+  
+        
+        
+        
     # reader = csv.reader(codecs.iterdecode(csv_file, 'unicode_escape'))
-    if common_header != list(csv_head):
-          return JsonResponse({
-                        "message": "error csv format"}, safe=False, status=406)
-    for i in csv_data:
-        name = i[0]
-        phone = i[1]
-        email = i[2]
-        ask= i[3]
-        state = i[4]
-        url = i[5]
-        notes = i[6]
-        try:
-            lead = User_leads(user=user, name=name, phone=phone, email=email,
-                            ask=ask, state=state, url=url,
-                            notes=notes)
-            lead.save()
-        except:
-            continue
+    # if common_header != list(csv_head):
+    #       return JsonResponse({
+    #                     "message": "error csv format"}, safe=False, status=406)
+    # for i in csv_data:
+    #     name = i[0]
+    #     phone = i[1]
+    #     email = i[2]
+    #     ask= i[3]
+    #     state = i[4]
+    #     url = i[5]
+    #     notes = i[6]
+    #     try:
+    #         lead = User_leads(user=user, name=name, phone=phone, email=email,
+    #                         ask=ask, state=state, url=url,
+    #                         notes=notes)
+    #         lead.save()
+    #     except:
+    #         continue
     return JsonResponse({'message': 'lead save successfully'}, status=200)
 
 # @csrf_exempt

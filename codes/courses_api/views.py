@@ -716,7 +716,7 @@ def lesson_email_notify(request,lessonId):
         print("🚀 ~ file: views.py ~ line 584 ~ lesson", lesson)
         email = request.POST.get('email')
         print("🚀 ~ file: views.py ~ line 586 ~ email", email)
-        data = LessonEmailNotify(lesson=lesson,email=email)
+        data = LessonEmailNotify(lesson_notify=lesson,email=email)
         data.save()
         return Response("Email Recorded",status=201)
     except Exception as e:

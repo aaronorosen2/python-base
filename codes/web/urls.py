@@ -69,7 +69,9 @@ urlpatterns = [
     path('parking_api/', include(
         ('parking.urls', 'parking_app'),
         namespace='parking_app')),
-
+    path('lesson_notifications/', include(
+        ('lesson_notifications.urls', 'lesson_notifications'),
+        namespace='lesson_notifications')),
     #  calendar URLS
     path('calendar', include('calendar_app.urls')),
     path('manifest', include('manifest_app.urls')),

@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     'channels',
     'notifications',
     'courses_api',
+    'lesson_notifications',
     'pdf_sign',
     'store',
     'bookbikerescue',
@@ -130,7 +131,6 @@ INSTALLED_APPS = [
     "calendar_v2",
     # "faceswap",
     'image_processor',
-    'lesson_notifications',
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 

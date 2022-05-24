@@ -61,7 +61,8 @@ class assigned_numbers(models.Model):
 
 
 class User_leads(models.Model):
-    name = models.CharField(max_length=255,blank=True,null=True)
+    first_name = models.CharField(max_length=255,blank=True,null=True)
+    last_name = models.CharField(max_length=255,blank=True,null=True)
     phone = models.CharField(max_length=255,blank=True,null=True)
     email = models.EmailField(max_length=255, blank=True,null=True)
     ask = models.CharField(max_length=255, blank=True,null=True)
@@ -82,7 +83,7 @@ class User_leads(models.Model):
     class Meta:
         db_table = 'User_leads'
         constraints = [
-            models.UniqueConstraint(fields=['name', 'phone', "email" , "ask","state" , "url" ,"notes"], name='uniqueUserLead')
+            models.UniqueConstraint(fields=['first_name','last_name', 'phone', "email" , "ask","state" , "url" ,"notes"], name='uniqueUserLead')
         ]
 
 
