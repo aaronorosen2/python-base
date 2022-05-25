@@ -24,5 +24,6 @@ class PaymentSerializer(serializers.Serializer):
 class StripeCheckoutSerializer(serializers.Serializer):
     price = serializers.IntegerField()
     description = serializers.CharField(max_length=255, required=False)
+    lesson_id = serializers.IntegerField()
 
 

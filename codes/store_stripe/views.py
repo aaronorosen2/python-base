@@ -10,7 +10,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework import status
 import stripe
 
-from courses_api.models import FlashCard
+from courses_api.models import FlashCard, Lesson
 
 from django.conf import settings
 from .serializers import PaymentSerializer, StripeCheckoutSerializer
@@ -116,12 +116,13 @@ def checkout(request):
     serializer.is_valid(raise_exception=True)
 
     desc = serializer.data.get('description', f'product_{user.id}_{user.email}_{user.username}') 
-    price = serializer.data.get('price', 0)
+    item_price = serializer.data.get('price', 0)
+    lesson_id = serializer.data.get('lesson_id', 0)
     account_id = user.stripedetails.stripe_account_id
     product = stripe.Product.create(name=desc)
 
     price = stripe.Price.create(
-        unit_amount=price*100,
+        unit_amount=item_price*100,
         currency="usd",
         product=product.id,
         )
@@ -142,4 +143,15 @@ def checkout(request):
             },
         },
     )
+    
+    lesson = Lesson.objects.filter(id=lesson_id).first()
+
+    transaction = Transaction()
+    transaction.transaction_amount = item_price
+    transaction.description = desc
+    transaction.user = user
+    transaction.lesson = lesson
+    transaction.stripe_session_id = session.id
+    transaction.save()
+
     return Response({'redirect': session.url})
