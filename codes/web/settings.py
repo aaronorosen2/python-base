@@ -133,6 +133,7 @@ INSTALLED_APPS = [
     'image_processor',
     'lesson_notifications',
     'postcards',
+    'wifi',
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
