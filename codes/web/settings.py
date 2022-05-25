@@ -104,7 +104,6 @@ INSTALLED_APPS = [
     'channels',
     'notifications',
     'courses_api',
-    'lesson_notifications',
     'pdf_sign',
     'store',
     'bookbikerescue',

@@ -12,6 +12,7 @@ class Command(BaseCommand):
         output = subprocess.run(
             ["sudo", "iwlist", "scann"], capture_output=True
         )
+        print(output)
         # XXX need to now parse output and format results like:
         # parse Cell
         # {"Address": "10:8E:BA:04:54:05",
