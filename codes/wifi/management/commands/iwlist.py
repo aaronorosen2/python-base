@@ -9,6 +9,9 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
+
+        # read file laptop_iwlist_output and parse
+
         output = subprocess.run(
             ["sudo", "iwlist", "scann"], capture_output=True
         )
