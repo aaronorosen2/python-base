@@ -71,8 +71,8 @@ class StripeConnectOnboardingView(APIView):
         if not user.stripedetails.is_onboarding_completed:
             account_link = stripe.AccountLink.create(
                 account=user.stripedetails.stripe_account_id,
-                refresh_url="http://localhost:8086/userProfile.html?status=refresh",
-                return_url="http://localhost:8086/userProfile.html?status=return",
+                refresh_url=settings.TEACHER_UI_URL + "/userProfile.html?status=refresh",
+                return_url=settings.TEACHER_UI_URL + "/userProfile.html?status=return",
                 type="account_onboarding",
             )
             return Response({'redirect': account_link.url}, status=status.HTTP_200_OK)
@@ -134,8 +134,8 @@ def checkout(request):
             'quantity': 1,
         }],
         mode='payment',
-        success_url='http://localhost:8086/payment_success.html',
-        cancel_url='http://localhost:8000/payment_failure.html',
+        success_url=settings.TEACHER_UI_URL + '/payment_success.html',
+        cancel_url=settings.TEACHER_UI_URL + '/payment_failure.html',
         payment_intent_data={
             'application_fee_amount': 00,
             'transfer_data': {
