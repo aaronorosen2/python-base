@@ -12,9 +12,8 @@ class StripeDetails(models.Model):
 
 
 class Transaction(models.Model):
-    to_account = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_amount = models.IntegerField()
-    email = models.EmailField(null=True, blank=True)
-    full_name = models.CharField(max_length=255, null=True, blank=True)
-    stripe_intent_id = models.CharField(max_length=255, null=True, blank=True)
-    is_complete = models.BooleanField(default=False)
+    description = models.TextField(null=True)
+    lesson = models.ForeignKey('courses_api.Lesson', on_delete=models.CASCADE, null=True)
+    stripe_session_id = models.CharField(max_length=255, null=True, blank=True)
