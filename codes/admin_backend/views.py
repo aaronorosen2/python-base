@@ -9,9 +9,13 @@ from knox.auth import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import Response
+from rest_framework import status
 from django.core import serializers
-from voip.models import CallList
-from sfapp2.utils.twilio import send_sms, list_call, list_contacted_sms
+from rest_framework.pagination import PageNumberPagination
+from voip.models import CallList, Sms_details
+from sfapp2.utils.twilio import send_sms, list_call, list_contacted_sms, list_call_2, update_list_call
+from .serializers import CallListSerializer, ContactEventSerializer, SmsSerializer
 from twilio.rest import Client
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 from django.db import connection
@@ -106,8 +110,41 @@ def get_members(request):
 @permission_classes([IsAuthenticated])
 def list_calls(request):
     # records = twilio.list_calls()
-    records = list_call()
-    return JsonResponse(list(records), safe=False) 
+    # records = list_call()
+    update_list_call()
+    calls = CallList.objects.all()
+    serializer = CallListSerializer(calls, many=True)
+    return Response(serializer.data)
+
+
+from itertools import chain
+import operator
+@api_view(['POST'])
+def get_number_history(request):
+    serializer = ContactEventSerializer(data=request.data)
+    if serializer.is_valid():
+        number = serializer.validated_data.get('number')
+        direction = serializer.validated_data.get('direction')
+        if direction == "FROM":
+            calls = CallList.objects.filter(from_number=number).all()
+            sms = Sms_details.objects.filter(from_number=number).all()
+        else:
+            calls = CallList.objects.filter(to_number=number).all()
+            sms = Sms_details.objects.filter(to_number=number).all()
+        events = chain(calls, sms)
+        events = sorted(events, key=operator.attrgetter('created_at'), reverse=True)
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        page = paginator.paginate_queryset(events, request)
+        serializers = []
+        for obj in page:
+            if isinstance(obj, CallList):
+                serializers.append(CallListSerializer(obj, many=False).data)
+            else:
+                serializers.append(SmsSerializer({"sms": obj}, many=False).data)
+
+        return Response({"data": serializers}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @app.task()

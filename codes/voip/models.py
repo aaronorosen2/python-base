@@ -34,7 +34,9 @@ class AdminGroupMember(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
 
+
 class CallList(models.Model):
+    sid = models.CharField(max_length=34, unique=True)
     date = models.DateTimeField()
     from_number = models.CharField(max_length=20, null=True)
     to_number = models.CharField(max_length=20, null=True)
@@ -42,18 +44,25 @@ class CallList(models.Model):
     duration = models.CharField(max_length=10, null=True)
     direction = models.CharField(max_length=30, null=True)
 
+    @property
+    def created_at(self):
+        return self.date
+
     class Meta:
         db_table = 'CallList'
-        constraints = [
-            models.UniqueConstraint(fields=['date', 'from_number', "to_number" , "recording_url","duration","direction"], name='unique appversion')
-        ]
+        # constraints = [
+        #     models.UniqueConstraint(fields=['date', 'from_number', "to_number" , "recording_url","duration","direction"], name='unique appversion')
+        # ]
+
 
 class assigned_numbers(models.Model):
     phone = models.CharField(max_length=20)
     user = models.ForeignKey(User,on_delete=models.CASCADE)
 
+
 class User_leads(models.Model):
-    name = models.CharField(max_length=255,blank=True,null=True)
+    first_name = models.CharField(max_length=255,blank=True,null=True)
+    last_name = models.CharField(max_length=255,blank=True,null=True)
     phone = models.CharField(max_length=255,blank=True,null=True)
     email = models.EmailField(max_length=255, blank=True,null=True)
     ask = models.CharField(max_length=255, blank=True,null=True)
@@ -74,8 +83,9 @@ class User_leads(models.Model):
     class Meta:
         db_table = 'User_leads'
         constraints = [
-            models.UniqueConstraint(fields=['name', 'phone', "email" , "ask","state" , "url" ,"notes"], name='uniqueUserLead')
+            models.UniqueConstraint(fields=['first_name','last_name', 'phone', "email" , "ask","state" , "url" ,"notes"], name='uniqueUserLead')
         ]
+
 
 class Sms_details(models.Model):
     from_number = models.CharField(max_length=20, blank=True, null=True)
@@ -84,6 +94,7 @@ class Sms_details(models.Model):
     direction = models.CharField(max_length=500, blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
     sid = models.CharField(max_length=512, blank=True, null=True, unique=True)
+
 
 class TwilioSession(models.Model):
     session_id = models.CharField(max_length=512, blank=True, null=True, unique=True)
