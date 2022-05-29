@@ -104,7 +104,6 @@ INSTALLED_APPS = [
     'channels',
     'notifications',
     'courses_api',
-    'lesson_notifications',
     'pdf_sign',
     'store',
     'bookbikerescue',
@@ -131,6 +130,9 @@ INSTALLED_APPS = [
     "calendar_v2",
     # "faceswap",
     'image_processor',
+    'lesson_notifications',
+    'postcards',
+    'wifi',
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
@@ -387,3 +389,5 @@ APPEND_SLASH=False
 
 STRIPE_TEST_PUBLISHABLE_KEY='pk_test_51Kycp9I0iCCc2SMWQAXTYzlcYg4FeexqIwsPywXpqqbACoVDnmpH3JP7pZPjLUqh9ktRAnlOigvn4gpi3yhcnU8E00bHXBUNJT'
 STRIPE_TEST_SECRET_KEY='sk_test_51Kycp9I0iCCc2SMWh6qqLSzvjUD9CSaSF8XE5DLN75mx2hHcEP0AnPafx3BFQAlSc1kYcrf2bXJfb4FDnqFAl5Kp00FH3NGI9X'
+TEACHER_UI_URL = os.environ.get('TEACHER_UI_URL', 'http://localhost:8086')
+
