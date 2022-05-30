@@ -403,11 +403,22 @@ def send_sms_(request):
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def get_lead(request):
+    #todo: add filter to user_leads via ('first_name', 'last_name', 'phone', "address") with icontains
     if request.method == 'GET':
         try:
             token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
             # print("🚀 ~ file: views.py ~ line 342 ~ token", token)
             user = User.objects.get(id=token.user_id)
+            # user = User.objects.first()
+            qs = User_leads.objects.filter(user=user)
+            if request.GET.get("first_name", None):
+                qs = qs.filter(first_name__icontains=request.GET.get("first_name"))
+            if request.GET.get("last_name", None):
+                qs = qs.filter(last_name__icontains=request.GET.get("last_name"))
+            if request.GET.get("phone", None):
+                qs = qs.filter(phone__icontains=request.GET.get("phone"))
+            if request.GET.get("address", None):
+                qs = qs.filter(address__icontains=request.GET.get("address"))
             # print("🚀 ~ file: views.py ~ line 344 ~ user", user)
             # leads = User_leads.objects.filter(user=user)
             # print("🚀 ~ file: views.py ~ line 346 ~ leads", leads)
@@ -415,10 +426,11 @@ def get_lead(request):
             # print("🚀 ~ file: views.py ~ line 348 ~ leads_ser", leads_ser.data)
             # return JsonResponse(leads_ser.data,safe=False)
             return JsonResponse(
-                    serializers.serialize("json", User_leads.objects.filter(user=user)),
+                    serializers.serialize("json", qs),
                     safe=False)
         except Exception as e:
             # print("🚀 ~ file: views.py ~ line 351 ~ e", e)
+            print(e)
             return Response({"msg":"No data"},status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'POST':

@@ -108,7 +108,7 @@ def get_members(request):
 
 @csrf_exempt
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+# @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def list_calls(request):
     # records = twilio.list_calls()
