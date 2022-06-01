@@ -12,8 +12,8 @@ BODY_HTML = """\
 </html>
 """
 
-AWS_ACCESS_KEY_ID = 'AKIAIHFAW4CMLKGZJWQQ'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = 'AKIARWLPGYIKWTF4OEPZ'
+AWS_SECRET_ACCESS_KEY = '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'
 
 
 def send_raw_email(to_email, reply_to, subject,
@@ -49,7 +49,7 @@ def send_raw_email(to_email, reply_to, subject,
     client = boto3.client(
         'ses', aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-        region_name='us-east-1')
+        region_name='us-east-2')
     try:
         print(
             client.send_raw_email(
@@ -83,7 +83,7 @@ def send_email(to_email, subject, message):
     client = boto3.client(
         'ses', aws_access_key_id=AWS_ACCESS_KEY_ID,
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-        region_name='us-east-1')
+        region_name='us-east-2')
 
     # Try to send the email.
     try:
