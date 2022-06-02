@@ -2,13 +2,19 @@
 
 from datetime import datetime, timedelta
 from calendar import HTMLCalendar
+
+from requests import request
 from .models import Event
+from .forms import AddEventForm
+
+from django.template.loader import render_to_string
 
 
 class Calendar(HTMLCalendar ):
-	def __init__(self, year=None, month=None):
+	def __init__(self, year=None, month=None, request=None):
 		self.year = year
 		self.month = month
+		self.request = request
 		super(Calendar, self).__init__()
 
 	# formats a day as a td
@@ -17,6 +23,7 @@ class Calendar(HTMLCalendar ):
 	def formatday(self, day, events ):
 		events_per_day = events.filter(date__day=day )
 		d = ''
+		# add_event_form = AddEventForm()
 		for event in events_per_day:
 			d += f"""
 				<li class="list-group-item"> {event.get_html_url} </li>
