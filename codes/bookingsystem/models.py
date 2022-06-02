@@ -12,7 +12,7 @@ from django.conf import settings
 User = get_user_model()
 class Item(models.Model):
     name=models.CharField(max_length=200)
-    image=models.TextField(null=True)    
+    image=models.TextField(null=True)
 
 class Event(models.Model):
     RECURRENCE_CHOICES = (

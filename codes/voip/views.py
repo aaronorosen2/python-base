@@ -238,6 +238,8 @@ def add_user_to_conf(request, session_id):
     dial = Dial()
     dial.conference(destination_number)
     resp.append(dial)
+    print(
+        'https://api.dreampotential.org/voip/api_voip/leave_conf/' + str(session_id) +"/" + str(destination_number))
 
     participant = client.conferences(destination_number).participants.create(
         record=True,
