@@ -1,4 +1,5 @@
 import imp
+import json
 from django.core.checks import messages
 from rest_framework.serializers import Serializer
 from setuptools import Command
@@ -105,6 +106,8 @@ def list_sms_api(request):
                 'from': record.from_number,
                 'to': record.to_number,
             })
+    print("🚀 ~ file: views.py ~ line 97 ~ num", filter_messages)
+
     return JsonResponse({'messages': filter_messages}, safe = False)
 
 @csrf_exempt
@@ -522,8 +525,10 @@ def csvUploder(request):
     # print("🚀 ~ file: views.py ~ line 429 ~ token", request.headers.get('Authorization')[:8])
     token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
     user = User.objects.get(id=token.user_id)
-    # common_header = ['Name', 'Phone', "Email" , "State","Ask" ,'url', "Notes","tax_overdue"]
     csv_file = request.data['csvFile']
+    # csvphonenum = request.data['csvphonenum']
+    # data = json.loads(csvphonenum)
+    # print("______________csvphonenum_____________----------",type(data))
     reader = pd.read_csv(csv_file)
     csv_head = list(reader.head())
     csv_data = reader.values.tolist()
@@ -538,7 +543,8 @@ def csvUploder(request):
 
         if 'Phone' in csv_head:
             loc= csv_head.index('Phone')
-            phone= i[loc]
+            phone_num = str(i[loc])
+            phone = phone_num.replace ('(','').replace(')','')
         
         if 'Status' in csv_head:
             loc= csv_head.index('Status')
@@ -559,7 +565,21 @@ def csvUploder(request):
         if 'First Name' in csv_head:
             loc= csv_head.index('First Name')
             first_name= i[loc]
-        lead = User_leads(user=user,first_name=first_name,last_name=last_Name,state=state,tax_overdue=tax_overdue,phone=phone,status=status,notes=notes,contact_id=contact_id)
+        
+        if 'url' in csv_head:
+            loc= csv_head.index('url')
+            url= i[loc]
+
+        if 'address_text' in csv_head:
+            loc= csv_head.index('address_text')
+            address= i[loc]
+
+        if 'Email' in csv_head:
+            loc= csv_head.index('Email')
+            email= i[loc]
+      
+   
+        lead = User_leads(user=user,first_name=first_name,last_name=last_Name,state=state,tax_overdue=tax_overdue,phone=phone,status=status,notes=notes,contact_id=contact_id,url=url,address=address,email=email)
         lead.save()
   
         
