@@ -37,6 +37,7 @@ class CompleteOnboardingView(APIView):
         try:
             if user:
                 user.stripedetails.is_onboarding_completed = True
+                user.stripedetails.is_connected = True
                 user.stripedetails.save()
                 return Response({'message': 'Success'}, status=200)
         except User.stripedetails.RelatedObjectDoesNotExist:
@@ -68,7 +69,10 @@ class StripeConnectOnboardingView(APIView):
             print(account)
             user.stripedetails.stripe_account_id = account.id
             user.stripedetails.is_onboarding_completed = False
+            user.stripedetails.is_connected = False
             user.stripedetails.save()
+        
+        
 
         if not user.stripedetails.is_onboarding_completed:
             account_link = stripe.AccountLink.create(
@@ -78,6 +82,13 @@ class StripeConnectOnboardingView(APIView):
                 type="account_onboarding",
             )
             return Response({'redirect': account_link.url}, status=status.HTTP_200_OK)
+        print(user.stripedetails.stripe_account_id, user.stripedetails.is_connected)
+        if user.stripedetails.stripe_account_id and not user.stripedetails.is_connected:
+            user.stripedetails.is_connected = True
+            user.stripedetails.save()
+            user.save()
+            return Response({'message': 'Connection successful.'})
+
         return Response({'message': 'Account onboarding completed.'})
 
 
@@ -91,14 +102,14 @@ def check_connection(request):
         return Response({'message': 'Failed. User not found'}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
-        if user.stripedetails.is_onboarding_completed:
+        if user.stripedetails.is_connected and user.stripedetails.stripe_account_id:
             return Response({
                 'message': 'Connection successful',
                 'connected': True
             }, status=200)
         else:
             return Response({
-                'message': 'Connection failed',
+                'message': 'Not connected.',
                 'connected': False
             }, status=400)
     except User.stripedetails.RelatedObjectDoesNotExist:
@@ -185,3 +196,31 @@ def payments_by_lesson(request, lesson_id, *args, **kwargs):
         })
 
     return Response({'message': 'Fetch Successful', 'data': response_data})
+
+
+@api_view(['POST'])
+def disconnect_stripe(request):
+    token = AuthToken.objects.get(
+        token_key=request.headers.get('Authorization')[:8])
+    user = User.objects.filter(id=token.user_id).first()
+
+    if not user:
+        return Response({'message': 'Failed. User not found'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        if user.stripedetails.is_connected:
+            user.stripedetails.is_connected = False
+            print("disconnected")
+            user.stripedetails.save()
+            user.save()
+            return Response({
+                'message': 'Disconnected Successfully.',
+                'connected': False
+            }, status=200)
+        else:
+            return Response({
+                'message': 'Already disconnected.',
+                'connected': False
+            }, status=400)
+    except User.stripedetails.RelatedObjectDoesNotExist:
+        return Response({'message': 'User does not have stripe details'}, status=400)

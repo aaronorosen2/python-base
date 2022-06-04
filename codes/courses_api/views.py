@@ -45,6 +45,10 @@ from math import sin, cos, sqrt, atan2, radians
 from django.template.loader import render_to_string
 from .utils.email_util import send_email, send_email_code
 # from codes.vconf.views import upload_to_s3, uuid_file_path
+import stripe
+from django.conf import settings
+
+stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 
 @api_view(['GET'])
 def apiOverview(request):
@@ -72,6 +76,7 @@ def lesson_create(request):
         braintree_private_key=""
         braintree_item_name=""
         braintree_item_price=""
+        stripe_product_price=0
 
         lesson_type = flashcard["lesson_type"]
         position =flashcard["position"]
@@ -119,6 +124,14 @@ def lesson_create(request):
                         braintree_private_key=braintree_private_key,
                         )
             BrainTreeConfig_obj.save()
+
+        if 'stripe_product_price' in flashcard:
+            stripe_product_price = flashcard['stripe_product_price']
+
+        if stripe_product_price: 
+            # todo: add priced stripe product
+            p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
+            pass 
 
         if(braintree_item_name != '' and braintree_item_price != '' and braintree_merchant_ID != '' 
             and braintree_public_key != '' and braintree_private_key != ''):

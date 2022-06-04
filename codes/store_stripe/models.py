@@ -9,6 +9,7 @@ class StripeDetails(models.Model):
     stripe_account_id = models.CharField(max_length=255)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_onboarding_completed = models.BooleanField(default=False)
+    is_connected = models.BooleanField(default=False, null=True)
 
 
 class Transaction(models.Model):
