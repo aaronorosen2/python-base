@@ -4,11 +4,13 @@ import random
 import json
 import requests
 
+from web import settings
+
 
 def send_email(to_email, lesson_name, lesson_id):
     SENDER = "DreamPotential <lead@dreampotential.org>"
     RECIPIENT = to_email
-    AWS_REGION = "us-west-1"
+    AWS_REGION = "us-east-2"
     CHARSET = "UTF-8"
     SUBJECT = "Lesson Completed"
     
@@ -18,16 +20,16 @@ def send_email(to_email, lesson_name, lesson_id):
         <body>
             <h1> Lesson Completed </h1>
             <p> Below lesson has been completed: </p>
-            <p><b>Lesson Name: {lesson_name}({lesson_id})</b></p>
+            <p><b>Lesson Name: {lesson_name}</b></p>
+            <p><b>Lesson Id: {lesson_id}</b></p>
             <p> One new response has been recieved for the lesson. </p>
             <p> Thanks! </p>
             <p> DreamPotential Team </p>
         </body>
     </html>
     """            
-
-    client = boto3.client('ses', aws_access_key_id='AKIAU7EQAGZOOVFPYIWO',
-            aws_secret_access_key='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', region_name=AWS_REGION)
+    client = boto3.client('ses', aws_access_key_id=getattr(settings,'EMAIL_AWS_ACCESS_KEY_ID', None),
+            aws_secret_access_key=getattr(settings, 'EMAIL_AWS_SECRET_ACCESS_KEY', None), region_name=AWS_REGION)
 
     try:
         response = client.send_email(
@@ -52,7 +54,7 @@ def send_email(to_email, lesson_name, lesson_id):
         )
 
     except ClientError as e:
-        print(e.response['Error']['Message'])
+        print(e, e.response['Error']['Message'])
     else:
         print("Email sent! Message ID:"),
         print(response['MessageId'])

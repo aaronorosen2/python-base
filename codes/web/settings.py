@@ -201,8 +201,8 @@ TWILIO = {
 }
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_ACCESS_KEY_ID = 'AKIAYMPAXPYXGBUSLCO6'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = 'AKIARWLPGYIKRQXN5VXR'
+AWS_SECRET_ACCESS_KEY = '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'
 AWS_STORAGE_BUCKET_NAME = 'sfappv2'
 
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
@@ -377,8 +377,8 @@ ALLOWED_HOSTS=['*']
 
 # Email
 EMAIL_BACKEND = 'django_ses.SESBackend'
-# AWS_ACCESS_KEY_ID = 'AKIAIHFAW4CMLKGZJWQQ'
-# AWS_SECRET_ACCESS_KEY = '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'
+EMAIL_AWS_ACCESS_KEY_ID = 'AKIARWLPGYIKWTF4OEPZ'
+EMAIL_AWS_SECRET_ACCESS_KEY = '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'
 DEFAULT_FROM_EMAIL = 'mail-api@dreampotential.org'
 
 # Instead of sending out real emails the console backend just writes the emails that would be sent to the standard
