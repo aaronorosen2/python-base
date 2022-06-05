@@ -15,7 +15,7 @@ from .models import Lesson,LessonEmailNotify
 from .models import FlashCard
 from .models import UserSessionEvent
 from .models import FlashCardResponse
-from store.models import BrainTreeConfig, item, StripeConfig
+from store.models import BrainTreeConfig, item, StripeProductPrice as StripeItem
 from .models import FlashCard
 from .models import UserSession
 from .models import Invite
@@ -127,11 +127,6 @@ def lesson_create(request):
         if 'stripe_product_price' in flashcard:
             stripe_product_price = flashcard['stripe_product_price']
 
-        if stripe_product_price: 
-            # todo: add priced stripe product
-            p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
-            pass 
-
         if(braintree_item_name != '' and braintree_item_price != '' and braintree_merchant_ID != '' 
             and braintree_public_key != '' and braintree_private_key != ''):
             f=FlashCard(lesson=lesson,
@@ -145,6 +140,32 @@ def lesson_create(request):
                         item_store=item.objects.get(id=item_obj.id),
                         is_required=flashcard.get('is_required'),
                         )
+            f.save()
+        elif stripe_product_price != 0:
+            # todo: add priced stripe product
+            p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
+            price = stripe.Price.create(
+                unit_amount=int(stripe_product_price)*100,
+                currency='usd',
+                product=p.id,
+            )
+            stripe_item = StripeItem()
+            stripe_item.stripe_price_id = price.id
+            stripe_item.stripe_product_id = p.id
+            stripe_item.price = stripe_product_price
+            stripe_item.save()
+
+            f = FlashCard(
+                lesson=lesson, 
+                lesson_type=lesson_type,
+                question=question,
+                options=options,
+                answer=answer,
+                image=image,
+                position=position,
+                stripe_item=stripe_item,
+                is_required=flashcard.get('is_required', False)
+                )
             f.save()
         else:
             f=FlashCard(lesson=lesson,
@@ -347,6 +368,7 @@ def lesson_update(request, pk):
             braintree_item_name=""
             braintree_item_price=""
             position =flashcard["position"]
+            stripe_product_price=0
             id_ = None
             if "id" in flashcard:
                 id_ = flashcard["id"]
@@ -380,6 +402,9 @@ def lesson_update(request, pk):
             if "braintree_item_price" in flashcard:
                 braintree_item_price = flashcard["braintree_item_price"]
 
+            if 'stripe_product_price' in flashcard:
+                stripe_product_price = flashcard['stripe_product_price']
+
             if "id" in flashcard:
                 if(braintree_item_name != '' or braintree_item_price != ''):
                     obj_item = FlashCard.objects.get(id=id_)
@@ -396,6 +421,10 @@ def lesson_update(request, pk):
                                 braintree_private_key=braintree_private_key,
                                 )
                     # BrainTreeConfig_obj.save()
+
+                if(stripe_product_price):
+                    obj_item = flashcard.objects.filter(id=id).first()
+                    StripeItem.objects.filter(id=obj_item.stripe_item).first().update(price=stripe_product_price)
                     
                 f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,
                                                         image=image,position=position)
@@ -429,6 +458,32 @@ def lesson_update(request, pk):
                                 item_store=item.objects.get(id=item_obj.id),
                                 is_required=flashcard.get('is_required'),
                                 )
+                    f.save()
+                elif stripe_product_price:
+                    lesson_type = flashcard["lesson_type"]
+                    p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
+                    price = stripe.Price.create(
+                        unit_amount=stripe_product_price*100,
+                        currency='usd',
+                        product=p.id,
+                    )
+                    stripe_item = StripeItem()
+                    stripe_item.stripe_price_id = price.id
+                    stripe_item.stripe_product_id = p.id
+                    stripe_item.price = stripe_product_price
+                    stripe_item.save()
+
+                    f = FlashCard(
+                        lesson=lesson, 
+                        lesson_type=lesson_type,
+                        question=question,
+                        options=options,
+                        answer=answer,
+                        image=image,
+                        position=position,
+                        stripe_item=stripe_item,
+                        is_required=flashcard.get('is_required', False)
+                        )
                     f.save()
                 else:
                     f=FlashCard(lesson=lesson,

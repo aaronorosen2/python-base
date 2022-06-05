@@ -33,6 +33,7 @@ class FlashCard(models.Model):
         BrainTreeConfig, on_delete=models.CASCADE, blank=True, null=True)
     stripe_config = models.ForeignKey(
         'store.StripeConfig', on_delete=models.CASCADE, blank=True, null=True)
+    stripe_item = models.ForeignKey('store.StripeProductPrice', on_delete=models.CASCADE, null=True, blank=True)
     item_store = models.ForeignKey(item, on_delete=models.CASCADE,
                                    blank=True, null=True)
     is_required = models.BooleanField(null=True, blank=True, default=False)
