@@ -1,3 +1,4 @@
+from pickletools import int4
 from django.db.models import OuterRef, Subquery
 from django.core.files import File
 from rest_framework import status
@@ -422,9 +423,20 @@ def lesson_update(request, pk):
                                 )
                     # BrainTreeConfig_obj.save()
 
-                if(stripe_product_price):
+                if(stripe_product_price != 0):
+                    print('stripe_product_price', stripe_product_price)
                     obj_item = flashcard.objects.filter(id=id).first()
-                    StripeItem.objects.filter(id=obj_item.stripe_item).first().update(price=stripe_product_price)
+                    p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
+                    price = stripe.Price.create(
+                        unit_amount=int(stripe_product_price)*100,
+                        currency='usd',
+                        product=p.id,
+                    )
+                    stripe_item = obj_item.stripe_item
+                    stripe_item.stripe_price_id = price.id
+                    stripe_item.stripe_product_id = p.id
+                    stripe_item.price = stripe_product_price
+                    stripe_item.save()
                     
                 f=FlashCard.objects.filter(id=id_).update(question=question,options=options,answer=answer,
                                                         image=image,position=position)
@@ -463,7 +475,7 @@ def lesson_update(request, pk):
                     lesson_type = flashcard["lesson_type"]
                     p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
                     price = stripe.Price.create(
-                        unit_amount=stripe_product_price*100,
+                        unit_amount=int(stripe_product_price)*100,
                         currency='usd',
                         product=p.id,
                     )
