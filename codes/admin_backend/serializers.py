@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from voip.models import CallList, Sms_details
+from voip.models import CallLog, Sms_details
 
 
-class CallListSerializer(serializers.ModelSerializer):
+class CallLogSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CallList
+        model = CallLog
         fields = ['date', 'from_number', 'to_number', 'recording_url', 'duration']
 
 

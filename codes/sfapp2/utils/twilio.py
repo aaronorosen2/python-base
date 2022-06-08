@@ -1,6 +1,6 @@
 from django.conf import settings
 from twilio.rest import Client
-from voip.models import CallList, Sms_details
+from voip.models import CallLog, Sms_details
 import random
 
 
@@ -137,7 +137,7 @@ def list_call():
     for call in calls:
         try:
             try:
-                record = CallList.objects.get(
+                record = CallLog.objects.get(
                     from_number=call.from_, to_number=call.to, duration=call.duration, date=call.date_created, direction=call.direction)
 
                 resps.append({
@@ -150,9 +150,9 @@ def list_call():
                     'sid': record.sid
                 })
 
-            except CallList.MultipleObjectsReturned:
+            except CallLog.MultipleObjectsReturned:
 
-                records = CallList.objects.filter(
+                records = CallLog.objects.filter(
                     from_number=call.from_, to_number=call.to, duration=call.duration, date=call.date_created,direction=call.direction)
                 for record in records:
                     resps.append({
@@ -164,7 +164,7 @@ def list_call():
                         'direction': record.direction,
                     })
 
-        except CallList.DoesNotExist:
+        except CallLog.DoesNotExist:
 
             if call.recordings.list():
                 url = (
@@ -174,7 +174,7 @@ def list_call():
             else:
                 url = ''
 
-            record = CallList(from_number=call.from_, to_number=call.to,
+            record = CallLog(from_number=call.from_, to_number=call.to,
                               duration=call.duration, date=call.date_created, recording_url=url,direction=call.direction)
             record.save()
             resps.append({
@@ -197,7 +197,7 @@ def list_call_2():
     reps = []
     calls = client.api.calls.list()
     for call in calls:
-        record = CallList.objects.filter(sid=call.sid).first()
+        record = CallLog.objects.filter(sid=call.sid).first()
 
         if not record:
             if call.recordings.list():
@@ -207,7 +207,7 @@ def list_call_2():
                          call.recordings.list()[0].sid))
             else:
                 url = ''
-            record = CallList(from_number=call.from_, to_number=call.to,
+            record = CallLog(from_number=call.from_, to_number=call.to,
                               duration=call.duration, date=call.date_created, recording_url=url,
                               direction=call.direction, sid=call.sid)
             record.save()
@@ -232,7 +232,7 @@ def update_list_call():
 
     calls = client.api.calls.list()
     for call in calls:
-        record = CallList.objects.filter(sid=call.sid).first()
+        record = CallLog.objects.filter(sid=call.sid).first()
         if record:
             # since we already have that record and calls that are returned are ordered by date then there is no need to continue checking
             return
@@ -243,7 +243,7 @@ def update_list_call():
                      call.recordings.list()[0].sid))
         else:
             url = ''
-        record = CallList(from_number=call.from_, to_number=call.to,
+        record = CallLog(from_number=call.from_, to_number=call.to,
                           duration=call.duration, date=call.date_created, recording_url=url,
                           direction=call.direction, sid=call.sid)
         record.save()

@@ -35,7 +35,7 @@ class AdminGroupMember(models.Model):
     is_admin = models.BooleanField(default=False)
 
 
-class CallList(models.Model):
+class CallLog(models.Model):
     sid = models.CharField(max_length=34, unique=True, null=True)
     date = models.DateTimeField()
     from_number = models.CharField(max_length=20, null=True)
@@ -49,7 +49,7 @@ class CallList(models.Model):
         return self.date
 
     class Meta:
-        db_table = 'CallList'
+        db_table = 'CallLog'
         # constraints = [
         #     models.UniqueConstraint(fields=['date', 'from_number', "to_number" , "recording_url","duration","direction"], name='unique appversion')
         # ]

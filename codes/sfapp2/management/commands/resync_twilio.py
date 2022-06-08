@@ -5,7 +5,7 @@ from voip.models import Phone,SMS,Call
 from termcolor import cprint
 from datetime import datetime
 import requests
-from voip.models import CallList
+from voip.models import CallLog
 from voip.models import User_leads
 
 class Command(BaseCommand):
@@ -124,11 +124,11 @@ class Command(BaseCommand):
         # for call in calls:
         #     try:
         #         try:
-        #             CallList.objects.get(from_number=call.from_, to_number=call.to,duration=call.duration,date=call.date_created)
-        #         except CallList.MultipleObjectsReturned:
+        #             CallLog.objects.get(from_number=call.from_, to_number=call.to,duration=call.duration,date=call.date_created)
+        #         except CallLog.MultipleObjectsReturned:
         #             continue
 
-        #     except CallList.DoesNotExist:
+        #     except CallLog.DoesNotExist:
         #         if call.recordings.list():
 
         #             url = (
@@ -139,13 +139,13 @@ class Command(BaseCommand):
         #         else:
         #             url = ''
 
-        #         call_data = CallList(from_number=call.from_, to_number=call.to,duration=call.duration , recording_url=url,date=call.date_created)
+        #         call_data = CallLog(from_number=call.from_, to_number=call.to,duration=call.duration , recording_url=url,date=call.date_created)
         #         call_data.save()
 
 
 
         for call in calls:
-            if not CallList.objects.filter(sid=call.sid).exists():
+            if not CallLog.objects.filter(sid=call.sid).exists():
                 print('not exist ----------------------------------------------------------------->>>>>>>>>>>>>>>>..')
                 if call.recordings.list():
                     url = (
@@ -154,7 +154,6 @@ class Command(BaseCommand):
                             call.recordings.list()[0].sid))
                 else:
                     url = ''
-                
-                record = CallList(from_number=call.from_, to_number=call.to, duration=call.duration,
+                record = CallLog(from_number=call.from_, to_number=call.to, duration=call.duration,
                                   date=call.date_created, recording_url=url, sid=call.sid)
                 record.save()
