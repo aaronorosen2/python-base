@@ -36,7 +36,7 @@ class AdminGroupMember(models.Model):
 
 
 class CallList(models.Model):
-    sid = models.CharField(max_length=34, unique=True)
+    sid = models.CharField(max_length=34, unique=True, null=True)
     date = models.DateTimeField()
     from_number = models.CharField(max_length=20, null=True)
     to_number = models.CharField(max_length=20, null=True)
