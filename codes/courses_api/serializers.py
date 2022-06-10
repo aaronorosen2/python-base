@@ -4,6 +4,9 @@ from .models import Student
 from lesson_notifications.models import LessonEmailNotify
 from classroom.models import Class
 
+from store.serializers import StripeItemSerializer
+from store.serializers import StripeProductPrice as StripeItem
+
 class classSerializer(serializers.ModelSerializer):
     class Meta:
         model = Class
@@ -22,12 +25,19 @@ class LessonSerializer(serializers.ModelSerializer):
 
 class FlashCardSerializer(serializers.ModelSerializer):
     usersessionevent = serializers.SerializerMethodField('get_usersession')
+    stripe_item = serializers.SerializerMethodField()
+        
+
     class Meta:
         model = FlashCard
         fields ='__all__'
 
     def get_usersession(self, flashcard):
         return UserSessionEventSerializer(UserSessionEvent.objects.filter(flash_card=flashcard), many=True).data
+        
+    def get_stripe_item(self, flashcardresponse):
+        print(flashcardresponse, 'flashcardresponse')
+        return StripeItemSerializer(StripeItem.objects.filter(id=flashcardresponse.stripe_item.id).first()).data
 
 
 class UserSessionEventSerializer(serializers.ModelSerializer):
@@ -55,6 +65,7 @@ class FlashcardResponseSerializer(serializers.ModelSerializer):
 
     def get_usersession(self,flashcardresponse):
         return UserSessionSerializer(UserSession.objects.filter(session_id=flashcardresponse.user_session.session_id),many=True).data
+
 
 # class UserSerializer(serializers.ModelSerializer):
 #     class Meta:

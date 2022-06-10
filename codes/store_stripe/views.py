@@ -16,6 +16,7 @@ from django.conf import settings
 from .serializers import PaymentSerializer, StripeCheckoutSerializer
 from .helpers import create_card_token
 from .models import StripeDetails
+from store.models import StripeProductPrice as StripeItem
 
 from knox.auth import AuthToken
 
@@ -129,22 +130,15 @@ def checkout(request):
 
     serializer.is_valid(raise_exception=True)
 
-    desc = serializer.data.get(
-        'description', f'product_{user.id}_{user.email}_{user.username}')
-    item_price = serializer.data.get('price', 0)
     lesson_id = serializer.data.get('lesson_id', 0)
+    price_id = serializer.data.get('stripe_price_id', '')
     account_id = user.stripedetails.stripe_account_id
-    product = stripe.Product.create(name=desc)
 
-    price = stripe.Price.create(
-        unit_amount=item_price*100,
-        currency="usd",
-        product=product.id,
-    )
+    stripe_item = StripeItem.objects.filter(stripe_price_id=price_id).first()
 
     session = stripe.checkout.Session.create(
         line_items=[{
-            'price': price.id,
+            'price': price_id,
             'quantity': 1,
         }],
         mode='payment',
@@ -161,8 +155,8 @@ def checkout(request):
     lesson = Lesson.objects.filter(id=lesson_id).first()
 
     transaction = Transaction()
-    transaction.transaction_amount = item_price
-    transaction.description = desc
+    transaction.transaction_amount = stripe_item.price
+    transaction.description = f'payment from {account_id} on lesson {lesson.id}. StripePriceId: {price_id}'
     transaction.user = user
     transaction.lesson = lesson
     transaction.stripe_session_id = session.id

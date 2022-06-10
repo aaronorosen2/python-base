@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import StripeConfig, item, order, userProfile
+from .models import StripeConfig, StripeProductPrice, item, order, userProfile
 
 class itemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,3 +40,10 @@ class StripeConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = StripeConfig
         fields = ('id', 'STRIPE_PUBLISHABLE_KEY', 'STRIPE_SECRET_KEY')
+
+
+class StripeItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StripeProductPrice
+        fields = "__all__"
