@@ -37,7 +37,10 @@ class FlashCardSerializer(serializers.ModelSerializer):
         
     def get_stripe_item(self, flashcardresponse):
         print(flashcardresponse, 'flashcardresponse')
-        return StripeItemSerializer(StripeItem.objects.filter(id=flashcardresponse.stripe_item.id).first()).data
+        if flashcardresponse.stripe_item is not None:
+            return StripeItemSerializer(StripeItem.objects.filter(id=flashcardresponse.stripe_item.id).first()).data
+        else:
+            return StripeItemSerializer().data
 
 
 class UserSessionEventSerializer(serializers.ModelSerializer):

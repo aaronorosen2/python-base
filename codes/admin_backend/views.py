@@ -2,7 +2,6 @@ import time
 import os
 from celery import Celery
 import json
-from .models import CallLogs
 from sfapp2.models import Member, Question, Choice
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -13,8 +12,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from voip.models import CallLog, Sms_details
-from .serializers import CallLogSerializer, ContactEventSerializer, SmsSerializer
+from voip.models import CallLogs, Sms_details
+from .serializers import CallLogsSerializer, ContactEventSerializer, SmsSerializer
 from itertools import chain
 import operator
 from sfapp2.utils.twilio import send_sms, list_call, list_contacted_sms, list_call_2, update_list_call
