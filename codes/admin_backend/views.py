@@ -2,6 +2,7 @@ import time
 import os
 from celery import Celery
 import json
+from .models import CallLogs
 from sfapp2.models import Member, Question, Choice
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -11,13 +12,13 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import Response
 from rest_framework import status
-from django.core import serializers
 from rest_framework.pagination import PageNumberPagination
 from voip.models import CallLog, Sms_details
-from sfapp2.utils.twilio import send_sms, list_call, list_contacted_sms, list_call_2, update_list_call
 from .serializers import CallLogSerializer, ContactEventSerializer, SmsSerializer
 from itertools import chain
 import operator
+from sfapp2.utils.twilio import send_sms, list_call, list_contacted_sms, list_call_2, update_list_call
+from .serializers import CallLogsSerializer, ContactEventSerializer, SmsSerializer
 from twilio.rest import Client
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 from django.db import connection
@@ -114,8 +115,8 @@ def list_calls(request):
     # records = twilio.list_calls()
     # records = list_call()
     update_list_call()
-    calls = CallLog.objects.all()
-    serializer = CallLogSerializer(calls, many=True)
+    calls = CallLogs.objects.all()
+    serializer = CallLogsSerializer(calls, many=True)
     return Response(serializer.data)
 
 
@@ -126,10 +127,10 @@ def get_number_history(request):
         number = serializer.validated_data.get('number')
         direction = serializer.validated_data.get('direction')
         if direction == "FROM":
-            calls = CallLog.objects.filter(from_number=number).all()
+            calls = CallLogs.objects.filter(from_number=number).all()
             sms = Sms_details.objects.filter(from_number=number).all()
         else:
-            calls = CallLog.objects.filter(to_number=number).all()
+            calls = CallLogs.objects.filter(to_number=number).all()
             sms = Sms_details.objects.filter(to_number=number).all()
         events = chain(calls, sms)
         events = sorted(events, key=operator.attrgetter('created_at'), reverse=True)
@@ -138,8 +139,8 @@ def get_number_history(request):
         page = paginator.paginate_queryset(events, request)
         serializers = []
         for obj in page:
-            if isinstance(obj, CallLog):
-                serializers.append(CallLogSerializer(obj, many=False).data)
+            if isinstance(obj, CallLogs):
+                serializers.append(CallLogsSerializer(obj, many=False).data)
             else:
                 serializers.append(SmsSerializer({"sms": obj}, many=False).data)
 

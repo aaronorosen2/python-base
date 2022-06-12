@@ -1,5 +1,88 @@
 from django.core.management.base import BaseCommand
-import subprocess
+from ...models import SSIDReading
+from ...serializers import  WifiNetworkSerializer
+import os
+
+
+def runIwList():
+    try:
+        # Setting path for laptop_iwlist_output file  start
+        module_dir = os.path.dirname(__file__)
+        # full path to laptop_iwlist_output.
+        file_path = os.path.abspath(os.path.join(
+            module_dir, '..', '..', 'laptop_iwlist_output'))
+        # Setting path for laptop_iwlist_output file  end
+        os.system("iwlist scann %s" % file_path)
+
+        # Reading file line by line start
+        data_file = open(file_path, 'r')
+        Lines = data_file.readlines()
+        # Strips the newline character
+        laptop_iwlist_output = []
+        network_dict = {}
+        # Iterating over each line of file
+        for line in Lines:
+            # Removing extra white space from file
+            line = line.strip()
+            # Checking that new network is listed in current line
+            if line.startswith('Cell'):
+                if len(network_dict) != 0:
+                    laptop_iwlist_output.append(network_dict)
+                    network_dict = {}
+                network_dict = {
+                    'address': '', 'channel': '', 'frequency': '',
+                    'quality': '', 'signal_level': '',
+                    'encryption_key': '', 'essID': '',
+                    'bit_rates': '', "mode": ''}
+            # Checking that adress is existing in current line
+            if "Address:" in line:
+                network_dict['address'] = line.split("Address:", 1)[1]
+
+            # Checking that Channel is existing in current line
+            elif "Channel:" in line:
+                network_dict['channel'] = line.split("Channel:", 1)[1]
+
+            # Checking that Frequency is existing in current line
+            elif "Frequency:" in line:
+                network_dict['frequency'] = line.split("Frequency:", 1)[1]
+
+            # Checking that quality is existing in current line
+            elif "Quality=" in line:
+                network_quality = line.split("Quality=", 1)[1]
+                network_dict['quality'] = network_quality.split(" ")[0]
+
+                # Checking that signal evel is existing in current line
+                if "Signal level=" in line:
+                    network_dict['signal_level'] = line.split(
+                        "Signal level=", 1)[1]
+
+            # Checking that encryption key is existing in current line
+            elif "Encryption key:" in line:
+                network_dict['encryption_key'] = line.split(
+                    "Encryption key:", 1)[1]
+
+            # Checking that essID is existing in current line
+            elif "ESSID:" in line:
+                network_dict['essID'] = line.split("ESSID:", 1)[1]
+
+            # Checking that bit rates is existing in current line
+            elif "Bit Rates:" in line:
+                network_dict['bit_rates'] = line.split("Bit Rates:", 1)[1]
+
+            # Checking that mode is existing in current line
+            elif "Mode:" in line:
+                network_dict['mode'] = line.split("Mode:", 1)[1]
+
+        # Setting data for wifi network serializer
+        serializer = WifiNetworkSerializer(
+            data=laptop_iwlist_output, many=True)
+        # Throw error if any validtion false for serializer
+        serializer.is_valid(raise_exception=True)
+        if serializer.is_valid():
+            # Inserting the data
+            serializer.save()
+    except Exception as e:
+        print(e)
 
 
 class Command(BaseCommand):
@@ -9,45 +92,4 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-
-        # read file laptop_iwlist_output and parse
-
-        output = subprocess.run(
-            ["sudo", "iwlist", "scann"], capture_output=True
-        )
-        print(output)
-        # XXX need to now parse output and format results like:
-        # parse Cell
-        # {"Address": "10:8E:BA:04:54:05",
-        #   "Channel": 1...
-
-
-
-#          Cell 14 - Address: 10:8E:BA:04:54:05
-#                    Channel:1
-#                    Frequency:2.412 GHz (Channel 1)
-#                    Quality=45/70  Signal level=-65 dBm  
-#                    Encryption key:on
-#                    ESSID:""
-#                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 6 Mb/s
-#                              9 Mb/s; 12 Mb/s; 18 Mb/s
-#                    Bit Rates:24 Mb/s; 36 Mb/s; 48 Mb/s; 54 Mb/s
-#                    Mode:Master
-#                    Extra:tsf=000003c5116111be
-#                    Extra: Last beacon: 4172ms ago
-#                    IE: Unknown: 0000
-#                    IE: Unknown: 010882848B960C121824
-#                    IE: Unknown: 030101
-#                    IE: Unknown: 050400010000
-#                    IE: Unknown: 0706555320010B14
-#                    IE: Unknown: 2A0100
-#                    IE: Unknown: 2D1A2C0100FF00000000000000000000000000000000000000000000
-#                    IE: IEEE 802.11i/WPA2 Version 1
-#                        Group Cipher : CCMP
-#                        Pairwise Ciphers (1) : CCMP
-#                        Authentication Suites (1) : PSK
-#                    IE: Unknown: 32043048606C
-#                    IE: Unknown: 3D1601080000000000000000000000000000000000000000
-#                    IE: Unknown: DD180050F2020101000003A4000027A4000042435E0062322F00
-
-
+        runIwList()

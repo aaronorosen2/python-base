@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import CallLog
+from .models import CallLogs
 # Register your models here.
-admin.site.register(CallLog)
+admin.site.register(CallLogs)
