@@ -6,9 +6,9 @@ import channels.layers
 import json
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
-
-app = Celery('web')
+app = Celery('web', broker="redis://redis:6379/0")
 app.config_from_object('django.conf:settings', namespace='CELERY')
+
 app.autodiscover_tasks()
 
 channel_layer = channels.layers.get_channel_layer()
