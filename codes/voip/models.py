@@ -101,11 +101,10 @@ class TwilioSession(models.Model):
     session_id = models.CharField(max_length=512, blank=True, null=True, unique=True)
     dest_number = models.CharField(max_length=40, blank=True, null=True)
     callsid = models.CharField(max_length=512, blank=True, null=True, unique=True)
-    confsid = models.CharField(max_length=512, blank=True, null=True, unique=True)
-
     created_at = models.DateTimeField(blank=True, null=True)
 
 
-
-
-
+class ConferenceSession(models.Model):
+    twilio_session = models.ForeignKey(TwilioSession, on_delete=models.CASCADE)
+    phone_number = models.CharField(max_length=40, blank=True, null=True)
+    created_at = models.DateTimeField(blank=True, null=True)

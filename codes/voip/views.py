@@ -11,8 +11,8 @@ from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause, Numb
 from twilio.rest import Client
 import uuid
 from knox.auth import AuthToken
-from .models import Phone, assigned_numbers, User_leads, Sms_details, TwilioSession
-from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer,UserLeadsSerializer
+from .models import Phone, assigned_numbers, User_leads, Sms_details, TwilioSession, ConferenceSession
+from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer, UserLeadsSerializer
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 from django.core import serializers
@@ -223,6 +223,13 @@ def voip_callback(request, session_id):
     print(str(resp))
     return HttpResponse(resp)
 
+
+
+@csrf_exempt
+def remove_user_to_conf(request, session_id):
+    pass
+ 
+
 @csrf_exempt
 def add_user_to_conf(request, session_id):
     print("🚀 ~ file: views.py ~ line 399 ~ session_id", session_id)
@@ -344,6 +351,11 @@ def join_conference(request):
     twilio_session.session_id = session_id
     twilio_session.dest_number = dest_number
     twilio_session.save()
+
+    conference_session = ConferenceSession()
+    conference_session.twilio_session = twilio_session
+    conference_session.phone_number = dest_number
+    conference_session.save()
 
 
     call = twilio_client.calls.create(record=True,
