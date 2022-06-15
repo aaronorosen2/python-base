@@ -10,16 +10,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterModelTable(
-            name='roominfo',
-            table='roominfo',
-        ),
-        migrations.AlterModelTable(
-            name='roomrecording',
-            table='roomrecording',
-        ),
-        migrations.AlterModelTable(
-            name='roomvisitors',
-            table='roomvisitors',
-        ),
+
     ]
