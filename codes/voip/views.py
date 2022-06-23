@@ -121,10 +121,10 @@ def get_all_active_numbers(request):
     incoming_phone_numbers = client.incoming_phone_numbers.list(limit=20)
     active_numbers = list()
     for record in incoming_phone_numbers:
-        print(record.phone_number)    
-        active_numbers.append(record.phone_number)    
+        print(record.phone_number)
+        active_numbers.append(record.phone_number)
     print("active numbers", active_numbers)
-    return JsonResponse({'active':active_numbers}, safe = False) 
+    return JsonResponse({'active':active_numbers}, safe = False)
 
 
 @csrf_exempt    
@@ -587,7 +587,6 @@ def csvUploder(request):
     #         loc= csv_head.index('Phone')
     #         phone_num = str(i[loc])
     #         phone = phone_num.replace ('(','').replace(')','')
-        
     #     if 'Status' in csv_head:
     #         loc= csv_head.index('Status')
     #         status= i[loc]
