@@ -428,24 +428,31 @@ def get_lead(request):
             # print("🚀 ~ file: views.py ~ line 342 ~ token", token)
             user = User.objects.get(id=token.user_id)
             # user = User.objects.first()
-            qs = Userleads.objects.filter(user=user)
-            if request.GET.get("first_name", None):
-                qs = qs.filter(first_name__icontains=request.GET.get("first_name"))
-            if request.GET.get("last_name", None):
-                qs = qs.filter(last_name__icontains=request.GET.get("last_name"))
-            if request.GET.get("phone", None):
-                qs = qs.filter(phone__icontains=request.GET.get("phone"))
-            if request.GET.get("address", None):
-                qs = qs.filter(address__icontains=request.GET.get("address"))
+            all_csv=[]
+            qs = Userleads.objects.filter(user=user).values("csv_data")
+            for i in qs:
+                all_csv.append(json.loads(i['csv_data']))
+            # print(all_csv)
+            # if request.GET.get("first_name", None):
+            #     qs = qs.filter(first_name__icontains=request.GET.get("first_name"))
+            # if request.GET.get("last_name", None):
+            #     qs = qs.filter(last_name__icontains=request.GET.get("last_name"))
+            # if request.GET.get("phone", None):
+            #     qs = qs.filter(phone__icontains=request.GET.get("phone"))
+            # if request.GET.get("address", None):
+            #     qs = qs.filter(address__icontains=request.GET.get("address"))
             # print("🚀 ~ file: views.py ~ line 344 ~ user", user)
             # leads = Userleads.objects.filter(user=user)
             # print("🚀 ~ file: views.py ~ line 346 ~ leads", leads)
             # leads_ser = UserLeadsSerializer(leads,many=True)
             # print("🚀 ~ file: views.py ~ line 348 ~ leads_ser", leads_ser.data)
             # return JsonResponse(leads_ser.data,safe=False)
-            return JsonResponse(
-                    serializers.serialize("json", qs),
-                    safe=False)
+            # return JsonResponse(
+            #         serializers.serialize("json", qs),
+            #         safe=False)
+            # print(pd.DataFrame(all_csv[0]))
+            # pd.DataFrame(all_csv[0]).to_html(index=False,classes="table table-striped table-bordered")
+            return JsonResponse(all_csv,safe=False)
         except Exception as e:
             # print("🚀 ~ file: views.py ~ line 351 ~ e", e)
             print(e)
@@ -546,8 +553,25 @@ def csvUploder(request):
     # data = json.loads(csvphonenum)
     # print("______________csvphonenum_____________----------",type(data))
     reader = pd.read_csv(csv_file)
-    dic=reader.to_dict()
-    dumped_data=json.dumps(dic)
+    # dic=reader.to_dict('list')
+    # all_leads=Userleads.objects.filter(user=user).values()
+    # list_dic=[]
+    # print("reader",reader)
+    # for i in all_leads:
+    #     list_dic.append(json.loads(i["csv_data"]))
+    # print("list_dic",type(list_dic))
+    # old_data=pd.DataFrame(list_dic)
+    # old_dic={}
+    # for i in list_dic:
+    #     for k,v in i.items():
+    #         print(v,type(v))
+    #         old_dic[k]=v
+    # print("old_dic",old_dic)
+    # old_data=pd.DataFrame(old_dic)
+    # print("old_data",old_data)
+    # dic=pd.concat([reader,old_data],ignore_index=True).drop_duplicates(keep=False)
+    dumped_data=json.dumps(reader.to_dict('records'))
+    print("dumped_data",dumped_data)
     # csv_head = list(reader.head())
     # csv_data = reader.values.tolist()
     # for i in csv_data:      
