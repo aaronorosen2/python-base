@@ -337,11 +337,12 @@ def complete_call(request, session_id):
 
 @csrf_exempt
 def join_conference(request):
-    source_number = request.POST.get("source_number")    
+    post_data=json.loads(request.body.decode("utf-8"))
+    source_number = post_data.get("source_number")    
     print("🚀 ~ file: views.py ~ line 256 ~ source_number", source_number)
-    dest_number = request.POST.get("dest_number")
+    dest_number = post_data.get("dest_number")
     print("🚀 ~ file: views.py ~ line 258 ~ dest_number", dest_number)
-    your_number = request.POST.get("your_number")
+    your_number = post_data.get("your_number")
     print("🚀 ~ file: views.py ~ line 260 ~ your_number", your_number)
 
     # try:
@@ -408,6 +409,15 @@ def make_call(request):
     return JsonResponse({'message': 'Success!'})
 
 
+# Get All Ongoing Calls from Twilio status
+@api_view(["get"])
+def get_ongoing_calls(request):
+    client = get_client()
+    calls = client.conferences.list(status='in-progress')
+    print(calls)
+    return JsonResponse(calls, safe=False)
+
+
 @api_view(['post'])
 def send_sms_(request):
     to_num = request.POST.get('to_num')
@@ -432,26 +442,6 @@ def get_lead(request):
             qs = Userleads.objects.filter(user=user).values("csv_data")
             for i in qs:
                 all_csv.append(json.loads(i['csv_data']))
-            # print(all_csv)
-            # if request.GET.get("first_name", None):
-            #     qs = qs.filter(first_name__icontains=request.GET.get("first_name"))
-            # if request.GET.get("last_name", None):
-            #     qs = qs.filter(last_name__icontains=request.GET.get("last_name"))
-            # if request.GET.get("phone", None):
-            #     qs = qs.filter(phone__icontains=request.GET.get("phone"))
-            # if request.GET.get("address", None):
-            #     qs = qs.filter(address__icontains=request.GET.get("address"))
-            # print("🚀 ~ file: views.py ~ line 344 ~ user", user)
-            # leads = Userleads.objects.filter(user=user)
-            # print("🚀 ~ file: views.py ~ line 346 ~ leads", leads)
-            # leads_ser = UserLeadsSerializer(leads,many=True)
-            # print("🚀 ~ file: views.py ~ line 348 ~ leads_ser", leads_ser.data)
-            # return JsonResponse(leads_ser.data,safe=False)
-            # return JsonResponse(
-            #         serializers.serialize("json", qs),
-            #         safe=False)
-            # print(pd.DataFrame(all_csv[0]))
-            # pd.DataFrame(all_csv[0]).to_html(index=False,classes="table table-striped table-bordered")
             return JsonResponse(all_csv,safe=False)
         except Exception as e:
             # print("🚀 ~ file: views.py ~ line 351 ~ e", e)

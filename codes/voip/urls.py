@@ -28,5 +28,6 @@ urlpatterns = [
     # path('api_voip/handleDialCallStatus', views.handleDialCallStatus),
     path('api_voip/retrieving_call_logs', views.retrieving_call_logs),
     path('api_voip/active', views.get_all_active_numbers),
+    path('api_voip/get_ongoing_calls', views.get_ongoing_calls)
 ]
 
