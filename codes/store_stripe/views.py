@@ -67,7 +67,7 @@ class StripeConnectOnboardingView(APIView):
                 type='express',
             )
 
-            print(account)
+            print('account', account)
             user.stripedetails.stripe_account_id = account.id
             user.stripedetails.is_onboarding_completed = False
             user.stripedetails.is_connected = False
@@ -76,6 +76,7 @@ class StripeConnectOnboardingView(APIView):
         
 
         if not user.stripedetails.is_onboarding_completed:
+            print('account_onboarding')
             account_link = stripe.AccountLink.create(
                 account=user.stripedetails.stripe_account_id,
                 refresh_url=settings.TEACHER_UI_URL + "/userProfile.html?status=refresh",
@@ -136,21 +137,38 @@ def checkout(request):
 
     stripe_item = StripeItem.objects.filter(stripe_price_id=price_id).first()
 
-    session = stripe.checkout.Session.create(
+    if stripe_item.stripe_recurring_price:
+        session = stripe.checkout.Session.create(
         line_items=[{
             'price': price_id,
             'quantity': 1,
         }],
-        mode='payment',
+        mode='subscription',
         success_url=settings.TEACHER_UI_URL + '/payment_success.html',
         cancel_url=settings.TEACHER_UI_URL + '/payment_failure.html',
-        payment_intent_data={
-            'application_fee_amount': 00,
+        subscription_data={
             'transfer_data': {
                 'destination': account_id,
+            }
+        }
+    ) 
+
+    else:
+        session = stripe.checkout.Session.create(
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=settings.TEACHER_UI_URL + '/payment_success.html',
+            cancel_url=settings.TEACHER_UI_URL + '/payment_failure.html',
+            payment_intent_data={
+                'application_fee_amount': 00,
+                'transfer_data': {
+                    'destination': account_id,
+                },
             },
-        },
-    )
+        )
 
     lesson = Lesson.objects.filter(id=lesson_id).first()
 

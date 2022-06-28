@@ -60,33 +60,32 @@ class assigned_numbers(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
 
 
-class User_leads(models.Model):
-    first_name = models.CharField(max_length=255,blank=True,null=True)
-    last_name = models.CharField(max_length=255,blank=True,null=True)
-    phone = models.CharField(max_length=255,blank=True,null=True)
-    email = models.EmailField(max_length=255, blank=True,null=True)
-    ask = models.CharField(max_length=255, blank=True,null=True)
-    state = models.CharField(max_length=255, blank=True,null=True)
-    last_call = models.DateField(blank=True, null=True)
-    last_dial_number = models.CharField(max_length=255, blank=True, null=True)
-    recording_url = models.CharField(max_length=256,blank=True,null=True)
-    url = models.CharField(max_length=300,blank=True,null=True)
-    notes = models.TextField(blank=True, default="")
-    status = models.CharField(max_length = 255, default = '-')
+class Userleads(models.Model):
+    # first_name = models.CharField(max_length=255,blank=True,null=True)
+    # last_name = models.CharField(max_length=255,blank=True,null=True)
+    # phone = models.CharField(max_length=255,blank=True,null=True)
+    # email = models.EmailField(max_length=255, blank=True,null=True)
+    # ask = models.CharField(max_length=255, blank=True,null=True)
+    # state = models.CharField(max_length=255, blank=True,null=True)
+    # last_call = models.DateField(blank=True, null=True)
+    # last_dial_number = models.CharField(max_length=255, blank=True, null=True)
+    # recording_url = models.CharField(max_length=256,blank=True,null=True)
+    # url = models.CharField(max_length=300,blank=True,null=True)
+    # notes = models.TextField(blank=True, default="")
+    # status = models.CharField(max_length = 255, default = '-')
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              blank=True, null=True)
-    city = models.CharField(max_length=255,blank=True,null=True)
-    zipcode = models.CharField(max_length=255,blank=True,null=True)
-    address = models.CharField(max_length=255,blank=True,null=True)
-    tax_overdue = models.CharField(max_length=255,blank=True,null=True)
-    contact_id = models.CharField(max_length=255,blank=True,null=True)
+    csv_data=models.TextField(blank=True, null=True)
+    id=models.AutoField(primary_key=True,unique=True,auto_created=True)
+    # city = models.CharField(max_length=255,blank=True,null=True)
+    # zipcode = models.CharField(max_length=255,blank=True,null=True)
+    # address = models.CharField(max_length=255,blank=True,null=True)
+    # tax_overdue = models.CharField(max_length=255,blank=True,null=True)
+    # contact_id = models.CharField(max_length=255,blank=True,null=True)
 
     class Meta:
-        db_table = 'User_leads'
-        constraints = [
-            models.UniqueConstraint(fields=['first_name','last_name', 'phone', "email" , "ask","state" , "url" ,"notes"], name='uniqueUserLead')
-        ]
-
+        db_table = 'Userleads'
+       
 
 class Sms_details(models.Model):
     from_number = models.CharField(max_length=20, blank=True, null=True)
@@ -101,11 +100,10 @@ class TwilioSession(models.Model):
     session_id = models.CharField(max_length=512, blank=True, null=True, unique=True)
     dest_number = models.CharField(max_length=40, blank=True, null=True)
     callsid = models.CharField(max_length=512, blank=True, null=True, unique=True)
-    confsid = models.CharField(max_length=512, blank=True, null=True, unique=True)
-
     created_at = models.DateTimeField(blank=True, null=True)
 
 
-
-
-
+class ConferenceSession(models.Model):
+    twilio_session = models.ForeignKey(TwilioSession, on_delete=models.CASCADE)
+    phone_number = models.CharField(max_length=40, blank=True, null=True)
+    created_at = models.DateTimeField(blank=True, null=True)

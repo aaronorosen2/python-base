@@ -223,8 +223,7 @@ def list_call_2():
     return reps
 
 def update_list_call():
-    #todo: add task to celery
-    #todo fix celery
+
     """ this only to update the database """
     account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
     auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']

@@ -11,8 +11,8 @@ from twilio.twiml.voice_response import VoiceResponse, Gather, Dial, Pause, Numb
 from twilio.rest import Client
 import uuid
 from knox.auth import AuthToken
-from .models import Phone, assigned_numbers, User_leads, Sms_details, TwilioSession
-from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer,UserLeadsSerializer
+from .models import Phone, assigned_numbers, Userleads, Sms_details, TwilioSession, ConferenceSession
+from .serializers import TwilioPhoneSerializer, Assigned_numbersSerializer, UserLeadsSerializer
 from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 from django.core import serializers
@@ -27,6 +27,7 @@ import codecs
 import requests
 import datetime
 import pandas as pd
+import json
 
 
 # Generate a session id for conference
@@ -223,6 +224,13 @@ def voip_callback(request, session_id):
     print(str(resp))
     return HttpResponse(resp)
 
+
+
+@csrf_exempt
+def remove_user_to_conf(request, session_id):
+    pass
+ 
+
 @csrf_exempt
 def add_user_to_conf(request, session_id):
     print("🚀 ~ file: views.py ~ line 399 ~ session_id", session_id)
@@ -294,7 +302,7 @@ def leave_conf(request, session_id, destination_number):
                 url=''
             # print("🚀 ~ file: views.py ~ line 229 ~ url", url)
             # print("🚀 ~ file: views.py ~ line 231 ~ calls[0].date_created", calls[0].date_created)
-            lead = User_leads.objects.get(phone=destination_number)
+            lead = Userleads.objects.get(phone=destination_number)
             lead.recording_url = url
             lead.last_call = calls[0].date_created
             lead.save()
@@ -329,11 +337,12 @@ def complete_call(request, session_id):
 
 @csrf_exempt
 def join_conference(request):
-    source_number = request.POST.get("source_number")    
+    post_data=json.loads(request.body.decode("utf-8"))
+    source_number = post_data.get("source_number")    
     print("🚀 ~ file: views.py ~ line 256 ~ source_number", source_number)
-    dest_number = request.POST.get("dest_number")
+    dest_number = post_data.get("dest_number")
     print("🚀 ~ file: views.py ~ line 258 ~ dest_number", dest_number)
-    your_number = request.POST.get("your_number")
+    your_number = post_data.get("your_number")
     print("🚀 ~ file: views.py ~ line 260 ~ your_number", your_number)
 
     # try:
@@ -344,6 +353,11 @@ def join_conference(request):
     twilio_session.session_id = session_id
     twilio_session.dest_number = dest_number
     twilio_session.save()
+
+    conference_session = ConferenceSession()
+    conference_session.twilio_session = twilio_session
+    conference_session.phone_number = dest_number
+    conference_session.save()
 
 
     call = twilio_client.calls.create(record=True,
@@ -395,6 +409,15 @@ def make_call(request):
     return JsonResponse({'message': 'Success!'})
 
 
+# Get All Ongoing Calls from Twilio status
+@api_view(["get"])
+def get_ongoing_calls(request):
+    client = get_client()
+    calls = client.conferences.list(status='in-progress')
+    print(calls)
+    return JsonResponse(calls, safe=False)
+
+
 @api_view(['post'])
 def send_sms_(request):
     to_num = request.POST.get('to_num')
@@ -408,31 +431,18 @@ def send_sms_(request):
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def get_lead(request):
-    #todo: add filter to user_leads via ('first_name', 'last_name', 'phone', "address") with icontains
+    #todo: add filter to Userleads via ('first_name', 'last_name', 'phone', "address") with icontains
     if request.method == 'GET':
         try:
             token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
             # print("🚀 ~ file: views.py ~ line 342 ~ token", token)
             user = User.objects.get(id=token.user_id)
             # user = User.objects.first()
-            qs = User_leads.objects.filter(user=user)
-            if request.GET.get("first_name", None):
-                qs = qs.filter(first_name__icontains=request.GET.get("first_name"))
-            if request.GET.get("last_name", None):
-                qs = qs.filter(last_name__icontains=request.GET.get("last_name"))
-            if request.GET.get("phone", None):
-                qs = qs.filter(phone__icontains=request.GET.get("phone"))
-            if request.GET.get("address", None):
-                qs = qs.filter(address__icontains=request.GET.get("address"))
-            # print("🚀 ~ file: views.py ~ line 344 ~ user", user)
-            # leads = User_leads.objects.filter(user=user)
-            # print("🚀 ~ file: views.py ~ line 346 ~ leads", leads)
-            # leads_ser = UserLeadsSerializer(leads,many=True)
-            # print("🚀 ~ file: views.py ~ line 348 ~ leads_ser", leads_ser.data)
-            # return JsonResponse(leads_ser.data,safe=False)
-            return JsonResponse(
-                    serializers.serialize("json", qs),
-                    safe=False)
+            all_csv=[]
+            qs = Userleads.objects.filter(user=user).values("csv_data")
+            for i in qs:
+                all_csv.append(json.loads(i['csv_data']))
+            return JsonResponse(all_csv,safe=False)
         except Exception as e:
             # print("🚀 ~ file: views.py ~ line 351 ~ e", e)
             print(e)
@@ -449,7 +459,7 @@ def get_lead(request):
         ask = request.data.get('ask')
         notes = request.data.get('notes')
         new_url = request.data.get('new_url')
-        lead = User_leads(user=user,first_name=first_name,last_name=last_name, phone=phone,  email=email,
+        lead = Userleads(user=user,first_name=first_name,last_name=last_name, phone=phone,  email=email,
                                 ask=ask, state=state, notes=notes,
                                 url=new_url)
 
@@ -458,7 +468,7 @@ def get_lead(request):
 
     elif request.method == 'PUT':
         if 'first_name' in request.data:
-            lead = User_leads.objects.get(pk=request.data['pk'])
+            lead = Userleads.objects.get(pk=request.data['pk'])
             lead.first_name = request.data.get('first_name')
             lead.last_name = request.data.get('last_name')
             lead.phone = request.data.get('phone')
@@ -472,7 +482,7 @@ def get_lead(request):
             return JsonResponse({'message': 'success'}, status=200)
 
         else:
-            lead = User_leads.objects.get(pk=request.data['pk'])
+            lead = Userleads.objects.get(pk=request.data['pk'])
             lead.notes = request.data['notes']
             lead.status = request.data['status']
             lead.last_call = datetime.datetime.now()
@@ -482,11 +492,11 @@ def get_lead(request):
 
     elif request.method == 'DELETE':
         if request.data:
-            lead = User_leads.objects.get(pk=request.data['pk'])
+            lead = Userleads.objects.get(pk=request.data['pk'])
             lead.delete()
             return JsonResponse({'message': 'success'}, status=200)
         else:
-            data = User_leads.objects.filter(
+            data = Userleads.objects.filter(
                 id__in=request.GET['listPk'].split(",")
             )
             data.delete()
@@ -517,13 +527,14 @@ def get_lead(request):
 #             ask = line[4]
 #             notes = line[5]
 #             url = line[6]
-#             lead = User_leads(name=name, phone=phone,  email=email,
+#             lead = Userleads(name=name, phone=phone,  email=email,
 #                               ask=ask, state=state, notes=notes,
 #                               url=url)
 #             lead.save()
 #     return JsonResponse({'message': 'lead save successfully'}, status=200)
 @api_view(['POST'])
 def csvUploder(request):
+    
     # print("🚀 ~ file: views.py ~ line 429 ~ token", request.headers.get('Authorization')[:8])
     token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
     user = User.objects.get(id=token.user_id)
@@ -532,59 +543,78 @@ def csvUploder(request):
     # data = json.loads(csvphonenum)
     # print("______________csvphonenum_____________----------",type(data))
     reader = pd.read_csv(csv_file)
-    csv_head = list(reader.head())
-    csv_data = reader.values.tolist()
-    for i in csv_data:      
-        if 'tax_overdue' in csv_head:
-            loc= csv_head.index('tax_overdue')
-            tax_overdue= i[loc]
+    # dic=reader.to_dict('list')
+    # all_leads=Userleads.objects.filter(user=user).values()
+    # list_dic=[]
+    # print("reader",reader)
+    # for i in all_leads:
+    #     list_dic.append(json.loads(i["csv_data"]))
+    # print("list_dic",type(list_dic))
+    # old_data=pd.DataFrame(list_dic)
+    # old_dic={}
+    # for i in list_dic:
+    #     for k,v in i.items():
+    #         print(v,type(v))
+    #         old_dic[k]=v
+    # print("old_dic",old_dic)
+    # old_data=pd.DataFrame(old_dic)
+    # print("old_data",old_data)
+    # dic=pd.concat([reader,old_data],ignore_index=True).drop_duplicates(keep=False)
+    dumped_data=json.dumps(reader.to_dict('records'))
+    print("dumped_data",dumped_data)
+    # csv_head = list(reader.head())
+    # csv_data = reader.values.tolist()
+    # for i in csv_data:      
+    #     if 'tax_overdue' in csv_head:
+    #         loc= csv_head.index('tax_overdue')
+    #         tax_overdue= i[loc]
 
-        if 'State' in csv_head:
-            loc= csv_head.index('State')
-            state= i[loc]
+    #     if 'State' in csv_head:
+    #         loc= csv_head.index('State')
+    #         state= i[loc]
 
-        if 'Phone' in csv_head:
-            loc= csv_head.index('Phone')
-            phone_num = str(i[loc])
-            phone = phone_num.replace ('(','').replace(')','')
+    #     if 'Phone' in csv_head:
+    #         loc= csv_head.index('Phone')
+    #         phone_num = str(i[loc])
+    #         phone = phone_num.replace ('(','').replace(')','')
         
-        if 'Status' in csv_head:
-            loc= csv_head.index('Status')
-            status= i[loc]
+    #     if 'Status' in csv_head:
+    #         loc= csv_head.index('Status')
+    #         status= i[loc]
 
-        if 'Notes' in csv_head:
-            loc= csv_head.index('Notes')
-            notes= i[loc]
+    #     if 'Notes' in csv_head:
+    #         loc= csv_head.index('Notes')
+    #         notes= i[loc]
             
-        if 'Contact ID' in csv_head:
-            loc= csv_head.index('Contact ID')
-            contact_id= i[loc]
+    #     if 'Contact ID' in csv_head:
+    #         loc= csv_head.index('Contact ID')
+    #         contact_id= i[loc]
 
-        if 'Last Name' in csv_head:
-            loc= csv_head.index('Last Name')
-            last_Name= i[loc]
+    #     if 'Last Name' in csv_head:
+    #         loc= csv_head.index('Last Name')
+    #         last_Name= i[loc]
 
-        if 'First Name' in csv_head:
-            loc= csv_head.index('First Name')
-            first_name= i[loc]
+    #     if 'First Name' in csv_head:
+    #         loc= csv_head.index('First Name')
+    #         first_name= i[loc]
         
-        if 'url' in csv_head:
-            loc= csv_head.index('url')
-            url= i[loc]
+    #     if 'url' in csv_head:
+    #         loc= csv_head.index('url')
+    #         url= i[loc]
 
-        if 'address_text' in csv_head:
-            loc= csv_head.index('address_text')
-            address= i[loc]
+    #     if 'address_text' in csv_head:
+    #         loc= csv_head.index('address_text')
+    #         address= i[loc]
 
-        if 'Email' in csv_head:
-            loc= csv_head.index('Email')
-            email= i[loc]
+    #     if 'Email' in csv_head:
+    #         loc= csv_head.index('Email')
+    #         email= i[loc]
       
    
-        lead = User_leads(user=user,first_name=first_name,last_name=last_Name,state=state,tax_overdue=tax_overdue,phone=phone,status=status,notes=notes,contact_id=contact_id,url=url,address=address,email=email)
-        lead.save()
+        # lead = Userleads(user=user,first_name=first_name,last_name=last_Name,state=state,tax_overdue=tax_overdue,phone=phone,status=status,notes=notes,contact_id=contact_id,url=url,address=address,email=email)
+        # lead.save()
   
-        
+    Userleads(user=user,csv_data=dumped_data).save()
         
         
     # reader = csv.reader(codecs.iterdecode(csv_file, 'unicode_escape'))
@@ -600,7 +630,7 @@ def csvUploder(request):
     #     url = i[5]
     #     notes = i[6]
     #     try:
-    #         lead = User_leads(user=user, name=name, phone=phone, email=email,
+    #         lead = Userleads(user=user, name=name, phone=phone, email=email,
     #                         ask=ask, state=state, url=url,
     #                         notes=notes)
     #         lead.save()

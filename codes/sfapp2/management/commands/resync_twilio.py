@@ -6,7 +6,7 @@ from termcolor import cprint
 from datetime import datetime
 import requests
 from voip.models import CallLog
-from voip.models import User_leads
+from voip.models import Userleads
 
 class Command(BaseCommand):
     help = 'Fetch phone number from Twilio'
@@ -93,7 +93,7 @@ class Command(BaseCommand):
             # break
 
         # finding URL for leads destination number & call date.
-        leads = User_leads.objects.all()
+        leads = Userleads.objects.all()
         for lead in leads:
             print(lead.phone)    
             calls = client.api.calls.list(from_='+14255785798',

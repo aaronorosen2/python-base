@@ -129,6 +129,11 @@ def lesson_create(request):
         if 'stripe_product_price' in flashcard:
             stripe_product_price = flashcard['stripe_product_price']
 
+        stripe_recurring_price = False;
+        if 'stripe_recurring_price' in flashcard:
+            print('stripe_recurring_price--setting')
+            stripe_recurring_price = flashcard['stripe_recurring_price']
+
         if(braintree_item_name != '' and braintree_item_price != '' and braintree_merchant_ID != '' 
             and braintree_public_key != '' and braintree_private_key != ''):
             f=FlashCard(lesson=lesson,
@@ -144,16 +149,28 @@ def lesson_create(request):
                         )
             f.save()
         elif stripe_product_price != 0:
-            # todo: add priced stripe product
             p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
-            price = stripe.Price.create(
-                unit_amount=int(stripe_product_price)*100,
-                currency='usd',
-                product=p.id,
-            )
+            if not stripe_recurring_price:
+                print('no_recurring_price')
+                price = stripe.Price.create(
+                    unit_amount=int(stripe_product_price)*100,
+                    currency='usd',
+                    product=p.id,
+                )
+            else: 
+                print('creating_recurring_price')
+                price = stripe.Price.create(
+                    unit_amount=int(stripe_product_price)*100,
+                    currency='usd',
+                    product=p.id,
+                    recurring={
+                        'interval': 'month',
+                    },
+                )
             stripe_item = StripeItem()
             stripe_item.stripe_price_id = price.id
             stripe_item.stripe_product_id = p.id
+            stripe_item.stripe_recurring_price = stripe_recurring_price
             stripe_item.price = stripe_product_price
             stripe_item.save()
 
@@ -371,6 +388,7 @@ def lesson_update(request, pk):
             braintree_item_price=""
             position =flashcard["position"]
             stripe_product_price=0
+            stripe_recurring_price = False
             id_ = None
             if "id" in flashcard:
                 id_ = flashcard["id"]
@@ -406,6 +424,11 @@ def lesson_update(request, pk):
 
             if 'stripe_product_price' in flashcard:
                 stripe_product_price = flashcard['stripe_product_price']
+
+            
+
+            if 'stripe_recurring_price' in flashcard:
+                stripe_recurring_price = flashcard['stripe_recurring_price']
 
             if "id" in flashcard:
                 if(braintree_item_name != '' or braintree_item_price != ''):
@@ -475,15 +498,26 @@ def lesson_update(request, pk):
                 elif stripe_product_price:
                     lesson_type = flashcard["lesson_type"]
                     p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
-                    price = stripe.Price.create(
-                        unit_amount=int(stripe_product_price)*100,
-                        currency='usd',
-                        product=p.id,
-                    )
+                    if(stripe_recurring_price):
+                        price = stripe.Price.create(
+                            unit_amount=int(stripe_product_price)*100,
+                            currency='usd',
+                            product=p.id,
+                            recurring={
+                                'interval': 'month',
+                            },
+                        )
+                    else:
+                        price = stripe.Price.create(
+                            unit_amount=int(stripe_product_price)*100,
+                            currency='usd',
+                            product=p.id,
+                        )
                     stripe_item = StripeItem()
                     stripe_item.stripe_price_id = price.id
                     stripe_item.stripe_product_id = p.id
                     stripe_item.price = stripe_product_price
+                    stripe_item.stripe_recurring_price = stripe_recurring_price
                     stripe_item.save()
 
                     f = FlashCard(

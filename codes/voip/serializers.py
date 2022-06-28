@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Phone, assigned_numbers , User_leads
+from .models import Phone, assigned_numbers , Userleads
 
 
 class TwilioPhoneSerializer(serializers.ModelSerializer):
@@ -17,5 +17,5 @@ class Assigned_numbersSerializer(serializers.ModelSerializer):
 class UserLeadsSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = User_leads
+        model = Userleads
         fields = '__all__'
