@@ -1,4 +1,6 @@
+import json
 from django.http import JsonResponse
+from hamcrest import instance_of
 
 from .serializers import LessonEmailNotifySerializer, LessonSlackNotifySerializer
 from .util import send_email, send_slack_notification
@@ -15,10 +17,17 @@ from .models import (LessonEmailNotify, LessonSlackNotify)
 @permission_classes([IsAuthenticated])
 def add_notify(request, lesson_id):
     try:
-        email = request.POST['email']
-        lesson_notify = LessonEmailNotify(lesson_notify=lesson_id, email=email)
-        lesson_notify.save()
-        return JsonResponse({"message": "Created"}, status=status.HTTP_201_CREATED)
+        body = json.loads(request.body)
+        if 'emails' in body and not isinstance(body['emails'],list):
+            return JsonResponse({"message": "Emails should be of type List"}, status = status.HTTP_417_EXPECTATION_FAILED)
+        emails = body['emails']
+        mapped = []
+        for em in emails:
+            mapped.append(LessonEmailNotify(lesson_notify_id = lesson_id, email = em))
+        print(mapped)
+        lesson_notify = LessonEmailNotify.objects.bulk_create(list(mapped), 10)
+        print(2, lesson_notify)
+        return JsonResponse({"message": "Created "+str(len(lesson_notify))+ " records."}, status=status.HTTP_201_CREATED)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Error occured! - " + str(e)}, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -29,7 +38,7 @@ def add_notify(request, lesson_id):
 @permission_classes([IsAuthenticated])
 def get_notify(request, lesson_id):
     try:
-        _notifications = LessonEmailNotify.objects.filter(lesson_notify=lesson_id).all()
+        _notifications = LessonEmailNotify.objects.filter(lesson_notify_id=lesson_id).all()
         serialized = LessonEmailNotifySerializer(_notifications, many=True)
         return JsonResponse({"data": serialized.data})
     except Exception as e:
@@ -40,9 +49,9 @@ def get_notify(request, lesson_id):
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def list_notify(request):
+def list_notify(request, lesson_id):
     try:
-        _notifications = LessonEmailNotify.objects.all()
+        _notifications = LessonEmailNotify.objects.filter(lesson_notify_id=lesson_id).all()
         serialized = LessonEmailNotifySerializer(_notifications, many=True)
         return JsonResponse(serialized.data, safe=False)
     except Exception as e:
@@ -55,11 +64,11 @@ def list_notify(request):
 @permission_classes([IsAuthenticated])
 def remove_notify(request, lesson_id):
     try:
-        email = request.GET.get("email")
-        if email is not None:
-            _notifications = LessonEmailNotify.objects.filter(notify_lesson=lesson_id, email=email).all()
+        emails = request.data.get("emails")
+        if emails is not None:
+            _notifications = LessonEmailNotify.objects.filter(lesson_notify_id=lesson_id, email__in=emails).all()
         else:
-            _notifications = LessonEmailNotify.objects.filter(notify_lesson=lesson_id).all()
+            return JsonResponse({"message": "Emails are required to delete notification"}, status=status.HTTP_400_BAD_REQUEST)
         count, data = _notifications.delete()
         return JsonResponse({"message": "Deleted {} notifications".format(str(count))})
     except Exception as e:
@@ -88,11 +97,17 @@ def notify(request, lesson_id):
 @permission_classes([IsAuthenticated])
 def add_slack_notify(request, lesson_id):
     try:
-        print(request.POST)
-        url = request.POST['url']
-        lesson_notify = LessonSlackNotify(lesson_notify_id=lesson_id, url=url)
-        lesson_notify.save()
-        return JsonResponse({"message": "Created"}, status=status.HTTP_201_CREATED)
+        print(request.body)
+        body = json.loads(request.body)
+        if 'urls' in body and not isinstance(body['urls'],list):
+            return JsonResponse({"message": "Urls should be of type List"}, status = status.HTTP_417_EXPECTATION_FAILED)
+        urls = body['urls']
+        mapped = []
+        for url in urls:
+            mapped.append(LessonSlackNotify(lesson_notify_id = lesson_id, url = url))
+        lesson_notify = LessonSlackNotify.objects.bulk_create(list(mapped), 10)
+        print(lesson_notify)
+        return JsonResponse({"message": "Created " +str(len(lesson_notify))+' records.'}, status=status.HTTP_201_CREATED)
     except Exception as e:
         print(e)
         return JsonResponse({"message": "Error occured! - " + str(e)}, status = status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -103,7 +118,7 @@ def add_slack_notify(request, lesson_id):
 @permission_classes([IsAuthenticated])
 def get_slack_notify(request, lesson_id):
     try:
-        _notifications = LessonSlackNotify.objects.filter(lesson_notify=lesson_id).all()
+        _notifications = LessonSlackNotify.objects.filter(lesson_notify_id=lesson_id).all()
         serialized = LessonSlackNotifySerializer(_notifications, many=True)
         return JsonResponse({"data": serialized.data})
     except Exception as e:
@@ -114,9 +129,9 @@ def get_slack_notify(request, lesson_id):
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def list_slack_notify(request):
+def list_slack_notify(request, lesson_id):
     try:
-        _notifications = LessonSlackNotify.objects.all()
+        _notifications = LessonSlackNotify.objects.filter(lesson_notify_id=lesson_id).all()
         serialized = LessonSlackNotifySerializer(_notifications, many=True)
         return JsonResponse(serialized.data, safe=False)
     except Exception as e:
@@ -129,11 +144,11 @@ def list_slack_notify(request):
 @permission_classes([IsAuthenticated])
 def remove_slack_notify(request, lesson_id):
     try:
-        url = request.GET.get("url")
-        if url is not None:
-            _notifications = LessonSlackNotify.objects.filter(notify_lesson=lesson_id, url=url).all()
+        urls = request.data.get("urls")
+        if urls is not None:
+            _notifications = LessonSlackNotify.objects.filter(lesson_notify_id=lesson_id, url__in=urls).all()
         else:
-            _notifications = LessonSlackNotify.objects.filter(notify_lesson=lesson_id).all()
+            return JsonResponse({"message": "Urls are required to delete slack notification"}, status=status.HTTP_400_BAD_REQUEST)
         count, data = _notifications.delete()
         return JsonResponse({"message": "Deleted {} notifications".format(str(count))})
     except Exception as e:
