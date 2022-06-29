@@ -62,13 +62,55 @@ def list_contacted_sms(to_number):
     for contact in contacts.keys():
 
         response.append({
-             # XXX do something
+            # XXX do something
             'name': 'test name',
             'phone': contact,
             'created_at': contacts[contact]['created_at'],
         })
 
     return sorted(response, key=lambda d: d['created_at'], reverse=True)
+
+
+def list_call_cache():
+    account_sid = settings.TWILIO['TWILIO_ACCOUNT_SID']
+    auth_token = settings.TWILIO['TWILIO_AUTH_TOKEN']
+    # twilio_number = settings.TWILIO['TWILIO_NUMBER']
+    client = Client(account_sid, auth_token)
+
+    # XXX Fix me...
+    calls = client.api.calls.list()
+    messages = []
+    for call in calls:
+        messages.append(get_and_create_call(call))
+
+    print(messages)
+
+    return sorted(messages, key=lambda d: d['date_created'], reverse=True)
+
+
+def get_and_create_call(call):
+
+    call_obj = Sms_details.objects.filter(sid=call.sid).first()
+    if not call_obj:
+        call_obj = CallLogs()
+
+    call_obj.recording = call.recording_url
+    call_obj.duration = call.duration
+    call_obj.from_number = call.from_number
+    call_obj.to = call.to_number
+    call_obj.direction = call.direction
+    call_obj.sid = call.sid
+
+    call_obj.save()
+    return {
+        'date_created': call_obj.date,
+        'recording': call_obj.recording_url,
+        'duration': call_obj.duration,
+        'from': call_obj.from_number,
+        'to': call_obj.to_number,
+        'direction': call_obj.direction,
+        'sid': call_obj.sid
+    }
 
 
 def list_sms_cache():
@@ -87,6 +129,7 @@ def list_sms_cache():
 
     return sorted(messages, key=lambda d: d['date_created'], reverse=True)
 
+
 def list_sms(to_number):
 
     print("Getting messages from number: %s" % to_number)
@@ -97,6 +140,7 @@ def list_sms(to_number):
     print("Number of messages: %s" % len(messages))
 
     return sorted(messages, key=lambda d: d['created_at'], reverse=True)
+
 
 def get_and_create_message(sms):
     print(dir(sms))
@@ -112,7 +156,7 @@ def get_and_create_message(sms):
     sms_message.msg_body = sms.body
     sms_message.direction = sms.direction
     sms_message.created_at = sms.date_created
-    sms_message.sid= sms.sid
+    sms_message.sid = sms.sid
     sms_message.save()
 
     return {
