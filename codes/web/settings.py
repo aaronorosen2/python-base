@@ -133,6 +133,7 @@ INSTALLED_APPS = [
     'lesson_notifications',
     'postcards',
     'wifi',
+    'ringlessVoiceMail'
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
@@ -200,6 +201,15 @@ TWILIO = {
     'TWILIO_NUMBER': '(425) 578-5798',
 }
 
+DROPCOW_BOY_CREDENTIALS = {
+    'TEAM_ID' : 'b7cc5a14-03b1-4ac4-a091-4446c91dbb69',
+    'SECRET' : '2b34298d-b081-4658-9c96-6350fc248e2f',
+    'URL' : 'https://api.dropcowboy.com/v1/rvm',
+    'SENDER' : '+4255785798'
+
+
+}
+
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = 'AKIARWLPGYIKRQXN5VXR'
 AWS_SECRET_ACCESS_KEY = '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'
@@ -244,7 +254,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
         'USER': db_user,
-        'HOST': '52.15.140.136',
+        'HOST': '18.217.211.120',
         'PORT': '5433',
         'PASSWORD': db_password,
     }
