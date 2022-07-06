@@ -435,14 +435,26 @@ def get_lead(request):
     if request.method == 'GET':
         try:
             token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-            # print("🚀 ~ file: views.py ~ line 342 ~ token", token)
+            print("🚀 ~ file: views.py ~ line 342 ~ token", token)
             user = User.objects.get(id=token.user_id)
             # user = User.objects.first()
             all_csv=[]
-            qs = Userleads.objects.filter(user=user).values("csv_data")
-            for i in qs:
-                all_csv.append(json.loads(i['csv_data']))
-            return JsonResponse(all_csv,safe=False)
+            # qs = Userleads.objects.filter(user=user).values("csv_data")
+            get_lead_serialized = UserLeadsSerializer(
+                 Userleads.objects.filter(user=user).values("csv_data"), many=True)
+            if len(get_lead_serialized.data) > 0 :
+                return JsonResponse((get_lead_serialized.data[0]['csv_data']), safe=False)
+            else:
+                return Response({"msg":"No data"},status=status.HTTP_404_NOT_FOUND)
+
+            # serializerData  =  UserLeadsSerializer(data=qs,many=True)
+            # # for i in qs:
+            # #     all_csv.append(json.loads(i['csv_data']))
+            # serializerData.is_valid(raise_exception=True)
+            # if serializerData.is_valid():
+            #     all_csv = serializerData.data
+            
+            # return JsonResponse(all_csv,safe=False)
         except Exception as e:
             # print("🚀 ~ file: views.py ~ line 351 ~ e", e)
             print(e)
@@ -536,8 +548,8 @@ def get_lead(request):
 def csvUploder(request):
     
     # print("🚀 ~ file: views.py ~ line 429 ~ token", request.headers.get('Authorization')[:8])
-    token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-    user = User.objects.get(id=token.user_id)
+    # token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+    user = User.objects.get(id="1")
     csv_file = request.data['csvFile']
     # csvphonenum = request.data['csvphonenum']
     # data = json.loads(csvphonenum)
