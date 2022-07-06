@@ -142,7 +142,6 @@ FCM_DJANGO_SETTINGS = {
 }
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -152,7 +151,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware'
+    'django.middleware.common.CommonMiddleware',
+    
 ]
 # Braintree Settings
 
@@ -388,6 +388,8 @@ CELERY_BEAT_SCHEDULE = {
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS=['*']
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS=["*"]
 
 # Email
 EMAIL_BACKEND = 'django_ses.SESBackend'
