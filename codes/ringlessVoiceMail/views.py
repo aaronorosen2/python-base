@@ -12,6 +12,7 @@ from django.forms.models import model_to_dict
 from django.conf import settings
 import calendar
 import time
+from django.contrib.auth.models import User
 from knox.auth import get_user_model, AuthToken
 import json
 import requests 
