@@ -5,6 +5,9 @@ from .serializers import RinglessVoiceMailSerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from knox.auth import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from json import dumps as jdumps
 from django.http import HttpResponse
 import os
@@ -27,8 +30,8 @@ def apiOverview(request):
 
 @api_view(['POST'])
 def saveRinglessVoiceMail(request):
-    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:6])
-    user = User.objects.get(id=token.user_id)
+    # token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:6])
+    user = request.user
     if request.FILES != "":
         print( request.FILES)
         # gmt stores current gmtime
@@ -40,7 +43,7 @@ def saveRinglessVoiceMail(request):
         ringlessVoiceMail_new_obj.id = str(uuid.uuid4())
         try:
             setattr(ringlessVoiceMail_new_obj, "voiceMail_name", str(ts)+".wav")
-            setattr(ringlessVoiceMail_new_obj, "user_id", user)
+            setattr(ringlessVoiceMail_new_obj, "user", user)
             ringlessVoiceMail_new_obj.save()           
         except Exception as e:
             print(e)
@@ -56,10 +59,12 @@ def saveRinglessVoiceMail(request):
 
 
 @api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def getRinglessVoiceMail(request):
     try:
-        token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:6])
-        user = User.objects.get(id=token.user_id)
+        # token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:6])
+        user = request.user
         serializer = RinglessVoiceMailSerializer(RinglessVoiceMail.objects.filter(user_id=user),many=True)
        
         return JsonResponse({'message': 'success',
@@ -80,14 +85,16 @@ def handle_uploaded_file(f,fileName):
     return True
 
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def send(request):
     try:
-        token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:6])
-        user = User.objects.get(id=token.user_id)
+        # token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:6])
+        user = request.user
         voice_id = request.POST.get("voice_id")
         receiver = request.POST.get("receiver")
         serializer = RinglessVoiceMailSerializer(RinglessVoiceMail.objects.get(id=voice_id, user_id=user ))
-        if serializer.data is not None :
+        if serializer.data is not None and len(serializer.data)  > 0 :
             file_url = request.get_host()+"/"+serializer.data["voiceMail_name"]
             send_voice_mail_response = sendRingLessVoiceMail(file_url , receiver , voice_id)
             if send_voice_mail_response["error"]:
@@ -109,18 +116,18 @@ def send(request):
 
 
 @api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def remove(request):
     try:
-        token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:6])
-        user = User.objects.get(id=token.user_id)
+        # token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:6])
+        # user = User.objects.get(id=token.user_id)
+        user = request.user
         voice_id = request.POST.get("voice_id")
-        check_voice_mail_exist = RinglessVoiceMail.objects.get(id=voice_id , user_id=user)
-        serializer = RinglessVoiceMailSerializer(check_voice_mail_exist)
-        if serializer.data is not None :
+        check_voice_mail_exist = RinglessVoiceMail.objects.filter(id=voice_id , user_id=user)
+        if check_voice_mail_exist is not None  and len(check_voice_mail_exist)  > 0 :
             check_voice_mail_exist.delete()  
             return JsonResponse({'message': 'success'}, status=200)
-
-
         else:
             return JsonResponse({'message': 'failed',
                              'error': "Invalid id provided."}, status=204)
@@ -136,7 +143,7 @@ def sendRingLessVoiceMail(file_url,receiver,voice_id) :
         receiver = receiver.replace("-", "")
         audio_url = file_url
         # audio_url = "http://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3"
-        sender = "+4255785798"
+        # sender = "+4255785798"
         drop_boy_foreign_id = voice_id
         drop_cowboy_data =  {
                                 "team_id": settings.DROPCOW_BOY_CREDENTIALS['TEAM_ID'], 
