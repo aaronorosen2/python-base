@@ -77,6 +77,12 @@ def getRinglessVoiceMail(request):
 
 def handle_uploaded_file(f,fileName):
     module_dir = os.path.dirname(__file__)
+    try: 
+        os.mkdir(os.path.join(
+                 module_dir, '..', 'static/ringlessVoiceMail'))
+    except FileExistsError:
+        pass
+
     file_path = os.path.abspath(os.path.join(
             module_dir, '..', 'static/ringlessVoiceMail', str(fileName))+'.wav')
     with open(file_path, 'wb+') as destination:

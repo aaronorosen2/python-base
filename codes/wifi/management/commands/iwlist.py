@@ -11,6 +11,7 @@ def runIwList():
         # full path to laptop_iwlist_output.
         file_path = os.path.abspath(os.path.join(
             module_dir, '..', '..', 'laptop_iwlist_output'))
+
         # Setting path for laptop_iwlist_output file  end
         os.system("iwlist scann %s" % file_path)
 
