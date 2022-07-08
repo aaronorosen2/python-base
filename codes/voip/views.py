@@ -57,10 +57,13 @@ def twilio_inbound_sms(request):
     print(request)
 
     # here we need to popualte our cache
-    list_sms_cache() 
+    list_sms_cache()
 
     send_sms("18434259777",
              request.POST.get("Body"))
+
+    # XXX(Behavin) we need to send push notification to websocket
+    # if client is connected via websocket to refresh them.
 
     return JsonResponse({'message': 'Success'})
 
