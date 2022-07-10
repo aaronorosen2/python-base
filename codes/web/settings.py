@@ -134,6 +134,7 @@ INSTALLED_APPS = [
     'postcards',
     'wifi',
     'ringlessVoiceMail'
+    'facebook'
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
