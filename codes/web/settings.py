@@ -133,7 +133,7 @@ INSTALLED_APPS = [
     'lesson_notifications',
     'postcards',
     'wifi',
-    'ringlessVoiceMail'
+    'ringlessVoiceMail',
     'facebook'
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
@@ -390,7 +390,7 @@ CELERY_BEAT_SCHEDULE = {
 CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS=['*']
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOWED_ORIGINS=["*"]
+# CORS_ALLOWED_ORIGINS=["*"]
 
 # Email
 EMAIL_BACKEND = 'django_ses.SESBackend'
