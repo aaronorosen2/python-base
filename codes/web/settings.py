@@ -52,18 +52,18 @@ if DEBUG:
                 'filename': os.path.join(os.getcwd(), 'logger.log'),
                 'formatter': 'verbose'
             },
-            'slack-error': {
-                'level': 'ERROR',
-                'api_key': SLACK_API_KEY,
-                'class': 'slacker_log_handler.SlackerLogHandler',
-                'channel': '#debug'
-            },
-            'slack-info': {
-                'level': 'ERROR',
-                'api_key': SLACK_API_KEY,
-                'class': 'slacker_log_handler.SlackerLogHandler',
-                'channel': '#debug'
-            },
+#            'slack-error': {
+#                'level': 'ERROR',
+#                'api_key': SLACK_API_KEY,
+#                'class': 'slacker_log_handler.SlackerLogHandler',
+#                'channel': '#debug'
+#            },
+#            'slack-info': {
+#                'level': 'ERROR',
+#                'api_key': SLACK_API_KEY,
+#                'class': 'slacker_log_handler.SlackerLogHandler',
+##                'channel': '#debug'
+#            },
         },
         'root': {
                 'handlers': ['console', 'file', # 'slack-error', "slack-info"
@@ -134,7 +134,8 @@ INSTALLED_APPS = [
     'postcards',
     'wifi',
     'ringlessVoiceMail',
-    'facebook'
+    'facebook',
+    'github',
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
