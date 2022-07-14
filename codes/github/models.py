@@ -22,7 +22,7 @@ class RepoMember(models.Model):
                              null=True, blank=True,
                              default=None)
 
-class UserSshPubKey(models.Models):
+class UserSshPubKey(models.Model):
     pub_key = models.TextField(null=True, blank=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
