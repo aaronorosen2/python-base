@@ -3,7 +3,14 @@ from knox.auth import get_user_model
 
 
 class FlowLog(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
+    account_id = models.CharField(max_length=255, null=True, blank=True)
+    interface_id = models.CharField(max_length=255, null=True, blank=True)
+    srcaddr = models.CharField(max_length=255, null=True, blank=True)
+    dstaddr = models.CharField(max_length=255, null=True, blank=True)
+    srcport = models.CharField(max_length=255, null=True, blank=True)
+    dstport = models.CharField(max_length=255, null=True, blank=True)
+    protocol = models.CharField(max_length=255, null=True, blank=True)
+    # keep going...
     #user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
     #                         null=True, blank=True,
     #                         default=None)

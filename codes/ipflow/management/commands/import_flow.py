@@ -1,3 +1,4 @@
+import os
 from django.core.management.base import BaseCommand
 import pandas
 
@@ -14,6 +15,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print("here is the start")
 
+        # Setting path for laptop_iwlist_output file  start
+        module_dir = os.path.dirname(__file__)
+        # full path to laptop_iwlist_output.
+        file_path = os.path.abspath(os.path.join(
+            module_dir, '..', '..', 'data'))
+
+        print(file_path)
         # here we need to read data file in this repo.
         # each line looks like this:
 
