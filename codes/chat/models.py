@@ -36,6 +36,9 @@ class Member(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
+    org = models.ForeignKey(Org, on_delete=models.CASCADE,
+                            null=True, blank=True,
+                            default=None)
 
     # phone number
     # email
@@ -48,9 +51,3 @@ class ChannelMember(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
-
-
-
-
-
-
