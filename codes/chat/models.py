@@ -47,7 +47,7 @@ class Member(models.Model):
 class ChannelMember(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
-                                 null=True, blank=True, default=None)
+                                 null=True, blank=True, default=None, related_name = 'added_by')
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
-                             default=None)
+                             default=None, related_name = "user")
