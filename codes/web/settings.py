@@ -139,6 +139,7 @@ INSTALLED_APPS = [
     'ipflow',
     'chat',
     'gitlab',
+    "salesforce",
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 

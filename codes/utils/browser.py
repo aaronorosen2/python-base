@@ -1,3 +1,4 @@
+from webdriver_manager.firefox import GeckoDriverManager
 import platform
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common import desired_capabilities
@@ -8,24 +9,26 @@ import time
 import requests
 import logging
 logger = logging.getLogger(__name__)
-from webdriver_manager.firefox import GeckoDriverManager
-
 
 
 def get_driver(platform, browser):
     if platform == "Windows":
         if browser == "chrome":
-            return webdriver.Chrome(ChromeDriverManager().install())
+            return
+            # return webdriver.Chrome(ChromeDriverManager().install())
         elif browser == "firefox":
             return webdriver.Firefox(
                 executable_path=GeckoDriverManager().install())
     return get_driver_with_captcha(local=True)
 
+
 def get_driver_with_captcha(local=False):
     chrome_options = webdriver.ChromeOptions()
     prefs = {"profile.managed_default_content_settings.images": 2}
     chrome_options.add_experimental_option("prefs", prefs)
-    #plugin = '/chrome-plugin/anticaptcha-plugin_v0.3007.crx'
+
+    # XXX Fix...
+    # plugin = '/chrome-plugin/anticaptcha-plugin_v0.3007.crx'
     # if local:
     #    plugin = './chrome-plugin/anticaptcha-plugin_v0.3007.crx'
 
@@ -33,26 +36,16 @@ def get_driver_with_captcha(local=False):
     #    plugin
     # )
 
-    # prefs = {
-    #    "profile.default_content_setting_values.notifications": 2,
-    # }
-    #chrome_options.add_experimental_option("prefs", prefs)
-
-
     if local:
         driver = webdriver.Chrome(options=chrome_options)
         config_anti_captcha(driver)
     else:
         driver = webdriver.Remote(
             'http://127.0.0.1:4444/wd/hub',
-            options.to_capabilities()
+            chrome_options.to_capabilities()
         )
 
     return driver
-
-
-
-
 
 
 def alive(url):
@@ -73,8 +66,6 @@ def alive(url):
         time.sleep(2)
 
 
-
-
 def get_driver_firefox(platform=None, proxy=None):
     # fp = webdriver.FirefoxProfile()
     # fp.add_extension('./firefox-plugin/anticaptcha-plugin_v0.3101.xpi')
@@ -86,7 +77,8 @@ def get_driver_firefox(platform=None, proxy=None):
     # XXX make configurable with env var for dev setup and prod deploy
     if socket.gethostname() in [
         'arosen-laptop', 'merih.local', 'hassans-MacBook-Pro-2.local',
-        'arosen-ZenBook-UX434IQ-Q407IQ', 'zano-Vostro-3558', 'zano-ASUS-TUF-Gaming-A15-FA506II-FA506II'
+        'arosen-ZenBook-UX434IQ-Q407IQ', 'zano-Vostro-3558',
+        'zano-ASUS-TUF-Gaming-A15-FA506II-FA506II'
     ]:
         command_executor = 'http://127.0.0.1:4444/wd/hub'
         alive_url = 'http://127.0.0.1:4444'
@@ -128,9 +120,6 @@ def get_driver_firefox(platform=None, proxy=None):
     driver.set_page_load_timeout(30)
     logger.info("set page load timeout")
     return driver
-
-
-
 
 
 def init_driver(browser, proxy=None):
