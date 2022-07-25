@@ -29,7 +29,7 @@ ALLOWED_HOSTS = ['*']
 
 SLACK_API_KEY = "xoxb-790630255906-1844871421842-FFFWwP6KQT2eIsjTBHA8fsUR"
 
-if DEBUG:
+if not DEBUG:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -132,7 +132,7 @@ INSTALLED_APPS = [
     'image_processor',
     'lesson_notifications',
     'postcards',
-    'wifi',
+    # 'wifi',
     'ringlessVoiceMail',
     'facebook',
     'github',
@@ -261,10 +261,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
-        'USER': db_user,
-        'HOST': '18.217.211.120',
+        'USER': 'postgres',
+        'HOST': 'localhost',
+        # 'HOST': '18.217.211.120',
         'PORT': '5433',
-        'PASSWORD': db_password,
+        'PASSWORD': 'EhB4bINnDFmzI0Bg',
     }
 }
 
@@ -317,8 +318,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Make knox’s Token Authentication default
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
         'knox.auth.TokenAuthentication',
     ],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
