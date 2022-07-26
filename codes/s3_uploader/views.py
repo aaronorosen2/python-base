@@ -114,38 +114,28 @@ class UserRegister(generics.GenericAPIView):
 #                 'detail' : 'Please provide both phone and otp for validations'
 #                 })
 
-@method_decorator(csrf_exempt, name='dispatch')
+
 # Login User -> Returns a token to make requests
 class UserLogin(KnoxLoginView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
         data = request.data
-        print("=================================================hello1")
-
         # Allow login using username/email both
         # teacher_login = False
         try:
-            data['username'] = 'ynayan93@gmail.com'
-            data['password'] = '12345'
+            data['username'] = data['email']
         except:
             pass
         # teacher_login = data.get('teacher_login','off')           
         serializer = AuthTokenSerializer(data=data)
-        print("=================================================hello2")
-
         serializer.is_valid(raise_exception=True)
-        print("=================================================hello3")
-
         user = serializer.validated_data['user']
-        print("=================================================hello4")
-
         # if teacher_login == 'on':
         #     teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
         #     if not (teacher and teacher['active']):
         #         return JsonResponse(data={'msg': 'Account not active'},status=403) 
         teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
-        print("+======================================="+str(user))
         login(request, user)
         return_data = super(UserLogin, self).post(request, format=None)
         return_data.data['is_teacher'] = teacher['active']
@@ -263,7 +253,7 @@ class S3SignedUrl(generics.GenericAPIView):
 class MakeS3FilePublic(generics.GenericAPIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-    serializer_class = RegisterSerializer
+    
     """
     Make s3 file public
     """

@@ -29,7 +29,7 @@ ALLOWED_HOSTS = ['*']
 
 SLACK_API_KEY = "xoxb-790630255906-1844871421842-FFFWwP6KQT2eIsjTBHA8fsUR"
 
-if not DEBUG:
+if DEBUG:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -261,10 +261,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
-        'USER': 'db_user',
+        'USER': db_user,
         'HOST': '18.217.211.120',
         'PORT': '5433',
-        'PASSWORD': 'db_password',
+        'PASSWORD': db_password,
     }
 }
 
@@ -317,8 +317,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Make knox’s Token Authentication default
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         'knox.auth.TokenAuthentication',
     ],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'

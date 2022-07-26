@@ -93,10 +93,7 @@ urlpatterns = [
     path('bookingsystem/', include(
         ('bookingsystem.urls', 'bookingsystem'),
         namespace='bookingsystem')),
-
     path('chat/', include(('chat.urls'))),
-
-
     path('dreamreader/', include('dreamreader.urls')),
     path('token/', include('video_call.urls')),
     path('neighbormade/', include('neighbormade.urls')),

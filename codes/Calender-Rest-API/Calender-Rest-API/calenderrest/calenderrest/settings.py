@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'calenderapi',
     'rest_framework',
-    'corsheaders',    
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
