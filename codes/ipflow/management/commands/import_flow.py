@@ -4,6 +4,7 @@ import pandas
 import boto3
 from ipflow.models import FlowLog, S3Account
 import gzip
+from tqdm import tqdm
 
 
 class Command(BaseCommand):
@@ -19,13 +20,28 @@ class Command(BaseCommand):
             session = boto3.Session(
                 aws_access_key_id=accounts.access_key,
                 aws_secret_access_key=accounts.secret_key,
-                region_name='us-east-1'
             )
             s3 = session.resource('s3')
             bucket = s3.Bucket(accounts.name)
-            print(bucket.objects.all())
-            for obj in bucket.objects.all():
-                print(obj)
+            for obj in tqdm(bucket.objects.all()):
                 with gzip.GzipFile(fileobj=obj.get()["Body"]) as gzipfile:
                     content = gzipfile.read()
-                    print(content)
+                    lists = content.splitlines()
+                    for list in lists:
+                        data = str(list).split(" ")[1:]
+                        FlowLog.objects.create(
+                            account_id=data[0],
+                            interface_id=data[1],
+                            srcaddr=data[2],
+                            dstaddr=data[3],
+                            srcport=data[4],
+                            dstport=data[5],
+                            protocol=data[6],
+                            packets=data[7],
+                            bytes=data[8],
+                            start=data[9],
+                            end=data[10],
+                            action=data[11],
+                            log_status=data[12],
+                            user=accounts
+                        )

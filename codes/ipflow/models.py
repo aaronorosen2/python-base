@@ -10,10 +10,15 @@ class FlowLog(models.Model):
     srcport = models.CharField(max_length=255, null=True, blank=True)
     dstport = models.CharField(max_length=255, null=True, blank=True)
     protocol = models.CharField(max_length=255, null=True, blank=True)
-    # keep going...
-    #user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
-    #                         null=True, blank=True,
-    #                         default=None)
+    packets = models.CharField(max_length=255, null=True, blank=True)
+    bytes = models.CharField(max_length=255, null=True, blank=True)
+    start = models.CharField(max_length=255, null=True, blank=True)
+    end = models.CharField(max_length=255, null=True, blank=True)
+    action = models.CharField(max_length=255, null=True, blank=True)
+    log_status = models.CharField(max_length=255, null=True, blank=True)
+    user = models.ForeignKey("S3Account", on_delete=models.CASCADE,
+                             null=True, blank=True,
+                             default=None)
 
     # we need to add the attributes for a flow log here.
     # https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html
