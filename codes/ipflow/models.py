@@ -17,3 +17,11 @@ class FlowLog(models.Model):
 
     # we need to add the attributes for a flow log here.
     # https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html
+
+
+class S3Account(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    username = models.CharField(max_length=255, null=True, blank=True)
+    access_key = models.CharField(max_length=255, null=True, blank=True)
+    secret_key = models.CharField(max_length=255, null=True, blank=True)
+    console_url = models.CharField(max_length=4096, null=True, blank=True)
