@@ -17,14 +17,12 @@ class ChannelSerializers(serializers.ModelSerializer):
     class Meta:
         model = Channel
         fields = '__all__'
-        # fields = ['name']
 
 
 class MessageSerializers(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = '__all__'
-        # fields = ['meta_attributes']
 
 
 

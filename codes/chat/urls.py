@@ -14,7 +14,5 @@ urlpatterns = [
     path('get/member/<str:pk>',views.MemberApiView.as_view(),name='member-data'),
     path('get/channelmember/<str:pk>',views.ChannelMemberApiView.as_view(),name='channel-member-data'),
 
-    # path('get/org/',views.orgapi,name='org-data'),
-
 
 ]
