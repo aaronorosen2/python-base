@@ -2,7 +2,12 @@ from django.db import models
 from knox.auth import get_user_model
 
 
+class S3Object(models.Model):
+    key = models.CharField(max_length=255, null=True, blank=True)
+
+
 class FlowLog(models.Model):
+    # XXX link to S3Object FK
     account_id = models.CharField(max_length=255, null=True, blank=True)
     interface_id = models.CharField(max_length=255, null=True, blank=True)
     srcaddr = models.CharField(max_length=255, null=True, blank=True)
