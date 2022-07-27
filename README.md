@@ -2,6 +2,9 @@
 
 ## Run Code project
 
+sudo apt install libffi-dev cmake libjpeg-dev zlib1g-dev
+
+
 ```configure db on env
 
 start local database:
