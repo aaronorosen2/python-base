@@ -16,6 +16,8 @@ class FlowLog(models.Model):
     end = models.CharField(max_length=255, null=True, blank=True)
     action = models.CharField(max_length=255, null=True, blank=True)
     log_status = models.CharField(max_length=255, null=True, blank=True)
+    bytes_size = models.CharField(max_length=255, null=True, blank=True)
+    file_path = models.CharField(max_length=255, null=True, blank=True)
     user = models.ForeignKey("S3Account", on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)

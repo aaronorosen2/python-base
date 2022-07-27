@@ -23,7 +23,9 @@ class Command(BaseCommand):
             )
             s3 = session.resource('s3')
             bucket = s3.Bucket(accounts.name)
-            for obj in tqdm(bucket.objects.all()):
+            for obj in bucket.objects.all():
+                size = obj.size
+                file_path = obj.key
                 with gzip.GzipFile(fileobj=obj.get()["Body"]) as gzipfile:
                     content = gzipfile.read()
                     lists = content.splitlines()
@@ -43,5 +45,7 @@ class Command(BaseCommand):
                             end=data[10],
                             action=data[11],
                             log_status=data[12],
-                            user=accounts
+                            user=accounts,
+                            bytes_size=size,
+                            file_path=file_path
                         )
