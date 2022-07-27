@@ -4,6 +4,9 @@ from knox.auth import get_user_model
 
 class S3Object(models.Model):
     key = models.CharField(max_length=255, null=True, blank=True)
+    user = models.ForeignKey("Flowlog", on_delete=models.CASCADE,
+                             null=True, blank=True,
+                             default=None)
 
 
 class FlowLog(models.Model):
