@@ -5,6 +5,7 @@ from django.urls import re_path
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from notifications.consumers import NotificationConsumer, NotificationConsumerQueue, VstreamConsumer
+from chat.consumers import ChatConsumer
 # from django.core.asgi import get_asgi_application
 
 application = ProtocolTypeRouter({
@@ -17,9 +18,10 @@ application = ProtocolTypeRouter({
             # re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumer.as_asgi()),
             re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
             re_path(r'vstream/', VstreamConsumer.as_asgi()),
-            
+            re_path(r'msg/(?P<user_id>\w+)/(?P<room_name>\w+)/$', ChatConsumer.as_asgi()),
         ]),
 })
+
 
 # application = ProtocolTypeRouter({
 
