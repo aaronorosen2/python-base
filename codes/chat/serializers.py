@@ -23,15 +23,14 @@ class MessageSerializers(serializers.ModelSerializer):
         fields = ['meta_attributes', 'channel', 'user']
 
 
-# class MemberSerializers(serializers.ModelSerializer):
-#     class Meta:
-#         model = Member
-#         fields = ['meta_attributes']
+class MemberSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ['meta_attributes']
 
-# class MemberSerializers(serializers.ModelSerializer):
-#     class Meta:
-#         model = Member
-#         fields = 
+class MemberSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Member
 
 
 class ChannelMemberSerializers(serializers.ModelSerializer):

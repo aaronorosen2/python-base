@@ -20,7 +20,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from knox.auth import TokenAuthentication
 from uritemplate import partial
 from .models import Channel, Org, Member, Message,ChannelMember
-from .serializers import OrgSerializers, MessageSerializers,ChannelSerializers,MemberSerializers, ChannelMemberSerializers
+from .serializers import OrgSerializers, MessageSerializers,ChannelSerializers, MemberSerializers, ChannelMemberSerializers
 
 # =====================================Org================================================
 
