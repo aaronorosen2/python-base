@@ -1,9 +1,10 @@
 import os
 from django.core.management.base import BaseCommand
 import pandas
-
-from ipflow.models import FlowLog
-
+import boto3
+from ipflow.models import FlowLog, S3Account
+import gzip
+from tqdm import tqdm
 
 
 class Command(BaseCommand):
@@ -14,22 +15,37 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         print("here is the start")
-
-        # Setting path for laptop_iwlist_output file  start
-        module_dir = os.path.dirname(__file__)
-        # full path to laptop_iwlist_output.
-        file_path = os.path.abspath(os.path.join(
-            module_dir, '..', '..', 'data'))
-
-        print(file_path)
-        # here we need to read data file in this repo.
-        # each line looks like this:
-
-        # for line in file:
-        #  create a new FlowLog.
-        # XXX we need to make sure we do not save duplicate.
-        # we need to integrate with s3 to get flow logs
-        # first step is building parser for file...
-
-        # now look up information for source_ip and store all
-        # info in FlowLow
+        s3 = boto3.client('s3')
+        for accounts in S3Account.objects.all():
+            session = boto3.Session(
+                aws_access_key_id=accounts.access_key,
+                aws_secret_access_key=accounts.secret_key,
+            )
+            s3 = session.resource('s3')
+            bucket = s3.Bucket(accounts.name)
+            for obj in bucket.objects.all():
+                size = obj.size
+                file_path = obj.key
+                with gzip.GzipFile(fileobj=obj.get()["Body"]) as gzipfile:
+                    content = gzipfile.read()
+                    lists = content.splitlines()
+                    for list in lists:
+                        data = str(list).split(" ")[1:]
+                        FlowLog.objects.create(
+                            account_id=data[0],
+                            interface_id=data[1],
+                            srcaddr=data[2],
+                            dstaddr=data[3],
+                            srcport=data[4],
+                            dstport=data[5],
+                            protocol=data[6],
+                            packets=data[7],
+                            bytes=data[8],
+                            start=data[9],
+                            end=data[10],
+                            action=data[11],
+                            log_status=data[12],
+                            user=accounts,
+                            bytes_size=size,
+                            file_path=file_path
+                        )

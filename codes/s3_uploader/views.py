@@ -253,7 +253,7 @@ class S3SignedUrl(generics.GenericAPIView):
 class MakeS3FilePublic(generics.GenericAPIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-
+    
     """
     Make s3 file public
     """
