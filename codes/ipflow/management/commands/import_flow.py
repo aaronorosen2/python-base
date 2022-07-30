@@ -14,6 +14,7 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
+
         s3 = boto3.client('s3')
         for accounts in S3Account.objects.all():
             session = boto3.Session(
@@ -23,6 +24,7 @@ class Command(BaseCommand):
             s3 = session.resource('s3')
             bucket = s3.Bucket(accounts.name)
             for obj in bucket.objects.all():
+                object_flow_logs = []
                 if S3Object.objects.filter(key=obj.key).first():
                     print("We already have imported this key")
                     continue
@@ -33,7 +35,7 @@ class Command(BaseCommand):
                     lists = content.splitlines()
                     for list in lists:
                         data = str(list).split(" ")[1:]
-                        FlowLog.objects.create(
+                        object_flow_logs.append(FlowLog(
                             account_id=data[0],
                             interface_id=data[1],
                             srcaddr=data[2],
@@ -50,8 +52,10 @@ class Command(BaseCommand):
                             user=accounts,
                             bytes_size=size,
                             file_path=file_path
-                        )
-                s3_object = S3Object()
-                s3_object.key = obj.key
-                s3_object.save()
-                print("saving object %s" % obj.key)
+
+                        ))
+                    FlowLog.objects.bulk_create(object_flow_logs)
+                    s3_object = S3Object()
+                    s3_object.key = obj.key
+                    s3_object.save()
+                    print("saving object %s" % obj.key)
