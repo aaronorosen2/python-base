@@ -2,7 +2,7 @@ import os
 from django.core.management.base import BaseCommand
 import pandas
 import boto3
-from ipflow.models import FlowLog, S3Account
+from ipflow.models import FlowLog, S3Account, S3Object
 import gzip
 from tqdm import tqdm
 
@@ -14,7 +14,6 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-        print("here is the start")
         s3 = boto3.client('s3')
         for accounts in S3Account.objects.all():
             session = boto3.Session(
@@ -24,6 +23,9 @@ class Command(BaseCommand):
             s3 = session.resource('s3')
             bucket = s3.Bucket(accounts.name)
             for obj in bucket.objects.all():
+                if S3Object.objects.filter(key=obj.key).first():
+                    print("We already have imported this key")
+                    continue
                 size = obj.size
                 file_path = obj.key
                 with gzip.GzipFile(fileobj=obj.get()["Body"]) as gzipfile:
@@ -49,3 +51,7 @@ class Command(BaseCommand):
                             bytes_size=size,
                             file_path=file_path
                         )
+                s3_object = S3Object()
+                s3_object.key = obj.key
+                s3_object.save()
+                print("saving object %s" % obj.key)
