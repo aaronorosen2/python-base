@@ -9,18 +9,23 @@ from datetime import datetime, timedelta
 # from datetime import date
 # date.fromtimestamp(1658706435).strftime('%Y-%m-%d %H:%M:%S') # check the date format
 # datetime.now().timestamp().split('.')[0] # get timestamp
+from datetime import date
 
 
 class FlowLogTable(APIView):
     def get(self, request):
-        flow_logs_obj = FlowLog.objects.all().filter(
-            start__gte=1658706435, end__lte=1658706549).values_list('dstaddr').annotate(Avg('bytes_size'))
-        # start_date = 1658706435
-        # all = []
-        # for i in range(1, 10):
-        #     sum = FlowLog.objects.all().filter(
-        #         start__gte=start_date+timedelta(days=i), end__lte=start_date+timedelta(days=i+1)).annotate(Sum('bytes_size'))
-        #     all.append(sum)
+        # flow_logs_obj = FlowLog.objects.all().filter(
+        #     start__gte=1658706435, end__lte=1658706549).values_list('dstaddr').annotate(Avg('bytes_size'))
+        # print(flow_logs_obj)
+        start_date = 1658792842
+        all = []
+        for i in range(1, 10):
+            starting_date = start_date+(i*2700)
+            ending_date = start_date+((i+1)*2700)
+            sum = FlowLog.objects.filter(
+                start__gte=starting_date, end__lte=ending_date).aggregate(Sum('bytes_size'))
+            all.append(
+                {"sum": sum, "start": starting_date, "end": ending_date})
         # serializer = FlowLogSerializer(flow_logs_obj, many=True)
-        return Response(flow_logs_obj)
-        # return Response(all)
+        # return Response(flow_logs_obj)
+        return Response(all)
