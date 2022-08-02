@@ -1,3 +1,4 @@
+from argparse import Action
 from ipflow import serialize
 from ipflow.models import FlowLog
 from ipflow.serialize import FlowLogSerializer
@@ -14,6 +15,7 @@ from operator import itemgetter
 
 
 class FlowLogTable(APIView):
+
     def get(self, request):
 
         # Average Bytes transferred by each dst IP
