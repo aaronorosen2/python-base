@@ -16,11 +16,13 @@ from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from knox.auth import get_user_model, AuthToken
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication,TokenAuthentication
 from knox.auth import TokenAuthentication
 from uritemplate import partial
 from .models import Channel, Org, Member, Message,ChannelMember
 from .serializers import OrgSerializers, MessageSerializers,ChannelSerializers, MemberSerializers, ChannelMemberSerializers
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync, sync_to_async
 
 # =====================================Org================================================
 
@@ -136,6 +138,9 @@ class ChannelApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageApiView(ListAPIView):
+    authentication_classes(TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
     queryset = Message.objects.all()
     serializer_class = MessageSerializers
 
@@ -155,11 +160,34 @@ class MessageApiView(ListAPIView):
 
 
     def post(self, request, format=None, *args, **kwargs):
-        try:   
-            serializers = MessageSerializers(data=request.data)
-            if serializers.is_valid():
-                serializers.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
+
+        def user_exist_in_group(our_user,our_channel):
+            try:
+                channel_member = ChannelMember.objects.get(user=our_user)
+                if str(channel_member.Channel) == str(our_channel):
+                    return True
+                return False
+            except:
+                return False
+
+
+        try:  
+            
+            channel_layer = get_channel_layer()
+            channel_group = Channel.objects.get(id=request.data["channel"])
+
+            if user_exist_in_group(request.data["user"],channel_group):    
+                async_to_sync(channel_layer.group_send)(
+                    f"{channel_group}", {"type": "notification_broadcast","text": {"status": "done","message":request.data["meta_attributes"]}})
+                
+              
+                serializers = MessageSerializers(data=request.data)
+                if serializers.is_valid():
+                    serializers.save()
+                    return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'msg':'You are not allowed in this Group'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
             return Response({'msg':'Try again!'}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)

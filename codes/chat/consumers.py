@@ -11,6 +11,12 @@ from chat.models import Message
 from .models import Channel, ChannelMember
 
 from .serializers import OrgSerializers, MessageSerializers,ChannelSerializers
+from django.contrib.auth.models import AnonymousUser
+from rest_framework_simplejwt.tokens import AccessToken, TokenError
+from django.contrib.auth import get_user_model
+from urllib.parse import parse_qs
+
+User = get_user_model()
 
 class ChatConsumer(AsyncWebsocketConsumer):
     groups = ["general"]
@@ -20,26 +26,47 @@ class ChatConsumer(AsyncWebsocketConsumer):
     user_counter = 0
     user_name = 'Anonymous'
     user_list = []
+    
+
+    @database_sync_to_async
+    def get_user(self,user_id,room_name):
+
+        try:
+            our_user = User.objects.get(id=user_id)
+            room_name = Channel.objects.get(name=room_name)
+            our_channel = ChannelMember.objects.filter(Channel=room_name).filter(user=our_user)
+            return True
+        except User.DoesNotExist:
+            return False
+
+
 
     @database_sync_to_async
     def get_channel_info(self):
         try:
             channel_info = Channel.objects.filter(name=self.room_name).first()
-            print(" ***** channel_info ********", channel_info)
             if channel_info:
                 channel_member = ChannelMember.objects.filter(Channel=channel_info).filter(user=self.user_id).first()
-                print("******** channel_member *******", channel_member)
             else:
                 return False
             return channel_member
         except Channel.DoesNotExist:
-            print("ERROR: CHANNEL doesnt exit ********")
             return False
 
     async def connect(self):
-        print(self.scope)
-        # if self.scope["user"] is not AnonymousUser:
-        if self.scope['url_route']['kwargs']['user_id'] and self.scope['url_route']['kwargs']['room_name']:
+
+        parsed_query_string = parse_qs(self.scope["query_string"])
+        token = parsed_query_string.get(b"token")[0].decode("utf-8")
+
+        print( await self.get_user(access_token["user_id"],self.scope['url_route']['kwargs']['room_name']),"====================")
+        try:
+            access_token = AccessToken(token)
+
+            self.scope["user"] = await self.get_user(access_token["user_id"],self.scope['url_route']['kwargs']['room_name'])
+        except TokenError:
+            self.scope["user"] = False
+        if self.scope["user"]:
+        # if self.scope['url_route']['kwargs']['user_id'] and self.scope['url_route']['kwargs']['room_name']:
             # self.user_id = self.scope["user"].id
             self.user_id = self.scope['url_route']['kwargs']['user_id']
         
@@ -62,7 +89,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user_id = self.scope['url_route']['kwargs']['user_id']
 
         send_data = json.loads(text_data)
-        print('test_data =============', send_data, self.channel_name)
         send_data = json.loads(text_data)
         await self.print_details(send_data)
 
@@ -119,27 +145,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = message_serializer.save()
             return MessageSerializers(message).data
         except Channel.DoesNotExist:
-            print('Channel.DoesNotExist *******************')
             return False
 
 
     async def disconnect(self, close_code):
-        print('disconnect')
         # Leave room group
-        await self.channel_layer.group_discard(
+        try:
+            await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
-        )
-        del self.user_dictionary[self.channel_name]
-        self.user_list.clear()
-        self.user_list.extend(self.user_dictionary.values())
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'users_list',
-                'users': json.dumps({'users': self.user_list, 'action': 'users_list'}),
-            },
-        )
+            )
+            del self.user_dictionary[self.channel_name]
+            self.user_list.clear()
+            self.user_list.extend(self.user_dictionary.values())
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'users_list',
+                    'users': json.dumps({'users': self.user_list, 'action': 'users_list'}),
+                },
+            )
+        except:
+            pass
 
     async def send_info_to_user_group(self, event):
         message = event["text"]
@@ -154,7 +181,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_last_message(self, user_id):
-        print('user_id==========',user_id)
         message = Message.objects.filter(user_id=user_id).last()
         return message.message
 
@@ -170,10 +196,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=event["users"])
 
     async def print_details(self, send_data):
-        print(self.user_name)
-        print(self.user_dictionary)
-        print(self.user_list)
-        print(send_data)
+        pass
 
     async def notification_to_user(self, event):
         await self.send(text_data=event["message"])
