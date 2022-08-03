@@ -88,3 +88,17 @@ class teacherUIMessage(models.Model):
                             null=True, blank=True,related_name='recipient', related_query_name='r')
     conversation_id = models.CharField(max_length=200, blank=False)
     item_ID = models.ForeignKey(item, on_delete=models.CASCADE,null=True, blank=True)
+
+
+# class StripeItem(models.Model):
+#     stripe_product_id = models.CharField(max_length=255)
+#     stripe_price_id = models.CharField(max_length=255)
+#     price = models.IntegerField()
+#     flashcard_id = models.ForeignKey('courses_api.FlashCard', on_delete=models.CASCADE, null=True, blank=True)
+
+class StripeProductPrice(models.Model):
+    stripe_product_id = models.CharField(max_length=255)
+    stripe_price_id = models.CharField(max_length=255)
+    price = models.IntegerField()
+    stripe_recurring_price = models.BooleanField(default=False, null=True, blank=True)
+    flashcard_id = models.ForeignKey('courses_api.FlashCard', on_delete=models.CASCADE, null=True, blank=True)

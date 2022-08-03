@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from .utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
 from .models import Member, Token, Service, GpsCheckin
-from .models import VideoUpload,MemberSession,MemberGpsEntry
+from .models import VideoUpload, MemberSession, MemberGpsEntry
 from .models import MyMed, Question, Choice, AdminFeedback, TagEntry
 from django.conf import settings
 import logging

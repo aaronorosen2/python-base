@@ -52,18 +52,18 @@ if DEBUG:
                 'filename': os.path.join(os.getcwd(), 'logger.log'),
                 'formatter': 'verbose'
             },
-            'slack-error': {
-                'level': 'ERROR',
-                'api_key': SLACK_API_KEY,
-                'class': 'slacker_log_handler.SlackerLogHandler',
-                'channel': '#debug'
-            },
-            'slack-info': {
-                'level': 'ERROR',
-                'api_key': SLACK_API_KEY,
-                'class': 'slacker_log_handler.SlackerLogHandler',
-                'channel': '#debug'
-            },
+#            'slack-error': {
+#                'level': 'ERROR',
+#                'api_key': SLACK_API_KEY,
+#                'class': 'slacker_log_handler.SlackerLogHandler',
+#                'channel': '#debug'
+#            },
+#            'slack-info': {
+#                'level': 'ERROR',
+#                'api_key': SLACK_API_KEY,
+#                'class': 'slacker_log_handler.SlackerLogHandler',
+##                'channel': '#debug'
+#            },
         },
         'root': {
                 'handlers': ['console', 'file', # 'slack-error', "slack-info"
@@ -133,6 +133,14 @@ INSTALLED_APPS = [
     'lesson_notifications',
     'postcards',
     'wifi',
+    'ringlessVoiceMail',
+    'facebook',
+    'github',
+    'ipflow',
+    'chat',
+    'gitlab',
+    "salesforce",
+    "rest_framework_simplejwt"
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
@@ -141,7 +149,6 @@ FCM_DJANGO_SETTINGS = {
 }
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -150,6 +157,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    
 ]
 # Braintree Settings
 
@@ -200,10 +210,19 @@ TWILIO = {
     'TWILIO_NUMBER': '(425) 578-5798',
 }
 
+DROPCOW_BOY_CREDENTIALS = {
+    'TEAM_ID' : 'b7cc5a14-03b1-4ac4-a091-4446c91dbb69',
+    'SECRET' : '2b34298d-b081-4658-9c96-6350fc248e2f',
+    'URL' : 'https://api.dropcowboy.com/v1/rvm',
+    'SENDER' : '+4255785798'
+
+
+}
+
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = 'AKIARWLPGYIKRQXN5VXR'
 AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'sfappv2'
+AWS_STORAGE_BUCKET_NAME = 'sfappv2.1'
 
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 
@@ -244,7 +263,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
         'USER': db_user,
-        'HOST': '52.15.140.136',
+        'HOST': '18.117.227.68',
         'PORT': '5433',
         'PASSWORD': db_password,
     }
@@ -297,18 +316,27 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Make knox’s Token Authentication default
+
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    'DEFAULT_RENDERER_CLASSES': ("rest_framework.renderers.JSONRenderer",),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         # 'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
-        'knox.auth.TokenAuthentication',
-    ],
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'knox.auth.TokenAuthentication',
+    ),
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
 
 # KNOX
 REST_KNOX = {
   'USER_SERIALIZER': 's3_uploader.serializers.UserSerializer',
+}
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(weeks=1),
 }
 
 # Internationalization
@@ -345,8 +373,10 @@ CHANNEL_LAYERS = {
     },
 }
 
-CELERY_BROKER_URL = 'redis://redis:6379'
-CELERY_RESULT_BACKEND = 'redis://redis:6379'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+BROKER_URL = 'redis://redis:6379/0'
+
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -374,6 +404,8 @@ CELERY_BEAT_SCHEDULE = {
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS=['*']
+CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ALLOWED_ORIGINS=["*"]
 
 # Email
 EMAIL_BACKEND = 'django_ses.SESBackend'

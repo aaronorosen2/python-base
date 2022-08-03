@@ -19,7 +19,9 @@ from django.conf.urls.static import static
 from django.conf import settings
 from notifications.views import notify
 from notifications.views import notification, admin_monitoring, vstream_html, disconnect_html
-
+from chat.views import chat_room
+from rest_framework_simplejwt.views import (TokenObtainPairView,
+                                            TokenRefreshView)
 from rest_framework_swagger.views import get_swagger_view
 
 schema_view = get_swagger_view(title='Pastebin API')
@@ -34,6 +36,7 @@ urlpatterns = [
         ('vconf.urls', 'vconf_api'),
         namespace='vconf_api')),
     path('courses_api/', include("courses_api.urls")),
+    path('ringlessVoiceMail_api/', include("ringlessVoiceMail.urls")),
     path('store_stripe/', include("store_stripe.urls")),
     path('notification/', notification),
     path('admin/', admin.site.urls),
@@ -92,9 +95,15 @@ urlpatterns = [
     path('bookingsystem/', include(
         ('bookingsystem.urls', 'bookingsystem'),
         namespace='bookingsystem')),
+    path('chat/', include(('chat.urls'))),
     path('dreamreader/', include('dreamreader.urls')),
     path('token/', include('video_call.urls')),
     path('neighbormade/', include('neighbormade.urls')),
     path('accounts/', include("django.contrib.auth.urls")),
+    path('ipflow/', include("ipflow.urls")),
+    path('chatroom/', chat_room),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
     # path('faceswap/', include('faceswap.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

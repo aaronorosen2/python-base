@@ -4,11 +4,20 @@ import redis
 from asgiref.sync import async_to_sync
 import channels.layers
 import json
+from celery.schedules import crontab
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
-
-app = Celery('web')
+app = Celery('web', broker="redis://redis:6379/0")
 app.config_from_object('django.conf:settings', namespace='CELERY')
+
+app.conf.beat_schedule = {
+    # run every 3 hours : midnight, 3am, 6am, 9am, noon, 3pm, 6pm, 9pm.
+    'update_all_agents_properties': {
+            'task': 'sfapp2.tasks.update_calls_to_database',
+            'schedule': crontab(minute=0, hour='*/2'),
+        },
+}
+
 app.autodiscover_tasks()
 
 channel_layer = channels.layers.get_channel_layer()
