@@ -23,10 +23,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_user(self,user_id,room_name):
-        room_name = Channel.objects.get(name=room_name)
-        our_channel = ChannelMember.objects.filter(Channel=room_name).filter(user=user_id)
         try:
-            # our_user = User.objects.get(id=user_id)
             room_name = Channel.objects.get(name=room_name)
             our_channel = ChannelMember.objects.filter(Channel=room_name).filter(user=user_id)
             return our_channel.exists()
@@ -170,7 +167,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user_list.extend(self.user_dictionary.values())
 
     async def users_list(self, event):
-        # print(self.channel_layer)
         await self.send(text_data=event["users"])
 
     async def print_details(self, send_data):
@@ -181,9 +177,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=event["message"])
 
     async def notification_broadcast(self, event):  
-        print(event)
-        print(event.keys())     
-        print()
+      
         message = event["text"]
         await self.send(text_data=json.dumps(message))
     
