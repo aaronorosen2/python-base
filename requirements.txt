@@ -136,7 +136,7 @@ reportlab==3.5.56
 requests
 requests-oauthlib==1.3.0
 rsa==4.6
-s3transfer==0.3.3
+s3transfer
 selenium==3.141.0
 service-identity==18.1.0
 shortuuid==1.0.1
