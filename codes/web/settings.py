@@ -262,6 +262,18 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
+        'USER': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5433',
+        'PASSWORD': 'EhB4bINnDFmzI0Bg',
+    }
+}
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
         'USER': db_user,
         'HOST': '18.117.227.68',
         'PORT': '5433',
@@ -359,7 +371,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [("0.0.0.0", 6379)],
         },
     },
 }
@@ -419,7 +431,8 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ("rest_framework.renderers.JSONRenderer",),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
 
 SIMPLE_JWT = {

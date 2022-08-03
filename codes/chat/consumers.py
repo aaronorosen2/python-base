@@ -124,7 +124,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.room_name,
                 {
                     'type': 'notification_broadcast',
-                    'message': send_data['message'],
+                    'text': send_data['message'],
                 },
             )
 
@@ -177,9 +177,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         pass
 
     async def notification_to_user(self, event):
+        
         await self.send(text_data=event["message"])
 
-    async def notification_broadcast(self, event):       
+    async def notification_broadcast(self, event):  
+        print(event)
+        print(event.keys())     
+        print()
         message = event["text"]
         await self.send(text_data=json.dumps(message))
     

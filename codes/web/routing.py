@@ -6,7 +6,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from notifications.consumers import NotificationConsumer, NotificationConsumerQueue, VstreamConsumer
 from chat.consumers import ChatConsumer
-from .middleware import WebSocketJWTAuthMiddleware
+from chat.middleware import WebSocketJWTAuthMiddleware
 # from django.core.asgi import get_asgi_application
 
 application = ProtocolTypeRouter({

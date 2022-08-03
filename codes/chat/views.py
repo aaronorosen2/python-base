@@ -177,11 +177,10 @@ class MessageApiView(ListAPIView):
             channel_layer = get_channel_layer()
             channel_group = Channel.objects.get(id=request.data["channel"])
             if user_exist_in_group(request.data["user"],channel_group): 
-
                 # async_to_sync(channel_layer.group_send)(
                 #     f"{channel_group}", {"type": "notification_broadcast","text": {"status": "done","message":request.data["meta_attributes"]}})
                 async_to_sync(channel_layer.group_send)(
-                    f"{channel_group}", {"type": "notification_broadcast","text": request.data["meta_attributes"]})
+                    f"{channel_group}", {"type": "notification_broadcast","text":request.data["meta_attributes"] })
                 
               
                 serializers = MessageSerializers(data=request.data)
