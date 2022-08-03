@@ -179,5 +179,5 @@ django-cors-headers
 webdrivermanager==0.10.0
 webdriver-manager==3.5.2
 # gitlab
-pyathena
+pyathena==2.13.0
 djangorestframework-simplejwt==5.2.0
