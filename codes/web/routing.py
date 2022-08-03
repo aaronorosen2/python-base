@@ -6,12 +6,13 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from notifications.consumers import NotificationConsumer, NotificationConsumerQueue, VstreamConsumer
 from chat.consumers import ChatConsumer
+from chat.middleware import WebSocketJWTAuthMiddleware
 # from django.core.asgi import get_asgi_application
 
 application = ProtocolTypeRouter({
     # "http": get_asgi_application(),
     "websocket": 
-        URLRouter([
+        WebSocketJWTAuthMiddleware(URLRouter([
             # URLRouter just takes standard Django path() or url() entries.
             # path("notifications/<str:room_name>/", NotificationConsumer.as_asgi(),name="ws_notifications"),
             # path("notifications/", NotificationConsumer.as_asgi(),name="ws_notifications"),
@@ -19,7 +20,7 @@ application = ProtocolTypeRouter({
             re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
             re_path(r'vstream/', VstreamConsumer.as_asgi()),
             re_path(r'msg/(?P<user_id>\w+)/(?P<room_name>\w+)/$', ChatConsumer.as_asgi()),
-        ]),
+        ])),
 })
 
 
