@@ -17,8 +17,8 @@ application = ProtocolTypeRouter({
             # path("notifications/<str:room_name>/", NotificationConsumer.as_asgi(),name="ws_notifications"),
             # path("notifications/", NotificationConsumer.as_asgi(),name="ws_notifications"),
             # re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumer.as_asgi()),
-            # re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
-            # re_path(r'vstream/', VstreamConsumer.as_asgi()),
+            re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
+            re_path(r'vstream/', VstreamConsumer.as_asgi()),
             re_path(r'msg/(?P<user_id>\w+)/(?P<room_name>\w+)/$', ChatConsumer.as_asgi()),
         ])),
 })

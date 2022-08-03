@@ -1,0 +1,96 @@
+
+{% block content %}
+{% load static %}
+
+<script>
+    
+var socket;
+function myFunction() 
+    {
+
+        if(document.getElementById("room_name"))
+        {
+
+          console.log(document.getElementById("room_name").value)
+          console.log(document.getElementById("user_id").value)
+ 
+            socket = new WebSocket('ws://' + window.location.host + '/msg/'+document.getElementById("user_id").value+'/'+document.getElementById("room_name").value+'/');
+
+            console.log(socket);
+            
+            socket.onopen = function open() {
+              console.log('WebSockets connection created.');
+              
+            };
+
+            socket.onmessage = function (event) 
+            {
+            console.log("Event-----",event.data)
+            let messages = document.getElementById('messages')
+            message.innerText = event.data
+
+
+            if(web_socket_data.action === 'queue_status'){
+            showNotification(web_socket_data.message)
+            }else if(web_socket_data.action === 'broadcast'){
+                document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.message
+            }else if(web_socket_data.action === 'solo'){
+                document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.sender+" ==> "+web_socket_data.message
+            } 
+   
+            }
+            socket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly',e);
+            };
+            socket.onerror = function(e) {
+            console.error('Error From Websocket',e);
+        };
+    };
+};
+
+{% comment %} function myFunction2(){
+    let form = document.getElementById('form')
+    form.addEventListener('submit', (e)=> {
+        e.preventDefault()
+        
+        let message = e.target.message.value 
+        console.log(JSON.stringify({
+            'message':message
+        }));
+        socket.send(JSON.stringify({
+            'message':message
+        }))
+        form.reset() // reset form for new messages
+    })
+} {% endcomment %}
+</script>
+<div style="width:200px;margin:20 auto">
+
+
+<h1>Chat Room</h1>
+  <input id="room_name" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Room Name!">
+
+  <input id="user_id" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Your Name!">
+  <button onclick="myFunction()" type="submit"  id="send_name" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Submit</button>
+  <h1 id="channel_name">Send Message</h1>
+
+  <form id="form">
+      <input type="text" name="message"/>
+      <input   onclick="myFunction2()" type="submit" name="submit"/>
+      
+  </form>
+
+<div style="text: blue;">
+    <H1 id="message"></h1>
+</div>
+</div>
+{% endblock content %}
+
+{% block afterbody %}
+<style>
+    *{
+      font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif
+    }
+  </style>
+{% endblock afterbody %}
+

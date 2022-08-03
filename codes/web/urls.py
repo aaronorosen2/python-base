@@ -18,7 +18,8 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 from notifications.views import notify
-from notifications.views import notification, admin_monitoring, vstream_html, disconnect_html,chat_room
+from notifications.views import notification, admin_monitoring, vstream_html, disconnect_html
+from chat.views import chat_room
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 from rest_framework_swagger.views import get_swagger_view

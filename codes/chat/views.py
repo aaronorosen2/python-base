@@ -1,4 +1,5 @@
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -25,6 +26,8 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync, sync_to_async
 
 # =====================================Org================================================
+def chat_room(request):
+    return render(request, "chat_room.html")
 
 @method_decorator(csrf_exempt, name='dispatch')
 class OrgApiView(ListAPIView):
@@ -169,16 +172,16 @@ class MessageApiView(ListAPIView):
                 return False
             except:
                 return False
-
-
         try:  
             
             channel_layer = get_channel_layer()
             channel_group = Channel.objects.get(id=request.data["channel"])
+            if user_exist_in_group(request.data["user"],channel_group): 
 
-            if user_exist_in_group(request.data["user"],channel_group):    
+                # async_to_sync(channel_layer.group_send)(
+                #     f"{channel_group}", {"type": "notification_broadcast","text": {"status": "done","message":request.data["meta_attributes"]}})
                 async_to_sync(channel_layer.group_send)(
-                    f"{channel_group}", {"type": "notification_broadcast","text": {"status": "done","message":request.data["meta_attributes"]}})
+                    f"{channel_group}", {"type": "notification_broadcast","text": request.data["meta_attributes"]})
                 
               
                 serializers = MessageSerializers(data=request.data)
