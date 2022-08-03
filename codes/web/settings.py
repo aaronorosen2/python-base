@@ -140,7 +140,7 @@ INSTALLED_APPS = [
     'chat',
     'gitlab',
     "salesforce",
-    'rest_framework_simplejwt',
+    "rest_framework_simplejwt"
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
@@ -258,18 +258,6 @@ ASGI_APPLICATION = 'web.routing.application'
 db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
 db_user = os.environ.get('db_user', 'postgres')
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'HOST': 'localhost',
-#         'PORT': '5433',
-#         'PASSWORD': 'EhB4bINnDFmzI0Bg',
-#     }
-# }
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -328,19 +316,28 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Make knox’s Token Authentication default
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         # 'rest_framework.authentication.BasicAuthentication',
-#         # 'rest_framework.authentication.SessionAuthentication',
-#         'knox.auth.TokenAuthentication',
-#     ],
-#     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
-# }
 
-# # KNOX
-# REST_KNOX = {
-#   'USER_SERIALIZER': 's3_uploader.serializers.UserSerializer',
-# }
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': ("rest_framework.renderers.JSONRenderer",),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'knox.auth.TokenAuthentication',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+}
+
+# KNOX
+REST_KNOX = {
+  'USER_SERIALIZER': 's3_uploader.serializers.UserSerializer',
+}
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(weeks=1),
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -371,7 +368,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("0.0.0.0", 6379)],
+            "hosts": [("redis", 6379)],
         },
     },
 }
@@ -426,16 +423,3 @@ STRIPE_TEST_PUBLISHABLE_KEY='pk_test_51Kycp9I0iCCc2SMWQAXTYzlcYg4FeexqIwsPywXpqq
 STRIPE_TEST_SECRET_KEY='sk_test_51Kycp9I0iCCc2SMWh6qqLSzvjUD9CSaSF8XE5DLN75mx2hHcEP0AnPafx3BFQAlSc1kYcrf2bXJfb4FDnqFAl5Kp00FH3NGI9X'
 TEACHER_UI_URL = os.environ.get('TEACHER_UI_URL', 'http://localhost:8086')
 
-
-REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': ("rest_framework.renderers.JSONRenderer",),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
-}
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(weeks=1),
-}
