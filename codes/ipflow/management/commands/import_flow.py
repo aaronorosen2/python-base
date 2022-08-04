@@ -22,14 +22,21 @@ class Command(BaseCommand):
                 aws_secret_access_key=accounts.secret_key,
             )
             s3 = session.resource('s3')
+            print("Fetching bucket...")
             bucket = s3.Bucket(accounts.name)
-            for obj in bucket.objects.all():
+            print("bucket fetched")
+
+            # In reverse time order newest first...
+            objs = bucket.objects.all()
+            print("Number of objs: %s" % len(objs))
+            for obj in objs:
                 object_flow_logs = []
                 if S3Object.objects.filter(key=obj.key).first():
                     print("We already have imported this key")
                     continue
                 size = obj.size
                 file_path = obj.key
+                print("Downloading... %s" % obj.key)
                 with gzip.GzipFile(fileobj=obj.get()["Body"]) as gzipfile:
                     content = gzipfile.read()
                     lists = content.splitlines()
