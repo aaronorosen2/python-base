@@ -1,3 +1,4 @@
+from curses.ascii import isdigit
 import os
 from django.core.management.base import BaseCommand
 import pandas
@@ -28,7 +29,7 @@ class Command(BaseCommand):
 
             # In reverse time order newest first...
             objs = bucket.objects.all()
-            print("Number of objs: %s" % len(objs))
+            # print("Number of objs: %s" % len(objs))
             for obj in objs:
                 object_flow_logs = []
                 if S3Object.objects.filter(key=obj.key).first():
@@ -43,18 +44,21 @@ class Command(BaseCommand):
                     for list in lists[1:]:
                         data = str(list).split(" ")[1:]
                         # print(data)
-
+                        for i in range(4, 9):
+                            if data[i].isdigit():
+                                data[i] = int(data[i])
+                            else:
+                                data[i] = 0
                         object_flow_logs.append(FlowLog(
                             account_id=data[0],
                             interface_id=data[1],
                             srcaddr=data[2],
                             dstaddr=data[3],
-                            srcport=data[4] if isinstance(data[4], int) else 0,
-                            dstport=data[5] if isinstance(data[5], int) else 0,
-                            protocol=data[6] if isinstance(
-                                data[6], int) else 0,
-                            packets=data[7] if isinstance(data[7], int) else 0,
-                            bytes=data[8] if isinstance(data[8], int) else 0,
+                            srcport=data[4],
+                            dstport=data[5],
+                            protocol=data[6],
+                            packets=data[7],
+                            bytes=data[8],
                             start=data[9],
                             end=data[10],
                             action=data[11],

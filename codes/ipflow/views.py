@@ -1,4 +1,7 @@
+from rest_framework.decorators import api_view
 from argparse import Action
+
+from django.http import JsonResponse
 from ipflow import serialize
 from ipflow.models import FlowLog
 from ipflow.serialize import FlowLogSerializer
@@ -85,3 +88,12 @@ class FlowLogTable(APIView):
                     QueryExecutionId=query_id, MaxResults=10)
                 break
         return Response(result)
+
+
+@api_view(['GET'])
+def get_flow_logs(request):
+    flow_logs_obj = FlowLog.objects.all().filter(
+        start__gte=1659169760, end__lte=1659169799).values_list('dstport').annotate(Avg('bytes_size'))[:10]
+    flow_logs_obj = [{'dstport': x[0], 'bytes_size':x[1]}
+                     for x in flow_logs_obj]
+    return JsonResponse(flow_logs_obj, safe=False, status=200)
