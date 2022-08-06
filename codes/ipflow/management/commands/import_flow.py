@@ -37,39 +37,40 @@ class Command(BaseCommand):
                     continue
                 size = obj.size
                 file_path = obj.key
-                print("Downloading... %s" % obj.key)
-                with gzip.GzipFile(fileobj=obj.get()["Body"]) as gzipfile:
-                    content = gzipfile.read()
-                    lists = content.splitlines()
-                    for list in lists[1:]:
-                        data = str(list).split(" ")[1:]
-                        # print(data)
-                        for i in range(4, 9):
-                            if data[i].isdigit():
-                                data[i] = int(data[i])
-                            else:
-                                data[i] = 0
-                        object_flow_logs.append(FlowLog(
-                            account_id=data[0],
-                            interface_id=data[1],
-                            srcaddr=data[2],
-                            dstaddr=data[3],
-                            srcport=data[4],
-                            dstport=data[5],
-                            protocol=data[6],
-                            packets=data[7],
-                            bytes=data[8],
-                            start=data[9],
-                            end=data[10],
-                            action=data[11],
-                            log_status=data[12],
-                            user=accounts,
-                            bytes_size=size,
-                            file_path=file_path
+                # print("Downloading... %s" % obj.key)
+                if file_path.endswith('.gz'):
+                    with gzip.GzipFile(fileobj=obj.get()["Body"]) as gzipfile:
+                        content = gzipfile.read()
+                        lists = content.splitlines()
+                        for list in lists[1:]:
+                            data = str(list).split(" ")[1:]
+                            # print(data)
+                            for i in range(4, 9):
+                                if data[i].isdigit():
+                                    data[i] = int(data[i])
+                                else:
+                                    data[i] = 0
+                            object_flow_logs.append(FlowLog(
+                                account_id=data[0],
+                                interface_id=data[1],
+                                srcaddr=data[2],
+                                dstaddr=data[3],
+                                srcport=data[4],
+                                dstport=data[5],
+                                protocol=data[6],
+                                packets=data[7],
+                                bytes=data[8],
+                                start=data[9],
+                                end=data[10],
+                                action=data[11],
+                                log_status=data[12],
+                                user=accounts,
+                                bytes_size=size,
+                                file_path=file_path
 
-                        ))
-                    FlowLog.objects.bulk_create(object_flow_logs)
-                    s3_object = S3Object()
-                    s3_object.key = obj.key
-                    s3_object.save()
-                    print("saving object %s" % obj.key)
+                            ))
+                        FlowLog.objects.bulk_create(object_flow_logs)
+                        s3_object = S3Object()
+                        s3_object.key = obj.key
+                        s3_object.save()
+                        print("saving object %s" % obj.key)
