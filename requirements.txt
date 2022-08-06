@@ -181,3 +181,4 @@ webdriver-manager==3.5.2
 # gitlab
 pyathena==2.13.0
 djangorestframework-simplejwt==5.2.0
+PyGithub

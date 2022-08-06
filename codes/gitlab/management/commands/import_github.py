@@ -1,7 +1,6 @@
-from github import Github
 from django.core.management.base import BaseCommand
 import os
-
+from github import Github
 
 class Command(BaseCommand):
     help = 'fetch and parse iwlist'
