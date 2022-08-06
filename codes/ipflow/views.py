@@ -94,6 +94,12 @@ class FlowLogTable(APIView):
 def get_flow_logs(request):
     flow_logs_obj = FlowLog.objects.all().filter(
         start__gte=1659169760, end__lte=1659169799).values_list('dstport').annotate(Avg('bytes_size'))[:10]
-    flow_logs_obj = [{'dstport': x[0], 'bytes_size':x[1]}
-                     for x in flow_logs_obj]
-    return JsonResponse(flow_logs_obj, safe=False, status=200)
+    ports_data = []
+    bytes_data = []
+    for i in flow_logs_obj:
+        ports_data.append(i[0])
+        bytes_data.append(i[1])
+    all = [{"name": "ports", "data": ports_data},
+           {"name": "bytes", "data": bytes_data}]
+
+    return JsonResponse(all, safe=False, status=200)
