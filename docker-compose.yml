@@ -11,12 +11,29 @@ services:
             - 8040:8000
         # command: bash -c "python3 manage.py runserver 0.0.0.0:8000"
         command: /usr/local/bin/gunicorn --env DJANGO_SETTINGS_MODULE=web.settings web.wsgi --workers 8 --timeout 999 --bind=0.0.0.0:8000
+        
+        environment:
+          - db
+          - db_password
+          - db_user
 
+
+    web_websocket:
+        restart: always
+        build: .
+        volumes:
+            - ./codes:/home/web/codes
+#            - /opt/pysfapp/media:/home/web/codes/media
+        ports:
+            - 8041:8010
+        command: /usr/local/bin/gunicorn --bind 0.0.0.0:8010 web.asgi -w 8 -k uvicorn.workers.UvicornWorker --timeout 999
 
         environment:
           - db
           - db_password
           - db_user
+
+
 
 
     redis:

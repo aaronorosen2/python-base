@@ -47,3 +47,4 @@ RUN pip3 install -r /tmp/requirements.txt
 #RUN ["chmod", "+x", "/entrypoint.sh"]
 
 EXPOSE 8040
+EXPOSE 8041
