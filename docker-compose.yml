@@ -10,7 +10,7 @@ services:
         ports:
             - 8040:8000
         # command: bash -c "python3 manage.py runserver 0.0.0.0:8000"
-        command: /usr/local/bin/gunicorn --env DJANGO_SETTINGS_MODULE=web.settings web.wsgi --workers 8 --timeout 999 --bind=0.0.0.0:8000
+        command: /usr/local/bin/gunicorn --env DJANGO_SETTINGS_MODULE=web.settings web.wsgi --workers 8 --timeout 999 --bind=0.0.0.0:8000 --access-logfile /var/log/gunicorn.access.log --error-logfile /var/log/gunicorn.error.log
         
         environment:
           - db
@@ -26,7 +26,10 @@ services:
 #            - /opt/pysfapp/media:/home/web/codes/media
         ports:
             - 8041:8010
-        command: /usr/local/bin/gunicorn --bind 0.0.0.0:8010 web.asgi -w 8 -k uvicorn.workers.UvicornWorker --timeout 999
+        command: /usr/local/bin/gunicorn --env DJANGO_SETTINGS_MODULE=web.settings --bind 0.0.0.0:8010 web.routing:application -w 8 -k uvicorn.workers.UvicornWorker --timeout 999 --access-logfile /var/log/gunicorn.access2.log --error-logfile /var/log/gunicorn.error2.log
+        # command: /usr/local/bin/gunicorn --bind 0.0.0.0:8010 web.routing:application -w 8 -k uvicorn.workers.UvicornWorker --timeout 999 --access-logfile /var/log/gunicorn.access2.log --error-logfile /var/log/gunicorn.error2.log
+        # command: /usr/local/bin/gunicorn --bind 0.0.0.0:8010 web.asgi -w 8 --timeout 999 --access-logfile /var/log/gunicorn.access2.log --error-logfile /var/log/gunicorn.error2.log
+        # command: /usr/local/bin/uvicorn web.routing:application --host 0.0.0.0 --port 8010 --access-logfile /var/log/gunicorn.access2.log --error-logfile /var/log/gunicorn.error2.log
 
         environment:
           - db
