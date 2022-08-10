@@ -1,96 +1,146 @@
-
 {% block content %}
 {% load static %}
 
 <script>
-    
-var socket;
-function myFunction() 
-    {
 
-        if(document.getElementById("room_name"))
-        {
+    var socket;
+    var isConnected = false;
+    // function myFunction() {
+    //     let retryCount = 0;
+    //     while (!isConnected) {
+    //         if (retryCount > 5) {
+    //             break;
+    //         }
+    //         addWebSocket();
+    //     }
+    // };
 
-          console.log(document.getElementById("room_name").value)
-          console.log(document.getElementById("user_id").value)
- 
-            socket = new WebSocket('ws://' + window.location.host + '/msg/'+document.getElementById("user_id").value+'/'+document.getElementById("room_name").value+'/');
+    function myFunction() {
+        console.log(document.getElementById("room_name").value)
+        let token = document.getElementById("token_id").value
+        // socket = new WebSocket('ws://' + window.location.host + '/msg/'+
+        //  document.getElementById("receiver_id").value + '/' +
+        //   document.getElementById("room_name").value + '/?token=' + token);
 
-            console.log(socket);
-            
-            socket.onopen = function open() {
-              console.log('WebSockets connection created.');
-              
-            };
+        // socket = new WebSocket('ws://' + window.location.host + '/msg/?token=' + token+'&receiver_id='+
+        // document.getElementById("receiver_id").value + '&message=solo');
 
-            socket.onmessage = function (event) 
-            {
-            console.log("Event-----",event.data)
-            let messages = document.getElementById('messages')
-            message.innerText = event.data
+        console.log(socket);
 
-
-            if(web_socket_data.action === 'queue_status'){
-            showNotification(web_socket_data.message)
-            }else if(web_socket_data.action === 'broadcast'){
-                document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.message
-            }else if(web_socket_data.action === 'solo'){
-                document.getElementById("notifications").innerHTML += "<br>"+web_socket_data.sender+" ==> "+web_socket_data.message
-            } 
-   
-            }
-            socket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly',e);
-            };
-            socket.onerror = function(e) {
-            console.error('Error From Websocket',e);
+        socket.onopen = function open() {
+            console.log('WebSockets connection created.');
+            isConnected = true;;
         };
-    };
-};
 
-{% comment %} function myFunction2(){
-    let form = document.getElementById('form')
-    form.addEventListener('submit', (e)=> {
-        e.preventDefault()
-        
-        let message = e.target.message.value 
-        console.log(JSON.stringify({
-            'message':message
-        }));
-        socket.send(JSON.stringify({
-            'message':message
-        }))
-        form.reset() // reset form for new messages
-    })
-} {% endcomment %}
+        socket.onmessage = function (event) {
+            console.log(event)
+            let web_socket_data = JSON.parse(event.data);
+            // web_socket_data = JSON.parse(web_socket_data);
+            console.log("web_socket_data--",web_socket_data.action)
+            console.log("web_socket_data--",web_socket_data.users)
+
+            if (web_socket_data.action === 'broadcast') {
+                document.getElementById("notifications").innerHTML += "<br>" + web_socket_data.message
+            }
+            else if (web_socket_data.action === 'solo') {
+                document.getElementById("notifications").innerHTML += "<br>" + web_socket_data.User + " ==> " + web_socket_data.message
+            }
+            else if (web_socket_data.action === 'users_list') {
+                document.getElementById("notifications").innerHTML += "<br>" +web_socket_data.users        }
+
+        }
+        socket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly', e);
+        };
+        socket.onerror = function (e) {
+            console.error('Error From Websocket', e);
+        };
+    }
+   
+
+    window.onload = function (e) {
+        let form = document.getElementById('form')
+        form.addEventListener('submit', (e) => {
+            e.preventDefault()
+
+            let message = e.target.message.value
+            let action = e.target.action.value
+
+
+            console.log(JSON.stringify({
+                'message': message
+            }));
+            socket.send(JSON.stringify({
+                'action': action,
+                'message': message
+            }))
+            form.reset() // reset form for new messages
+        })
+    }
 </script>
-<div style="width:200px;margin:20 auto">
 
 
-<h1>Chat Room</h1>
-  <input id="room_name" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Room Name!">
+{% comment %} ========================Chat Room============================================= {% endcomment %}
+<div style="width:600px;margin:20px; ">
 
-  <input id="user_id" type="text" style="width:100%;font-size:20px;padding:10px;" placeholder="Please Type Your Name!">
-  <button onclick="myFunction()" type="submit"  id="send_name" style="width:100%;font-size:20px;padding:10px;margin-top:10px">Submit</button>
-  <h1 id="channel_name">Send Message</h1>
+    <div>
+        <h1>Chat Room</h1>
+        <label for="room_name">Room Name</label><br>
+        <input id="room_name" type="text" style="width:100%;font-size:20px;padding:10px;"
+            placeholder="Please Type Room Name!">
 
-  <form id="form">
-      <input type="text" name="message"/>
-      <input   onclick="myFunction2()" type="submit" name="submit"/>
-      
-  </form>
+        <label for="receiver_id">Receiver Name</label><br>
+        <input id="receiver_id" type="text" style="width:100%;font-size:20px;padding:10px;"
+            placeholder="Please Type Your Name!">
 
-<div style="text: blue;">
-    <H1 id="message"></h1>
-</div>
+        
+
+            <!-- <select id="our_users" style="height:40px; width:300px;" >
+                <option value="None">Select</option> 
+                                <option value="solo"></option>
+                
+            </select> -->
+
+
+
+
+        <label for="token_id">Token</label><br>
+        <input id="token_id" type="text" style="width:100%;font-size:20px;padding:10px;"
+            placeholder="Please Type Your Token!">
+
+        <button onclick="myFunction()" type="submit" id="send_name"
+            style="width:100%;font-size:20px;padding:10px;margin-top:10px">Submit</button>
+
+    </div>
+
+
+    {% comment %} ========================Send Message============================================= {% endcomment %}
+    <div>
+        <h1 id="channel_name">Send Message</h1>
+        <form id="form">
+            <select id="action" style="height:40px; width:300px;">
+                <option value="None">Select</option>
+                <option value="solo">Solo</option>
+                <option value="broadcast">Broadcast</option>
+            </select>
+
+            <input id="send" type="textarea" name="message" style="height:100px; width:300px;" />
+            <button id="message_submit" type="submit" style="height:40px; width:300px;">Submit</button>
+
+        </form>
+    </div>
+
+    <div >
+        <p id="notifications"></p>
+    </div>
 </div>
 {% endblock content %}
 
 {% block afterbody %}
 <style>
-    *{
-      font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif
+    * {
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        font-size: 20px;
     }
-  </style>
+</style>
 {% endblock afterbody %}
-
