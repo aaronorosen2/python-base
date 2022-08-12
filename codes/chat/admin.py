@@ -22,6 +22,11 @@ class ChannelMemberAdmin(admin.ModelAdmin):
 class MessageChannelAdmin(admin.ModelAdmin): 
     list_display = [field.name for field in MessageChannel._meta.fields]
 
+class MessageUserAdmin(admin.ModelAdmin): 
+    list_display = [field.name for field in MessageUser._meta.fields]
+
+class ClientsAdmin(admin.ModelAdmin): 
+    list_display = [field.name for field in Clients._meta.fields]
 
 admin.site.register(Org, OrgAdmin)
 admin.site.register(Message, MessageAdmin)
@@ -29,3 +34,5 @@ admin.site.register(Channel, ChannelAdmin)
 admin.site.register(Member, MemberAdmin)
 admin.site.register(ChannelMember, ChannelMemberAdmin)
 admin.site.register(MessageChannel, MessageChannelAdmin)
+admin.site.register(MessageUser, MessageUserAdmin)
+admin.site.register(Clients, ClientsAdmin)

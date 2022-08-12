@@ -178,9 +178,6 @@ class MessageApiView(ListAPIView):
             channel_group = Channel.objects.get(id=request.data["channel"])
             if user_exist_in_group(request.data["user"],channel_group): 
              
-                # async_to_sync(channel_layer.group_send)(
-                #     f"{channel_group}", {"type": "notification_broadcast",
-                # "text": {"status": "done","message":request.data["meta_attributes"]}})
                 async_to_sync(channel_layer.group_send)(
                     f"{channel_group}", {"type": "notification_broadcast",
                     "message": request.data["meta_attributes"]})
@@ -375,11 +372,8 @@ class MessageChannelApiView(ListAPIView):
             channel_group = Channel.objects.get(id=request.data["channel"])
             if user_exist_in_group(request.data["user"],channel_group): 
                 
-                # async_to_sync(channel_layer.group_send)(
-                #     f"{channel_group}", {"type": "notification_broadcast",
-                # "text": {"status": "done","message":request.data["meta_attributes"]}})
                 async_to_sync(channel_layer.group_send)(
-                    f"{channel_group}", {"type": "notification_broadcast",
+                    f"{channel_group}", {"type": "notification.broadcast",
                     "message": request.data["message_text"]})
                 
               
@@ -413,6 +407,76 @@ class MessageChannelApiView(ListAPIView):
             message_info = MessageChannel.objects.get(id=int(id))
             if id is not None:
                 message_info = MessageChannel.objects.get(id=int(id))
+                message_info.delete()
+                return Response({"message": "Successfully Deleted!"}, status=200)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
+
+# ==========================================MessageUser==================================================
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MessageUserApiView(ListAPIView):
+    authentication_classes(TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    queryset = MessageUser.objects.all()
+    serializer_class = MessageUserSerializers
+
+    def get(self, request, pk=None, *args, **kwargs):
+        try:
+            id = pk
+            if id is not None:
+                message_info = MessageUser.objects.get(id=int(id))
+                serializer = self.get_serializer(message_info)
+                return Response(serializer.data)
+
+            message_info = MessageUser.objects.all()
+            serializer = self.get_serializer(message_info,many=True)
+            return Response(serializer.data)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
+
+
+    def post(self, request, format=None, *args, **kwargs):
+        try:  
+            
+            channel_layer = get_channel_layer()
+            user = User.objects.get(id=request.data["to_user"])
+            channel_name = Clients.objects.filter(user_id = user).last()
+            async_to_sync(channel_layer.send)(
+                channel_name.channel_name, 
+                {"type": "notification_to_user",
+                "message": request.data["message_text"]},
+                )
+            
+            
+            serializers = MessageUserSerializers(data=request.data)
+            if serializers.is_valid():
+                serializers.save()
+                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
+        
+            return Response({'msg':'Try again!'}, status=400)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
+
+    
+    def patch(self, request, pk,*args, **kwargs):
+        try: 
+            message_info = MessageUser.objects.get(id = pk)
+            serializer = MessageUserSerializers(message_info, data=request.data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
+            return Response({"msg": "No Content"},status=204)
+        except Exception as ex:
+            return Response({"error": str(ex)},status=400)
+
+    def delete(self, request, pk=None, *args, **kwargs):
+        try:
+            id = pk
+            message_info = MessageUser.objects.get(id=int(id))
+            if id is not None:
+                message_info = MessageUser.objects.get(id=int(id))
                 message_info.delete()
                 return Response({"message": "Successfully Deleted!"}, status=200)
         except Exception as ex:

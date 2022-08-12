@@ -22,8 +22,8 @@ application = ProtocolTypeRouter({
             # re_path(r'msg/(?P<receiver_id>\w+)/(?P<room_name>\w+)/$', ChatConsumer.as_asgi()),
             re_path(r'msg/user/$',MessageUserConsumer.as_asgi()),
             re_path(r'msg/channel/$', ChatConsumer.as_asgi()),
-            re_path(r'msg/sms/$', ChatConsumer.as_asgi()),
-            re_path(r'msg_queue/(?P<user_id>\w+)/(?P<room_name>\w+)/$', ChatConsumerQueue.as_asgi()),
+            # re_path(r'msg/sms/$', ChatConsumer.as_asgi()),
+            # re_path(r'msg_queue/(?P<user_id>\w+)/(?P<room_name>\w+)/$', ChatConsumerQueue.as_asgi()),
 
         ])),
 })
