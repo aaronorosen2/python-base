@@ -443,11 +443,12 @@ class MessageUserApiView(ListAPIView):
             channel_layer = get_channel_layer()
             user = User.objects.get(id=request.data["to_user"])
             channel_name = Clients.objects.filter(user_id = user).last()
-            async_to_sync(channel_layer.send)(
-                channel_name.channel_name, 
-                {"type": "notification_to_user",
-                "message": request.data["message_text"]},
-                )
+            if channel_name!= None:
+                async_to_sync(channel_layer.send)(
+                    channel_name.channel_name, 
+                    {"type": "notification_to_user",
+                    "message": request.data["message_text"]},
+                    )
             
             
             serializers = MessageUserSerializers(data=request.data)
