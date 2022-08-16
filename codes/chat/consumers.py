@@ -10,6 +10,8 @@ from rest_framework_simplejwt.tokens import AccessToken, TokenError
 from django.contrib.auth import get_user_model
 from urllib.parse import parse_qs
 User = get_user_model()
+import logging
+logger = logging.getLogger(__name__)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     groups = ["general"]
@@ -47,12 +49,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     #   Connection Method  
     async def connect(self):
+        print('****** Connecting to channel ************')
+        logger.info('******* Connecting to channel ************')
         parsed_query_string = parse_qs(self.scope["query_string"])
         token = parsed_query_string.get(b"token")[0].decode("utf-8")
         access_token = AccessToken(token)
         x =  await self.get_user(access_token["user_id"],self.scope['url_route']['kwargs']['room_name'])
        
         try:
+            print('token', token)
             access_token = AccessToken(token)
 
             if access_token["user_id"] == int(self.scope['url_route']['kwargs']['user_id']):
@@ -60,9 +65,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             else:
                 self.scope["user"] = False
         except TokenError as e:
+            print('Error in Token', str(e))
             self.scope["user"] = False
 
-
+        print(self.scope["user"])
         if self.scope["user"]:
             self.user_id = self.scope['url_route']['kwargs']['user_id']
         
@@ -78,6 +84,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.accept()            
             await self.channel_layer.group_add(f"{self.room_name}", self.channel_name)
         else:
+            print('Closing connection due to invalid user ')
             self.close()
     # Receive message from WebSocket
 
@@ -195,6 +202,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         # Leave room group
         try:
+            print('****** Disconnecting to channel ************')
+            logger.info('******* Disconnecting to channel ************')
             await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
