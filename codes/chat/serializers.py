@@ -50,7 +50,7 @@ class MessageUserSerializers(serializers.ModelSerializer):
         model = MessageUser
         fields = '__all__'
 
-# class MessageSMSSerializers(serializers.ModelSerializer):
-#     class Meta:
-#         model = MessageSMS
-#         fields = '__all__'
+class MessageSMSSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = MessageSMS
+        fields = '__all__'

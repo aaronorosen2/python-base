@@ -46,6 +46,8 @@ class Member(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
+    phone_number = models.CharField(max_length=13,null = True, blank = True, default='')
+
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True,
                             default=None)
@@ -110,21 +112,23 @@ class Clients(models.Model):
                              default=None)
     channel_name = models.CharField(max_length = 256, null = True,
                                              blank = True, default='',)
+    created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
+    modified_at = models.DateTimeField(auto_now=True,null=True, blank=True)
     def __str__(self) -> str:
         return f"- {self.user} "
 
     
-# class MessageSMS(models.Model):
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
-#                              null=True, blank=True,
-#                              default=None)
-#     meta_attributes = models.CharField(max_length=256, blank=True, default='')
-#     # (recative app/ or some one else)
-#     to_phone_number = models.ForeignKey(FROMPHONE, on_delete=models.CASCADE)
-#     message_type = models.CharField(max_length = 256, null = True, blank = True, default='')
-#     media_link =  models.URLField(max_length = 256, null = True, blank = True, default='')
-#     message_text= models.TextField(blank = True)
-#     def __str__(self) -> str:
-#         return f" {self.user} "
+class MessageSMS(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    from_user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
+                             null=True, blank=True,
+                             default=None)
+    meta_attributes = models.CharField(max_length=256, blank=True, default='')
+    # (recative app/ or some one else)
+    to_phone_number = models.CharField(max_length=13,null = True, blank = True, default='')
+    message_type = models.CharField(max_length = 256, null = True, blank = True, default='')
+    media_link =  models.URLField(max_length = 256, null = True, blank = True, default='')
+    message_text= models.TextField(blank = True)
+    def __str__(self) -> str:
+        return f"From {self.user} To {self.to_phone_number}"
     
