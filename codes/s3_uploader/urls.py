@@ -5,7 +5,7 @@ from .views import (UserRegister, PasswordReset, UserCourses, UserLogin, \
                    ChangePasswordView, Home, S3SignedUrl, S3Upload, \
                    MakeS3FilePublic)
 
-from .views import MyObtainTokenPairView
+from .views import User_login_JWT
 
 urlpatterns = [
     # User Management and Auth APIs
@@ -34,8 +34,7 @@ urlpatterns = [
     path('list_courses/', list_courses, name='list_courses'),
     path('list_courses_protected/', list_courses_auth,
          name='list_courses_protected'),
-#     path('user_login/', LoginUserApi.as_view()
-#     path('user_login/', MyObtainTokenPairView.as_view()),
-    path('user/login1', MyObtainTokenPairView.as_view(), name='login'),
+     #URL for JWT token
+    path('user/login1', User_login_JWT.as_view(), name='login1'),
 
 ]

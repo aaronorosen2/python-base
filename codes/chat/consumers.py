@@ -311,7 +311,6 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
         send_data = json.loads(text_data)
         send_data = json.loads(text_data)
         send_data["User"] = str(self.user_id)
-        print(text_data)
         if await self.is_client_active(self.receiver_id):
             await self.channel_layer.send(
                     await self.to_channel_name(self.receiver_id),

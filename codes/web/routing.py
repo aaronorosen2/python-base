@@ -4,8 +4,13 @@ from django.urls import re_path
 
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-from notifications.consumers import NotificationConsumer, NotificationConsumerQueue, VstreamConsumer
-from chat.consumers import ChatConsumer,ChatConsumerQueue,MessageUserConsumer,MessageSMSConsumer
+from ringlessVoiceMail.consumer import RinglessVoiceMailConsumer
+from notifications.consumers import ( NotificationConsumer, 
+                                    NotificationConsumerQueue, 
+                                    VstreamConsumer )
+from chat.consumers import ( ChatConsumer, ChatConsumerQueue,
+                            MessageUserConsumer,MessageSMSConsumer)
+                            
 from chat.middleware import WebSocketJWTAuthMiddleware
 
 
@@ -23,6 +28,7 @@ application = ProtocolTypeRouter({
             re_path(r'msg/channel/$', ChatConsumer.as_asgi()),
             re_path(r'msg/user/$',MessageUserConsumer.as_asgi()),
             re_path(r'msg/sms/$',MessageSMSConsumer.as_asgi()),
+            # re_path(r'ringless/$',RinglessVoiceMailConsumer.as_asgi()),
             # re_path(r'msg/sms/$', ChatConsumer.as_asgi()),
             # re_path(r'msg_queue/(?P<user_id>\w+)/(?P<room_name>\w+)/$', ChatConsumerQueue.as_asgi()),
 
