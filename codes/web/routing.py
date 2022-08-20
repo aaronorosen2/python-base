@@ -12,7 +12,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 django.setup()
 
 from notifications.consumers import NotificationConsumer, NotificationConsumerQueue, VstreamConsumer
-from chat.consumers import ChatConsumer
+from chat.consumers import ChatConsumer,ChatConsumerQueue,MessageUserConsumer,MessageSMSConsumer
 from chat.middleware import WebSocketJWTAuthMiddleware
 
 
@@ -24,9 +24,11 @@ application = ProtocolTypeRouter({
             # path("notifications/<str:room_name>/", NotificationConsumer.as_asgi(),name="ws_notifications"),
             # path("notifications/", NotificationConsumer.as_asgi(),name="ws_notifications"),
             # re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumer.as_asgi()),
-            # re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
-            # re_path(r'vstream/', VstreamConsumer.as_asgi()),
-            re_path(r'msg/(?P<user_id>\w+)/(?P<room_name>\w+)/$', ChatConsumer.as_asgi()),
+            re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
+            re_path(r'vstream/', VstreamConsumer.as_asgi()),
+            re_path(r'msg/channel/$', ChatConsumer.as_asgi()),
+            re_path(r'msg/user/$',MessageUserConsumer.as_asgi()),
+            re_path(r'msg/sms/$',MessageSMSConsumer.as_asgi()),
         ])),
 })
 

@@ -1,7 +1,5 @@
 from rest_framework import serializers
-
-from .models import Org,Channel, Member, Message, ChannelMember
-
+from .models import *
 from django.contrib.auth.models import User
 
 
@@ -37,4 +35,22 @@ class MemberSerializers(serializers.ModelSerializer):
 class ChannelMemberSerializers(serializers.ModelSerializer):
     class Meta:
         model = ChannelMember
+        fields = '__all__'
+
+
+#=====================Updated ===========================================================
+
+class MessageChannelSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = MessageChannel
+        fields = '__all__'
+        
+class MessageUserSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = MessageUser
+        fields = '__all__'
+
+class MessageSMSSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = MessageSMS
         fields = '__all__'
