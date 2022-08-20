@@ -337,8 +337,8 @@ class ChannelMemberApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageChannelApiView(ListAPIView):
-    authentication_classes(TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    # authentication_classes(TokenAuthentication,)
+    # permission_classes = (IsAuthenticated,)
 
     queryset = MessageChannel.objects.all()
     serializer_class = MessageChannelSerializers
@@ -418,8 +418,8 @@ class MessageChannelApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageUserApiView(ListAPIView):
-    authentication_classes(TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    # authentication_classes(TokenAuthentication,)
+    # permission_classes = (IsAuthenticated,)
 
     queryset = MessageUser.objects.all()
     serializer_class = MessageUserSerializers
@@ -499,8 +499,8 @@ class MessageUserApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageSMSApiView(ListAPIView):
-    authentication_classes(TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    # authentication_classes(TokenAuthentication,)
+    # permission_classes = (IsAuthenticated,)
 
     queryset = MessageSMS.objects.all()
     serializer_class = MessageSMSSerializers

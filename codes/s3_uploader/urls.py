@@ -1,10 +1,11 @@
 from django.urls import path, include
 from knox import views as knox_views
-from .views import UserRegister, PasswordReset, UserCourses, UserLogin, \
+from .views import (UserRegister, PasswordReset, UserCourses, UserLogin, \
                    AllCourses, list_courses, list_courses_auth, \
                    ChangePasswordView, Home, S3SignedUrl, S3Upload, \
-                   MakeS3FilePublic
+                   MakeS3FilePublic)
 
+from .views import MyObtainTokenPairView
 
 urlpatterns = [
     # User Management and Auth APIs
@@ -33,4 +34,8 @@ urlpatterns = [
     path('list_courses/', list_courses, name='list_courses'),
     path('list_courses_protected/', list_courses_auth,
          name='list_courses_protected'),
+#     path('user_login/', LoginUserApi.as_view()
+#     path('user_login/', MyObtainTokenPairView.as_view()),
+    path('user/login1', MyObtainTokenPairView.as_view(), name='login'),
+
 ]

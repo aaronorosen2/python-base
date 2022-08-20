@@ -3,7 +3,12 @@ from rest_framework import serializers
 from vconf.models import RoomInfo, RoomVisitors, RoomRecording, Brand, Visitor, Recording
 # from .models import UserCoustom
 from sfapp2.utils.twilio import send_confirmation_code
+
+from classroom.models import TeacherAccount
+from classroom.serializers import TeacherAccountSerializer
 # Change Password Serializer
+
+
 class ChangePasswordSerializer(serializers.Serializer):
     model = User
 
@@ -64,3 +69,104 @@ class RegisterSerializer(serializers.ModelSerializer):
 #                                         email=validated_data.get('email'),first_name=validated_data['first_name'])
 
 #         return user
+
+
+# =========================================================================================================
+
+from rest_framework import serializers
+
+
+# class LoginUserSerializer(serializers.Serializer):
+#     email = serializers.EmailField()
+#     # phone_number = serializers.CharField()
+#     password = serializers.CharField(write_only=True)
+
+class UserSerializer(serializers.ModelSerializer):
+     isStaffAdmin = serializers.SerializerMethodField(read_only=True)
+
+     class Meta:
+         model = User
+         fields = ['id', 'username', 'email', 'isStaffAdmin']
+
+
+     def get_isStaffAdmin(self, obj):
+         return obj.is_staff
+
+
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+class UserSerializerWithToken(UserSerializer):
+
+     token = serializers.SerializerMethodField(read_only=True)
+
+     class Meta:
+         model = User
+         fields = ['id', 'username', 'email', 'isStaffAdmin', 'token']
+
+     def get_token(self, obj):
+         token = RefreshToken.for_user(obj)
+         return str(token.access_token)
+
+     def get_isStaffAdmin(self, obj):
+         if obj.is_staff and obj.is_active:
+             return 2
+         else:
+             error = {'message': "Invalid User"}
+             raise serializers.ValidationError(error)
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+# class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+#      def validate(self, attrs):
+#          data = super().validate(attrs)
+#          data['username'] = self.user.email
+#          data['email'] = self.user.email
+#          serializer = UserSerializerWithToken(self.user).data
+#          for k, v in serializer.items():
+#              data[k] = v
+#          return data
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    
+    def validate(self, attrs):
+        try:
+            attrs['username'] = attrs['email']
+        except:
+            pass
+        data = super().validate(attrs)
+
+        teacher = TeacherAccountSerializer(
+            TeacherAccount.objects.filter(teacher=self.user).first()).data
+
+        data["user"] ={"id":self.user.id,
+                    "name":self.user.first_name,
+                    "username":self.user.username,
+                    "email":self.user.email
+                    }
+        data['is_teacher'] = teacher['active']
+
+        return data
+
+    @classmethod
+    def get_token(cls, user):
+        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
+
+        # Add custom data to token
+        # token['username'] = user.username
+        return token
+
+
+# class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+#     @classmethod
+#     def get_token(cls, user):
+#         token = super(MyTokenObtainPairSerializer, cls).get_token(user)
+
+#         # Add custom claims
+#         token['username'] = user.username
+#         token['isSuperuser'] = user.is_superuser
+#         token['email'] = user.email
+#         return token
