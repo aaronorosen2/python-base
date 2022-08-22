@@ -4,15 +4,19 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import re_path
 
 from channels.routing import ProtocolTypeRouter, URLRouter
-# from channels.auth import AuthMiddlewareStack
-# from django.core.asgi import get_asgi_application
 
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 django.setup()
 
-from notifications.consumers import NotificationConsumer, NotificationConsumerQueue, VstreamConsumer
-from chat.consumers import ChatConsumer,ChatConsumerQueue,MessageUserConsumer,MessageSMSConsumer
+from channels.auth import AuthMiddlewareStack
+from ringlessVoiceMail.consumer import RinglessVoiceMailConsumer
+from notifications.consumers import ( NotificationConsumer, 
+                                    NotificationConsumerQueue, 
+                                    VstreamConsumer )
+from chat.consumers import ( ChatConsumer, ChatConsumerQueue,
+                            MessageUserConsumer,MessageSMSConsumer)
+                            
 from chat.middleware import WebSocketJWTAuthMiddleware
 
 

@@ -6,6 +6,10 @@ from sfapp2.utils.twilio import send_confirmation_code
 
 from classroom.models import TeacherAccount
 from classroom.serializers import TeacherAccountSerializer
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+
 # Change Password Serializer
 
 
@@ -43,43 +47,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         return user
 
-# class NewRegisterSerializer(serializers.ModelSerializer):
-#     name = serializers.CharField(source='first_name')
-
-#     class Meta:
-#         model = UserCoustom
-#         fields = ('id', 'name',  'email', 'password', 'phone', 'photo', 'bio')
-#         extra_kwargs = {'password': {'write_only': True}}
-
-#     def validate(self, data):
-#         """
-#         Check that the start is before the stop.
-#         """
-#         if data['phone']:
-#             UserCoustom.objects.filter(phone= data['phone'])
-#             raise serializers.ValidationError("Number Already exist")
-#         if data['email']:
-#             UserCoustom.objects.filter(phone= data['email'])
-#             raise serializers.ValidationError("Email Already exist")
-#         return data
-
-#     def create(self, validated_data):
-#         user = UserCoustom.objects.create_user(validated_data['email'], password=validated_data['password'],phone=validated_data['phone'],
-#                                         photo=validated_data['photo'],bio=validated_data['bio'],
-#                                         email=validated_data.get('email'),first_name=validated_data['first_name'])
-
-#         return user
-
-
-# =========================================================================================================
-
-from rest_framework import serializers
-
-
-# class LoginUserSerializer(serializers.Serializer):
-#     email = serializers.EmailField()
-#     # phone_number = serializers.CharField()
-#     password = serializers.CharField(write_only=True)
 
 class UserSerializer(serializers.ModelSerializer):
      isStaffAdmin = serializers.SerializerMethodField(read_only=True)
@@ -115,18 +82,7 @@ class UserSerializerWithToken(UserSerializer):
              error = {'message': "Invalid User"}
              raise serializers.ValidationError(error)
 
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-# class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-
-#      def validate(self, attrs):
-#          data = super().validate(attrs)
-#          data['username'] = self.user.email
-#          data['email'] = self.user.email
-#          serializer = UserSerializerWithToken(self.user).data
-#          for k, v in serializer.items():
-#              data[k] = v
-#          return data
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -153,20 +109,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super(MyTokenObtainPairSerializer, cls).get_token(user)
-
-        # Add custom data to token
-        # token['username'] = user.username
         return token
 
 
-# class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-
-#     @classmethod
-#     def get_token(cls, user):
-#         token = super(MyTokenObtainPairSerializer, cls).get_token(user)
-
-#         # Add custom claims
-#         token['username'] = user.username
-#         token['isSuperuser'] = user.is_superuser
-#         token['email'] = user.email
-#         return token

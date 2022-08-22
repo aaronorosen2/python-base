@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 from knox.auth import get_user_model, AuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication,TokenAuthentication
-from knox.auth import TokenAuthentication
+# from knox.auth import TokenAuthentication
 from uritemplate import partial
 from .models import *
 from .serializers import *
@@ -337,8 +337,8 @@ class ChannelMemberApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageChannelApiView(ListAPIView):
-    # authentication_classes(TokenAuthentication,)
-    # permission_classes = (IsAuthenticated,)
+    authentication_classes(TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     queryset = MessageChannel.objects.all()
     serializer_class = MessageChannelSerializers
@@ -359,7 +359,11 @@ class MessageChannelApiView(ListAPIView):
 
 
     def post(self, request, format=None, *args, **kwargs):
+        login_user = request.user
+        request.data._mutable = True
 
+        request.data['user'] = login_user.id
+        request.data._mutable = False
         def user_exist_in_group(our_user,our_channel):
             try:
                 channel_member = ChannelMember.objects.get(user=our_user)
@@ -368,11 +372,12 @@ class MessageChannelApiView(ListAPIView):
                 return False
             except:
                 return False
+
         try:  
-            
             channel_layer = get_channel_layer()
             channel_group = Channel.objects.get(id=request.data["channel"])
-            if user_exist_in_group(request.data["user"],channel_group): 
+
+            if user_exist_in_group(login_user.id,channel_group): 
                 
                 async_to_sync(channel_layer.group_send)(
                     f"{channel_group}", {"type": "notification.broadcast",
@@ -418,8 +423,8 @@ class MessageChannelApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageUserApiView(ListAPIView):
-    # authentication_classes(TokenAuthentication,)
-    # permission_classes = (IsAuthenticated,)
+    authentication_classes(TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     queryset = MessageUser.objects.all()
     serializer_class = MessageUserSerializers
@@ -440,10 +445,16 @@ class MessageUserApiView(ListAPIView):
 
 
     def post(self, request, format=None, *args, **kwargs):
+        login_user = request.user
+        request.data._mutable = True
+
+        request.data['to_user'] = login_user.id
+        request.data._mutable = False
         try:  
             
             channel_layer = get_channel_layer()
             user = User.objects.get(id=request.data["to_user"])
+            
             channel_name = Clients.objects.filter(user_id = user).last()
             if channel_name!= None:
                 async_to_sync(channel_layer.send)(
@@ -499,8 +510,8 @@ class MessageUserApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageSMSApiView(ListAPIView):
-    # authentication_classes(TokenAuthentication,)
-    # permission_classes = (IsAuthenticated,)
+    authentication_classes(TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     queryset = MessageSMS.objects.all()
     serializer_class = MessageSMSSerializers
@@ -531,30 +542,31 @@ class MessageSMSApiView(ListAPIView):
                 send_sms(to_phone_number,message_text) 
                 serializers.save()
             channel_layer = get_channel_layer()
-            member_id = Member.objects.get(phone_number=request.data["to_phone_number"])
-            user = member_id.user_id
-            channel_name = Clients.objects.filter(user_id = user).last()
-            
-            if channel_name!= None:
-                async_to_sync(channel_layer.send)(
-                    channel_name.channel_name, 
-                    {"type": "notification_to_user",
-                    "message": request.data["message_text"]},
-                    )
-            else:
-                from_user = User.objects.get(id=request.data["from_user"])
-                user = from_user.id
+            member_id = Member.objects.filter(phone_number=request.data["to_phone_number"]).first()
+
+            if member_id!= None:
+                user = member_id.user_id
                 channel_name = Clients.objects.filter(user_id = user).last()
+            
                 if channel_name!= None:
                     async_to_sync(channel_layer.send)(
                         channel_name.channel_name, 
                         {"type": "notification_to_user",
-                        "message": "User is not currently active"},
+                        "message": request.data["message_text"]},
                         )
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-                # else:
-                #     return Response({'msg':'Phone number is not registered!'}, status=400)
-            return Response({'msg':'Try again!'}, status=400)
+                else:
+                    from_user = User.objects.get(id=request.data["from_user"])
+                    user = from_user.id
+                    channel_name = Clients.objects.filter(user_id = user).last()
+                    if channel_name!= None:
+                        async_to_sync(channel_layer.send)(
+                            channel_name.channel_name, 
+                            {"type": "notification_to_user",
+                            "message": "User is not currently active"},
+                            )
+                    return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
+                return Response({'msg':'Try again!'}, status=400)
+            return Response({'status':"Message sent"}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
 

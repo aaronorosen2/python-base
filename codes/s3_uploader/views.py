@@ -31,6 +31,18 @@ from .serializers import UserSerializer, RegisterSerializer
 from knox.auth import TokenAuthentication
 from classroom.models import TeacherAccount
 from classroom.serializers import TeacherAccountSerializer
+from .serializers import MyTokenObtainPairSerializer
+from rest_framework_simplejwt.views import (TokenObtainPairView,
+                                            TokenRefreshView)
+
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .serializers import MyTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import MyTokenObtainPairSerializer
+
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -409,96 +421,32 @@ def list_courses(request):
 @permission_classes([IsAuthenticated])
 def list_courses_auth(request):
     return JsonResponse({'messages': 'list_courses_protected, auth required'}, safe=False)
+
 # ==================================================================================================
-from django.contrib.auth import authenticate
-# from .serializers import LoginUserSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import serializers
 
-# class LoginUserApi(APIView):
-
-#     def post(self, request):
-#         data = request.data
-#         try:
-#             data['username'] = data['email']
-#         except:
-#             pass
-#         serializer = LoginUserSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         # data = serializer.validated_data # Fetch the data form serializer
-#         # serializer = AuthTokenSerializer(data=data)
-#         serializer.is_valid(raise_exception=True)
-
-#         print(serializer.validated_data)
-#         print()
-#         print()
-#         # user = serializer.validated_data['user']
-#         # user = serializer.validated_data
-#         # teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
-#         # login(request, user)
-#         user=authenticate(email=data['email'], password=data['password'])
-#         print(user)
-#         print("==================")
-#         # return_data = super(UserLogin, self).post(request, format=None)
-#         # return_data.data['is_teacher'] = teacher['active']
-#     #    user = authenticate(email=data['email'], password=data['password']) # check for email and password
-#     #    if not user or user.phone_number != data['phone_number']: # check for phone
-#     #        raise serializers.ValidationError({'detail':'Incorrect email, phone, or password'})
-#     #    # Generate Token
-#         refresh = RefreshToken.for_user(user)
-
-#         return Response(
-#            {
-#                'access': str(refresh.access_token),
-#                'refresh': str(refresh),
-#                'phone' : "67890987678"
-#            }
-#            , status=status.HTTP_200_OK
-#            )
-        # ====================================code=====================================
-        # data = request.data
-        # try:
-        #     data['username'] = data['email']
-        # except:
-        #     pass
-        # serializer = AuthTokenSerializer(data=data)
-        # serializer.is_valid(raise_exception=True)
-        # user = serializer.validated_data['user']
-        # teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
-        # login(request, user)
-        # return_data = super(UserLogin, self).post(request, format=None)
-        # return_data.data['is_teacher'] = teacher['active']
-        # return return_data
-
-from .serializers import MyTokenObtainPairSerializer
-from rest_framework_simplejwt.views import (TokenObtainPairView,
-                                            TokenRefreshView)
-# class MyTokenObtainPairView(TokenObtainPairView):
-#      serializer_class = MyTokenObtainPairSerializer
-
-
-
-# from .serializers import MyTokenObtainPairSerializer
-# from rest_framework_simplejwt.views import TokenObtainPairView
-# from rest_framework.permissions import IsAuthenticated,AllowAny
-
-# class MyObtainTokenPairView(TokenObtainPairView):
-#     print("+++++++++++++++++++++++++++===")
-#     # print(request.data)
-#     permission_classes = (AllowAny,)
-#     serializer_class = MyTokenObtainPairSerializer
-
-
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import MyTokenObtainPairSerializer
-
-class MyObtainTokenPairView(TokenObtainPairView):
+class User_login_JWT(TokenObtainPairView):
     permission_classes = (AllowAny,)
     serializer_class = MyTokenObtainPairSerializer
 
-    # def post(self, request, pk=None, *args, **kwargs):
-    #     serializer = self.get_serializer(message_info)
+    def post(self, request, format=None):
+        data = request.data
+        
+        try:
+            data['username'] = data['email']
+        except:
+            pass
+        serializer = AuthTokenSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        
+        teacher = TeacherAccountSerializer(
+            TeacherAccount.objects.filter(teacher=user).first()).data
+        login(request, user)
+        return_data = super(User_login_JWT, self).post(request, format=None)
+        return_data.data['is_teacher'] = teacher['active']
 
-    #     pass
+        return_data.data['token']= return_data.data['access']
+        del return_data.data['access']
+        return return_data
+
 
