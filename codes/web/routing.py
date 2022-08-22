@@ -10,7 +10,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
 django.setup()
 
 from channels.auth import AuthMiddlewareStack
-from ringlessVoiceMail.consumer import RinglessVoiceMailConsumer
+# from ringlessVoiceMail.consumer import RinglessVoiceMailConsumer
 from notifications.consumers import ( NotificationConsumer, 
                                     NotificationConsumerQueue, 
                                     VstreamConsumer )
