@@ -26,4 +26,7 @@ urlpatterns = [
     # path('get/message',views.MessageApiView.as_view(),name='message-data'),
     # path('get/message/<str:pk>',views.MessageApiView.as_view(),name='message-data'),
 
+    path('get/nummsg/user/' ,views.GetMessageApiView.as_view(),name='message_user_till'),
+    path('get/nummsg/user/records=<pk>' ,views.GetMessageApiView.as_view(),name='message_user_till')
+
 ]

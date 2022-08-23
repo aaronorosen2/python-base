@@ -25,7 +25,8 @@ from .serializers import *
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync, sync_to_async
 from sfapp2.utils.twilio import send_sms
-
+import calendar
+import time
 
 # =====================================Org================================================
 def chat_room(request):
@@ -223,6 +224,19 @@ class MessageApiView(ListAPIView):
 
 
 # ======================================Member======================================================
+def handle_uploaded_file(f,fileName):
+    module_dir = os.path.dirname(__file__)
+    try: 
+        os.mkdir(os.path.join(
+                 module_dir,'..', 'static/chat/profile_pic'))
+    except FileExistsError:
+        pass
+    file_path = os.path.abspath(os.path.join(
+            module_dir, '..', 'static/chat/profile_pic/', str(fileName))+'.png')
+    with open(file_path, 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    return True
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MemberApiView(ListAPIView):
@@ -245,7 +259,14 @@ class MemberApiView(ListAPIView):
 
 
     def post(self, request, format=None, *args, **kwargs):
-        try:   
+        try:
+            gmt = time.gmtime()
+            # ts stores timestamp
+            ts = calendar.timegm(gmt)
+            handle_uploaded_file(request.FILES['profile_pic'] ,ts)
+            # request.data['profile_pic'] = str(request.FILES['profile_pic'])
+            request.data['profile_pic'] = str(ts)
+            request.data['profile_pic'] = "http://"+request.get_host()+"/static/chat/profile_pic/"+str(ts)+".png"
             serilizers = MemberSerializers(data=request.data)
             if serilizers.is_valid():
                 serilizers.save()
@@ -360,16 +381,12 @@ class MessageChannelApiView(ListAPIView):
 
     def post(self, request, format=None, *args, **kwargs):
         login_user = request.user
-        request.data._mutable = True
-
         request.data['user'] = login_user.id
-        request.data._mutable = False
+
         def user_exist_in_group(our_user,our_channel):
             try:
-                channel_member = ChannelMember.objects.get(user=our_user)
-                if str(channel_member.Channel) == str(our_channel):
-                    return True
-                return False
+                channel_member = ChannelMember.objects.filter(user=our_user).filter(Channel=our_channel)
+                return True
             except:
                 return False
 
@@ -446,10 +463,7 @@ class MessageUserApiView(ListAPIView):
 
     def post(self, request, format=None, *args, **kwargs):
         login_user = request.user
-        request.data._mutable = True
-
         request.data['to_user'] = login_user.id
-        request.data._mutable = False
         try:  
             
             channel_layer = get_channel_layer()
@@ -592,3 +606,34 @@ class MessageSMSApiView(ListAPIView):
                 return Response({"message": "Successfully Deleted!"}, status=200)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
+
+
+# ==========================================N Number of Message ==================================================
+
+from rest_framework.pagination import PageNumberPagination
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GetMessageApiView(ListAPIView):
+    authentication_classes(TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    queryset = MessageChannel.objects.all().order_by('-created_at')
+    serializer_class = MessageChannelSerializers
+    
+    def get(self, request ,pk=None, *args, **kwargs):
+        paginator = PageNumberPagination()
+        try:       
+            paginator.page_size_query_param = 'records'
+            page_size = 10
+            page_query_param = 'p'
+            paginator.page_size = page_size
+            paginator.page_query_param = page_query_param
+            pagi = paginator.paginate_queryset(queryset=self.get_queryset(), request=request)
+            serializer = self.get_serializer(pagi, many=True)
+            theData= serializer.data
+            return paginator.get_paginated_response(theData) 
+        except Exception as ex:
+            pass
+            return Response({"error --- ": str(ex)}, status=400)
+
+# http://127.0.0.1:8000/chat/get/nummsg/user/?p=1&records=8

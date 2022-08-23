@@ -1,3 +1,4 @@
+from ast import Delete
 import json
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -11,7 +12,6 @@ from django.contrib.auth import get_user_model
 from urllib.parse import urlparse, parse_qs
 User = get_user_model()
 # =============================================MessageChannel============================================
-
 class ChatConsumer(AsyncWebsocketConsumer):
 
     user_dictionary = {}
@@ -45,9 +45,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return False
 
     @database_sync_to_async
-    def get_last_message(self, user_id):
-        message = Message.objects.filter(user_id=user_id).last()
-        return message.message
+    def get_profile_pic_url(self, user_id):
+        profile_pic = Member.objects.filter(user_id=user_id).last()
+        return profile_pic.profile_pic
 
     @database_sync_to_async
     def get_channel_info(self,room_name):
@@ -58,6 +58,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             else:
                 return False
             return channel_member
+        except Channel.DoesNotExist:
+            return False
+
+    @database_sync_to_async
+    def extract_username_from_db(self,user_id):
+        try:
+            username = User.objects.filter(id=user_id).first()
+            if username:
+                return username.username
+            else:
+                return "Anonymous"
         except Channel.DoesNotExist:
             return False
  
@@ -110,10 +121,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.close()
 
     async def receive(self, text_data):
-        await self.load_message(text_data)
-        send_data = json.loads(text_data)
-        send_data = json.loads(text_data)
-        send_data["User"] = str(self.user_id)
+        msg_from_db = await self.load_message(text_data)
+        msg_from_db["name"] = await self.extract_username_from_db(msg_from_db.get('user'))
+        del msg_from_db['id']
+        msg_from_db['User'] = msg_from_db['user']
+        del msg_from_db['user']
+        print(msg_from_db)
+        print()
+        # send_data = json.dumps(msg_from_db)
+        send_data = msg_from_db
+        # send_data = json.loads(text_data)
+        # send_data["User"] = str(self.user_id)
         
         await self.print_details(send_data)
         await self.channel_layer.group_send(
@@ -138,7 +156,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message_serializer = MessageChannelSerializers(data=message_details)
             message_serializer.is_valid(raise_exception=True)
             message = message_serializer.save()
-            return MessageSerializers(message).data
+            return MessageChannelSerializers(message).data
         except Channel.DoesNotExist:
             return False
 
@@ -171,7 +189,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
    
 
     async def notification_broadcast(self, event): 
-        await self.send(text_data=json.dumps( event["message"]))
+        await self.send(text_data=event["message"])
 
     async def error_message(self, event):       
         await self.send(text_data=json.dumps( event["message"]))
@@ -207,7 +225,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.close()
 
 # =============================================MessageUser==================================================
-
+# This will Delete all data in Clients if we restart the server
+Clients.objects.all().delete()
 class MessageUserConsumer(AsyncWebsocketConsumer):
 
     user_channel_name_list = {} #dict of all active users

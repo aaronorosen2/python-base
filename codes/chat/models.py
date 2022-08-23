@@ -3,7 +3,8 @@
 
 from django.db import models
 from knox.auth import get_user_model
-
+import os
+import datetime
 
 User = get_user_model()
 
@@ -13,7 +14,7 @@ class Org(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
-    meta_attributes = models.CharField(max_length=100, blank=True, default='')
+    meta_attributes = models.CharField(max_length=100,unique=True)
 
     def __str__(self) -> str:
         return self.meta_attributes
@@ -41,8 +42,15 @@ class Message(models.Model):
     meta_attributes = models.CharField(max_length=100, blank=True, default='')
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
 
+
+
 class Member(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+    profile_pic = models.CharField(max_length=256, null = True, blank = True,)
+
+
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
@@ -107,11 +115,12 @@ class MessageUser(models.Model):
         return f"To- {self.to_user}  From- {self.from_user}"
 
 class Clients(models.Model):
+    # id = models.CharField(max_length = 256, null = True,
+    #                                          blank = True, default=1)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
-    channel_name = models.CharField(max_length = 256, null = True,
-                                             blank = True, default='',)
+    channel_name = models.CharField(max_length = 256 ,null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     modified_at = models.DateTimeField(auto_now=True,null=True, blank=True)
     def __str__(self) -> str:
