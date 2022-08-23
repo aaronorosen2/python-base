@@ -135,7 +135,6 @@ INSTALLED_APPS = [
     'wifi',
     'ringlessVoiceMail',
     'facebook',
-    'github',
     'ipflow',
     'chat',
     'gitlab',

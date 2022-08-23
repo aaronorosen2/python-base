@@ -2,6 +2,7 @@ from django.db import models
 
 
 class SSIDReading(models.Model):
+    training_label = models.CharField(max_length=512, blank=True, null=True)
     address = models.CharField(max_length=512, blank=True, null=True)
     channel = models.CharField(max_length=512, blank=True, null=True)
     frequency = models.CharField(max_length=512, blank=True, null=True)

@@ -110,7 +110,7 @@ class UserRegister(generics.GenericAPIView):
 #                         'status' : True,
 #                         'detail' : 'OTP mactched. Thank you.'
 #                         })
-#                 else: 
+#                 else:
 #                     return Response({
 #                         'status' : False,
 #                         'detail' : 'OTP incorrect.'
@@ -140,15 +140,16 @@ class UserLogin(KnoxLoginView):
             data['username'] = data['email']
         except:
             pass
-        # teacher_login = data.get('teacher_login','off')           
+        # teacher_login = data.get('teacher_login','off')
         serializer = AuthTokenSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         # if teacher_login == 'on':
         #     teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
         #     if not (teacher and teacher['active']):
-        #         return JsonResponse(data={'msg': 'Account not active'},status=403) 
-        teacher = TeacherAccountSerializer(TeacherAccount.objects.filter(teacher = user).first()).data
+        #         return JsonResponse(data={'msg': 'Account not active'},status=403)
+        teacher = TeacherAccountSerializer(
+            TeacherAccount.objects.filter(teacher=user).first()).data
         login(request, user)
         return_data = super(UserLogin, self).post(request, format=None)
         return_data.data['is_teacher'] = teacher['active']
@@ -266,7 +267,7 @@ class S3SignedUrl(generics.GenericAPIView):
 class MakeS3FilePublic(generics.GenericAPIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-    
+
     """
     Make s3 file public
     """
@@ -294,7 +295,6 @@ class MakeS3FilePublic(generics.GenericAPIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class S3Upload(APIView):
     permission_classes = (permissions.AllowAny,)
-
 
     def post(self, request, *args, **kwargs):
         print("Uploading", request.FILES, request.POST)

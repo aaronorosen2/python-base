@@ -3,15 +3,16 @@ from knox import views as knox_views
 from .views import (UserRegister, PasswordReset, UserCourses, UserLogin, \
                    AllCourses, list_courses, list_courses_auth, \
                    ChangePasswordView, Home, S3SignedUrl, S3Upload, \
-                   MakeS3FilePublic)
+                   MakeS3FilePublic, User_login_JWT)
 
-from .views import User_login_JWT
 
 urlpatterns = [
     # User Management and Auth APIs
     path('', Home.as_view(), name='home'),
     path('user/register/', UserRegister.as_view(), name='register'),
-    path('user/login', UserLogin.as_view(), name='login'),
+         #URL for JWT token
+    path('user/login', User_login_JWT.as_view(), name='login1'),
+    # path('user/login', UserLogin.as_view(), name='login'),
     path('user/logout', knox_views.LogoutView.as_view(), name='logout'),
     # path('/user/password_reset', PasswordReset.as_view(), name='reset'),
     path('user/logoutall/', knox_views.LogoutAllView.as_view(),
@@ -34,7 +35,5 @@ urlpatterns = [
     path('list_courses/', list_courses, name='list_courses'),
     path('list_courses_protected/', list_courses_auth,
          name='list_courses_protected'),
-     #URL for JWT token
-    path('user/login1', User_login_JWT.as_view(), name='login1'),
 
 ]

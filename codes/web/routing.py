@@ -1,10 +1,16 @@
+import django
 from django.urls import path
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import re_path
 
 from channels.routing import ProtocolTypeRouter, URLRouter
+
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web.settings')
+django.setup()
+
 from channels.auth import AuthMiddlewareStack
-from ringlessVoiceMail.consumer import RinglessVoiceMailConsumer
+# from ringlessVoiceMail.consumer import RinglessVoiceMailConsumer
 from notifications.consumers import ( NotificationConsumer, 
                                     NotificationConsumerQueue, 
                                     VstreamConsumer )
@@ -24,14 +30,9 @@ application = ProtocolTypeRouter({
             # re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumer.as_asgi()),
             re_path(r'notifications/(?P<room_name>\w+)/$', NotificationConsumerQueue.as_asgi()),
             re_path(r'vstream/', VstreamConsumer.as_asgi()),
-            # re_path(r'msg/(?P<receiver_id>\w+)/(?P<room_name>\w+)/$', ChatConsumer.as_asgi()),
             re_path(r'msg/channel/$', ChatConsumer.as_asgi()),
             re_path(r'msg/user/$',MessageUserConsumer.as_asgi()),
             re_path(r'msg/sms/$',MessageSMSConsumer.as_asgi()),
-            # re_path(r'ringless/$',RinglessVoiceMailConsumer.as_asgi()),
-            # re_path(r'msg/sms/$', ChatConsumer.as_asgi()),
-            # re_path(r'msg_queue/(?P<user_id>\w+)/(?P<room_name>\w+)/$', ChatConsumerQueue.as_asgi()),
-
         ])),
 })
 

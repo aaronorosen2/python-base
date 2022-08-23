@@ -14,8 +14,8 @@ Automat==20.2.0
 autopep8==1.5.7
 beautifulsoup4==4.9.3
 billiard
-boto3==1.16.28
-botocore==1.19.43
+boto3
+botocore<2.0a.0
 braintree==4.5.0
 bs4==0.0.1
 CacheControl==0.12.6
@@ -136,7 +136,7 @@ reportlab==3.5.56
 requests
 requests-oauthlib==1.3.0
 rsa==4.6
-s3transfer==0.3.3
+s3transfer
 selenium==3.141.0
 service-identity==18.1.0
 shortuuid==1.0.1
@@ -179,3 +179,7 @@ django-cors-headers
 webdrivermanager==0.10.0
 webdriver-manager==3.5.2
 # gitlab
+pyathena==2.13.0
+djangorestframework-simplejwt==5.2.0
+PyGithub
+uvicorn[standard]
