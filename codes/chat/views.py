@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 from knox.auth import get_user_model, AuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication,TokenAuthentication
-# from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from uritemplate import partial
 from .models import *
 from .serializers import *
