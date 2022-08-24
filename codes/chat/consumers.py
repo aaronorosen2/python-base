@@ -73,6 +73,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return False
  
     async def connect(self): 
+
         try:
             parsed_query_string = parse_qs(self.scope["query_string"])
             if parsed_query_string:
@@ -126,8 +127,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         del msg_from_db['id']
         msg_from_db['User'] = msg_from_db['user']
         del msg_from_db['user']
-        print(msg_from_db)
-        print()
         # send_data = json.dumps(msg_from_db)
         send_data = msg_from_db
         # send_data = json.loads(text_data)

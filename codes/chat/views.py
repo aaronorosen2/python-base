@@ -382,7 +382,8 @@ class MessageChannelApiView(ListAPIView):
     def post(self, request, format=None, *args, **kwargs):
         login_user = request.user
         request.data['user'] = login_user.id
-
+        user_profile_name = UserProfile.objects.get(user = login_user)
+        request.data['user_profile'] = user_profile_name.id
         def user_exist_in_group(our_user,our_channel):
             try:
                 channel_member = ChannelMember.objects.filter(user=our_user).filter(Channel=our_channel)
@@ -463,7 +464,9 @@ class MessageUserApiView(ListAPIView):
 
     def post(self, request, format=None, *args, **kwargs):
         login_user = request.user
-        request.data['to_user'] = login_user.id
+        request.data['from_user'] = login_user.id
+        user_profile_name = UserProfile.objects.get(user = login_user)
+        request.data['user_profile'] = user_profile_name.id
         try:  
             
             channel_layer = get_channel_layer()
@@ -608,32 +611,102 @@ class MessageSMSApiView(ListAPIView):
             return Response({"error": str(ex)}, status=400)
 
 
-# ==========================================N Number of Message ==================================================
+# # ==========================================N Number of Message ==================================================
+
+
+# @method_decorator(csrf_exempt, name='dispatch')
+# class GetMessageApiView(ListAPIView):
+#     authentication_classes(JWTAuthentication,)
+#     permission_classes = (IsAuthenticated,)
+
+#     queryset = MessageChannel.objects.all().order_by('-created_at')
+#     serializer_class = MessageChannelSerializers
+    
+#     def get(self, request ,pk=None, *args, **kwargs):
+#         paginator = PageNumberPagination()
+#         try:       
+#             paginator.page_size_query_param = 'records'
+#             page_size = 10
+#             page_query_param = 'p'
+#             paginator.page_size = page_size
+#             paginator.page_query_param = page_query_param
+#             pagi = paginator.paginate_queryset(queryset=self.get_queryset(), request=request)
+#             serializer = self.get_serializer(pagi, many=True)
+#             theData= serializer.data
+#             return paginator.get_paginated_response(theData) 
+#         except Exception as ex:
+#             pass
+#             return Response({"error --- ": str(ex)}, status=400)
+
+# # http://127.0.0.1:8000/chat/get/nummsg/user/?p=1&records=8
+
+
+# ========================================== N - Number of Message Perticular User ==================================================
 
 from rest_framework.pagination import PageNumberPagination
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetMessageApiView(ListAPIView):
-    authentication_classes(JWTAuthentication,)
+    # authentication_classes(TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-
-    queryset = MessageChannel.objects.all().order_by('-created_at')
-    serializer_class = MessageChannelSerializers
+    serializer_class = PaginationUserSerializers
     
-    def get(self, request ,pk=None, *args, **kwargs):
+    def get(self, request ,user=None,records=None, *args, **kwargs):
         paginator = PageNumberPagination()
-        try:       
+        try:
+            queryset = MessageUser.objects.filter(to_user=user, from_user=request.user).order_by('-created_at')
+            queryset_2 = MessageUser.objects.filter(to_user =request.user, from_user=user).order_by('-created_at')
+            
+            new_queryset = queryset_2 | queryset
             paginator.page_size_query_param = 'records'
-            page_size = 10
+            page_size = int(records)
             page_query_param = 'p'
-            paginator.page_size = page_size
+            
+            if page_size > 10: paginator.page_size = records
+            else :  paginator.page_size = 10
+            
             paginator.page_query_param = page_query_param
-            pagi = paginator.paginate_queryset(queryset=self.get_queryset(), request=request)
-            serializer = self.get_serializer(pagi, many=True)
+            
+            pagi = paginator.paginate_queryset(queryset=new_queryset, request=request)
+            serializer = self.get_serializer(data=pagi, many=True)
+            serializer.is_valid()
             theData= serializer.data
             return paginator.get_paginated_response(theData) 
         except Exception as ex:
             pass
             return Response({"error --- ": str(ex)}, status=400)
 
-# http://127.0.0.1:8000/chat/get/nummsg/user/?p=1&records=8
+
+# ========================================== N - Number of Message for Group ==================================================
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GetGroupMessageApiView(ListAPIView):
+    # authentication_classes(TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    
+    serializer_class = PaginationChannelSerializers
+    
+    def get(self, request ,channel=None,records=None, *args, **kwargs):
+        paginator = PageNumberPagination()
+        try:       
+            queryset = MessageChannel.objects.filter(channel_id=channel).order_by('-created_at')
+            paginator.page_size_query_param = 'records'
+            page_size = int(records)
+            page_query_param = 'p'
+            
+            if page_size > 10 : paginator.page_size = records
+            else :  paginator.page_size = 10
+            
+            paginator.page_query_param = page_query_param
+            pagi = paginator.paginate_queryset(queryset= queryset, request=request)
+            serializer = self.get_serializer(pagi, many=True)
+            theData= serializer.data
+            return paginator.get_paginated_response(theData) 
+        except Exception as ex:
+            pass
+            return Response({"error --- ": str(ex)}, status=400)
+            
+            
+            
+            
+    

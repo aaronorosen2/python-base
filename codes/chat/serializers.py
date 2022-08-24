@@ -54,3 +54,18 @@ class MessageSMSSerializers(serializers.ModelSerializer):
     class Meta:
         model = MessageSMS
         fields = '__all__'
+
+from s3_uploader.serializers import  UserProfileShowSerializers
+
+
+class PaginationChannelSerializers(serializers.ModelSerializer):
+    user_profile = UserProfileShowSerializers()
+    class Meta:
+        model = MessageChannel
+        fields = '__all__'
+        
+class PaginationUserSerializers(serializers.ModelSerializer):
+    user_profile = UserProfileShowSerializers()
+    class Meta:
+        model = MessageUser
+        fields = '__all__'

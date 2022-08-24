@@ -1,6 +1,6 @@
 # from django.db import models
-# from django.contrib.auth import get_user_model
-
+from django.contrib.auth import get_user_model
+from s3_uploader.models import UserProfile
 from django.db import models
 from knox.auth import get_user_model
 import os
@@ -74,6 +74,9 @@ class ChannelMember(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None, related_name = "user")
+    org = models.ForeignKey(Org, on_delete=models.CASCADE,
+                            null=True, blank=True,
+                            default=None)
 
     def __str__(self) -> str:
         return f"Member- {self.user}  Channel- {self.Channel}"
@@ -83,6 +86,8 @@ class ChannelMember(models.Model):
 
 
 class MessageChannel(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, 
+                                            blank=True, default=None, )
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
@@ -97,6 +102,8 @@ class MessageChannel(models.Model):
         return f"Member- {self.user}  Channel- {self.channel}"
 
 class MessageUser(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, 
+                                            blank=True, default=None, )
     created_at = models.DateTimeField(auto_now_add=True)
     from_user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,related_name = 'from_user',
