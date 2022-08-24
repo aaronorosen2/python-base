@@ -60,20 +60,22 @@ def teacherapi(request):
 
 #API for create/delete student to class
 @api_view(['GET','POST','DELETE','PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def studentapi(request):
-    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    # token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
 
     if request.method == 'GET' and request.GET.get('teacher'):
         serializer = StudentSerializer(Student.objects.all(),many=True)
         return JsonResponse(serializer.data,safe=False)
              
     elif request.method == 'GET':
-        serializer = StudentSerializer(Student.objects.filter(user_id=token.user_id),many=True)
+        serializer = StudentSerializer(Student.objects.filter(user_id=request.user.id),many=True)
         return JsonResponse(serializer.data,safe=False)
     
     elif request.method == 'POST':
         try:
-            user = User.objects.get(id=token.user_id)
+            user = User.objects.get(id=request.user.id)
             student = Student(name=request.data['name'],email=request.data['email'],phone=request.data['phone'],user=user)
             student.save()
             return JsonResponse({"success":True},status=201)
@@ -83,7 +85,7 @@ def studentapi(request):
     elif request.method == 'PUT':
         try:
             student = Student.objects.get(pk=request.data['id'])
-            user = User.objects.get(id=token.user_id)
+            user = User.objects.get(id=request.user.id)
             student.name = request.data['name']
             student.email = request.data['email']
             student.phone = request.data['phone']
@@ -108,15 +110,17 @@ def studentapi(request):
 
 
 @api_view(['GET','POST','DELETE','PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def classapi(request):
-    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    # token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
     if request.method == 'GET':
-        serializer = ClassSerializer(Class.objects.filter(user_id=token.user_id),many=True)
+        serializer = ClassSerializer(Class.objects.filter(user_id=request.user.id),many=True)
         return JsonResponse(serializer.data,safe=False)
 
     elif request.method == 'POST':
         try:
-            user = User.objects.get(id=token.user_id)
+            user = User.objects.get(id=request.user.id)
             class_ = Class(class_name=request.data['class_name'],public=request.data['class_is_public'],user=user)
             class_.save()
             return JsonResponse({"success":True},status=201)
@@ -125,7 +129,7 @@ def classapi(request):
 
     elif request.method == 'PUT':
         try:
-            user = User.objects.get(id=token.user_id)
+            user = User.objects.get(id=request.user.id)
             class_ = Class.objects.get(pk=request.data['id'])
             class_.class_name = request.data['class_name']
             class_.public = request.data['class_is_public']
