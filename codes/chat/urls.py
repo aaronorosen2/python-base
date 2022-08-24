@@ -32,7 +32,7 @@ urlpatterns = [
     # It will fetch perticular group records    
     path('get/user=<user>&records=<records>' ,views.GetMessageApiView.as_view(),name='message_user_till'),
     # It will fetch perticular group records    
-    path('get/channle=<channel>&records=<records>' ,views.GetGroupMessageApiView.as_view(),name='message_user_till'),
+    path('get/channel=<channel>&records=<records>' ,views.GetGroupMessageApiView.as_view(),name='message_user_till'),
 
 
 ]
