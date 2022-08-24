@@ -17,7 +17,7 @@ from botocore.exceptions import ClientError
 from knox.auth import get_user_model, AuthToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from knox.auth import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CheckinActivityAdminSerializer, TagEntrySerializer
@@ -279,7 +279,7 @@ def checkin_activity_admin(request):
 
 @csrf_exempt
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def checkin_feedback_admin(request):
     admin = request.user
@@ -398,7 +398,7 @@ def get_presigned_video_url(object_name, expiration=3600,
 
 @csrf_exempt
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def assign_tag(request):
     member = Member.objects.filter(id=request.POST.get('member_id')).first()
@@ -416,7 +416,7 @@ def assign_tag(request):
 
 @csrf_exempt
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_tags(request):
     if request.user.is_authenticated:

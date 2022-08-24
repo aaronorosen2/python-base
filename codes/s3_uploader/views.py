@@ -13,7 +13,7 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from knox.auth import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
 from rest_framework import generics
@@ -28,7 +28,7 @@ from sfapp2.utils.twilio import send_confirmation_code
 from rest_framework.parsers import FileUploadParser
 from .serializers import ChangePasswordSerializer
 from .serializers import UserSerializer, RegisterSerializer
-from knox.auth import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from classroom.models import TeacherAccount
 from classroom.serializers import TeacherAccountSerializer
 from .serializers import MyTokenObtainPairSerializer
@@ -129,7 +129,7 @@ class UserRegister(generics.GenericAPIView):
 
 # Login User -> Returns a token to make requests
 class UserLogin(KnoxLoginView):
-    # authentication_classes = (TokenAuthentication,)
+    # authentication_classes = (JWTAuthentication,)
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
@@ -265,7 +265,7 @@ class S3SignedUrl(generics.GenericAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MakeS3FilePublic(generics.GenericAPIView):
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     """
@@ -402,7 +402,7 @@ class AllCourses(generics.GenericAPIView):
 
 # Test endpoint - Auth endpoint with TokenAuthentication
 class UserCourses(generics.GenericAPIView):
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
@@ -417,7 +417,7 @@ def list_courses(request):
 
 # Test endpoint - Auth endpoint with TokenAuthentication
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def list_courses_auth(request):
     return JsonResponse({'messages': 'list_courses_protected, auth required'}, safe=False)

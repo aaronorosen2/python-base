@@ -5,7 +5,7 @@ from hamcrest import instance_of
 from .serializers import LessonEmailNotifySerializer, LessonSlackNotifySerializer
 from .util import send_email, send_slack_notification
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from knox.auth import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,7 +13,7 @@ from rest_framework import status
 from .models import (LessonEmailNotify, LessonSlackNotify)
 
 @api_view(["POST"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def add_notify(request, lesson_id):
     try:
@@ -34,7 +34,7 @@ def add_notify(request, lesson_id):
 
 
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_notify(request, lesson_id):
     try:
@@ -47,7 +47,7 @@ def get_notify(request, lesson_id):
 
 
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def list_notify(request, lesson_id):
     try:
@@ -60,7 +60,7 @@ def list_notify(request, lesson_id):
 
 
 @api_view(["DELETE"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def remove_notify(request, lesson_id):
     try:
@@ -93,7 +93,7 @@ def notify(request, lesson_id):
 
 
 @api_view(["POST"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def add_slack_notify(request, lesson_id):
     try:
@@ -114,7 +114,7 @@ def add_slack_notify(request, lesson_id):
 
 
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_slack_notify(request, lesson_id):
     try:
@@ -127,7 +127,7 @@ def get_slack_notify(request, lesson_id):
 
 
 @api_view(["GET"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def list_slack_notify(request, lesson_id):
     try:
@@ -140,7 +140,7 @@ def list_slack_notify(request, lesson_id):
 
 
 @api_view(["DELETE"])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def remove_slack_notify(request, lesson_id):
     try:

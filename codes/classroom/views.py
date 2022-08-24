@@ -7,7 +7,7 @@ from django.http import QueryDict
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 from .serializers import TeacherAccountSerializer,TeacherSerializer,StudentSerializer,UserSerializer, ClassSerializer, ClassEnrolledSerializer, ClassEmailSerializer, ClassSMSSerializer, StudentEmailSerializer, StudentSMSSerializer, InviteLinkSerializer,UserTeacherAccountSerializer
-from knox.auth import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import TemplateHTMLRenderer
@@ -156,7 +156,7 @@ def publicclass(request):
 
 
 @api_view(['GET','POST','DELETE','PUT'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def classenrolledapi(request):
     if request.method == 'GET':
@@ -187,7 +187,7 @@ def classenrolledapi(request):
 
 @csrf_exempt
 @api_view(['GET','POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def student_classes(request):
     from courses_api.models import Lesson,FlashCard,FlashCardResponse
@@ -284,7 +284,7 @@ def student_text(request):
 
 @api_view(['GET'])
 @csrf_exempt
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_invitation_link(request):
     invite = None
@@ -310,7 +310,7 @@ def get_invitation_info(request):
 
 @api_view(['POST'])
 @csrf_exempt
-# @authentication_classes([TokenAuthentication])
+# @authentication_classes([JWTAuthentication])
 # @permission_classes([IsAuthenticated])
 def joinClass(request):
     if request.POST.get('phone') and request.POST.get('class_id') and request.POST.get('name') and isValidEmail(request.POST.get('email')):
@@ -343,7 +343,7 @@ def isValidEmail(email):
 
 @api_view(['POST'])
 @csrf_exempt
-# @authentication_classes([TokenAuthentication])
+# @authentication_classes([JWTAuthentication])
 # @permission_classes([IsAuthenticated])
 def setTeacherStatus(request):
     if isinstance(request.data.get('status'), bool):

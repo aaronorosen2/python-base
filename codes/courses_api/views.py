@@ -3,7 +3,7 @@ from django.db.models import OuterRef, Subquery
 from django.core.files import File
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from knox.auth import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.http import Http404, HttpResponseBadRequest
@@ -200,7 +200,7 @@ def lesson_create(request):
     return Response(LessonSerializer(les_).data)
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def lesson_read(request, pk):
     data = {}
@@ -247,7 +247,7 @@ def lesson_read(request, pk):
             return Response({'msg':"you do not has access to view this lesson"},status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def add_to_class(request):
     class_id = request.POST.get('class_id')
@@ -267,7 +267,7 @@ def add_to_class(request):
         return JsonResponse({'msg': 'invalid Parameters'}, status=400)
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def lessons_in_class(request):
     class_id = request.GET.get('class_id')

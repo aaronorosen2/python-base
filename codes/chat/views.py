@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 from knox.auth import get_user_model, AuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication,TokenAuthentication
-# from knox.auth import TokenAuthentication
+# from rest_framework_simplejwt.authentication import JWTAuthentication
 from uritemplate import partial
 from .models import *
 from .serializers import *
@@ -144,7 +144,7 @@ class ChannelApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageApiView(ListAPIView):
-    authentication_classes(TokenAuthentication,)
+    authentication_classes(JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     queryset = Message.objects.all()
@@ -358,7 +358,7 @@ class ChannelMemberApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageChannelApiView(ListAPIView):
-    authentication_classes(TokenAuthentication,)
+    authentication_classes(JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     queryset = MessageChannel.objects.all()
@@ -440,7 +440,7 @@ class MessageChannelApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageUserApiView(ListAPIView):
-    authentication_classes(TokenAuthentication,)
+    authentication_classes(JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     queryset = MessageUser.objects.all()
@@ -524,7 +524,7 @@ class MessageUserApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageSMSApiView(ListAPIView):
-    authentication_classes(TokenAuthentication,)
+    authentication_classes(JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     queryset = MessageSMS.objects.all()
@@ -614,7 +614,7 @@ from rest_framework.pagination import PageNumberPagination
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetMessageApiView(ListAPIView):
-    authentication_classes(TokenAuthentication,)
+    authentication_classes(JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     queryset = MessageChannel.objects.all().order_by('-created_at')

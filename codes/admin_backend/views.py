@@ -5,7 +5,7 @@ import json
 from sfapp2.models import Member, Question, Choice
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from knox.auth import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -45,7 +45,7 @@ def parse_question_answers(question_answers):
 
 @csrf_exempt
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_question_counters(request):
     members = Member.objects.all().values()
@@ -91,7 +91,7 @@ def get_question_counters(request):
 
 @csrf_exempt
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_members(request):
 
@@ -108,7 +108,7 @@ def get_members(request):
 
 @csrf_exempt
 @api_view(['GET'])
-# @authentication_classes([TokenAuthentication])
+# @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def list_calls(request):
     # records = twilio.list_calls()
