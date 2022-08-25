@@ -2,7 +2,7 @@
 from django.contrib.auth import get_user_model
 from s3_uploader.models import UserProfile
 from django.db import models
-from knox.auth import get_user_model
+# from knox.auth import get_user_model
 import os
 import datetime
 
@@ -14,10 +14,10 @@ class Org(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
-    meta_attributes = models.CharField(max_length=100,unique=True)
+    meta_attributes = models.CharField(max_length=256,unique=True)
 
     def __str__(self) -> str:
-        return self.meta_attributes
+        return f"Organization Name {self.meta_attributes}"
     # profile_photo
     # website
     # channel = models.ForeignKey('Channel', on_delete=models.CASCADE)
@@ -46,11 +46,8 @@ class Message(models.Model):
 
 class Member(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-
-
+    #have to delete line 49 (Abhishek Jain)
     profile_pic = models.CharField(max_length=256, null = True, blank = True,)
-
-
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
@@ -60,7 +57,7 @@ class Member(models.Model):
                             null=True, blank=True,
                             default=None)
     def __str__(self) -> str:
-        return f"Member-{self.user}  Org- {self.org}"
+        return f"Member Name -{self.user}  Org- {self.org}"
 
 
 class ChannelMember(models.Model):
@@ -89,6 +86,7 @@ class MessageChannel(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, 
                                             blank=True, default=None, )
     created_at = models.DateTimeField(auto_now_add=True)
+    # change user to 'from =_user'
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)

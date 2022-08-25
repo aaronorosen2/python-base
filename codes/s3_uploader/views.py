@@ -13,23 +13,25 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework_simplejwt.authentication import JWTAuthentication
+# from knox.auth import TokenAuthentication
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from s3_uploader.models import UserProfile
 from sfapp2.utils.twilio import send_confirmation_code
 from rest_framework.parsers import FileUploadParser
-from .serializers import ChangePasswordSerializer
+from .serializers import ChangePasswordSerializer, UserProfileSerializers
 from .serializers import UserSerializer, RegisterSerializer
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from classroom.models import TeacherAccount
+# from knox.auth import TokenAuthentication
+from classroom.models import Teacher, TeacherAccount
 from classroom.serializers import TeacherAccountSerializer
 from .serializers import MyTokenObtainPairSerializer
 from rest_framework_simplejwt.views import (TokenObtainPairView,
@@ -42,7 +44,8 @@ from .serializers import MyTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
 
-
+import time
+import calendar
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -129,7 +132,7 @@ class UserRegister(generics.GenericAPIView):
 
 # Login User -> Returns a token to make requests
 class UserLogin(KnoxLoginView):
-    # authentication_classes = (JWTAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
@@ -235,7 +238,6 @@ class S3SignedUrl(generics.GenericAPIView):
 
             # del os.environ['S3_USE_SIGV4']
 
-            print(resp)
             return JsonResponse(resp)
     # def post(self, request, *args, **kwargs):
     # # os.environ['S3_USE_SIGV4'] = 'True'
@@ -267,6 +269,8 @@ class S3SignedUrl(generics.GenericAPIView):
 class MakeS3FilePublic(generics.GenericAPIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
+    # ==============Getting error so added line 271 Abhi Jain==========================================
+    serializer_class = TeacherAccountSerializer
 
     """
     Make s3 file public
@@ -450,3 +454,91 @@ class User_login_JWT(TokenObtainPairView):
         return return_data
 
 
+from rest_framework.generics import ListAPIView
+from django.db import models
+
+
+def handle_uploaded_file(f,fileName):
+    module_dir = os.path.dirname(__file__)
+    try: 
+        os.mkdir(os.path.join(
+                 module_dir, '..', 'static/userprofiles/'))
+    except FileExistsError:
+        pass
+
+    file_path = os.path.abspath(os.path.join(
+            module_dir, '..', 'static/userprofiles/', str(fileName))+'.jpg')
+    with open(file_path, 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    return True 
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ProfileUploadApiView(ListAPIView):
+    
+    # queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializers
+    permission_classes = (IsAuthenticated,)
+    
+    def get(self, request, pk=None, *args, **kwargs):
+        try:
+            if request.user:
+                user = request.user
+            else:
+                user = pk
+            if id is not None:
+                member_info = UserProfile.objects.get(user= user)
+                
+                
+                serializer = self.get_serializer(member_info)
+
+                return Response(serializer.data)
+
+            return Response(serializer.data)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
+
+    def post(self, request, format=None, *args, **kwargs):
+        login_user = request.user
+        request.data['user'] = login_user.id
+        try:   
+            gmt = time.gmtime()
+            ts = calendar.timegm(gmt)
+            handle_uploaded_file(request.FILES['image'] , ts)
+            
+            file_url = ("http://"+request.get_host()+
+                            "/static/userprofiles/"+str(ts)+'.jpg')
+            request.data['image'] = str(file_url)
+            
+            serilizers = UserProfileSerializers(data=request.data)
+            if serilizers.is_valid():  
+                createChannel = {'image':request.data['image'],
+                'modified_at' : models.DateTimeField(auto_now=True),
+                'phone_number':request.data['phone_number']
+                }
+                UserProfile.objects.update_or_create(user = login_user, defaults=createChannel) 
+                # serilizers.save()
+                return Response({'msg':'data created','document_id': request.data['image']}, status=status.HTTP_201_CREATED)
+            
+            return Response({'msg':'Try again!'}, status=400)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
+
+
+    def delete(self, request, pk=None, *args, **kwargs):
+        login_user = request.user   
+        request.data['user'] = login_user.id
+        request.data['image'] = ''
+        try:
+            serilizers = UserProfileSerializers(data=request.data)
+                
+            if serilizers.is_valid():  
+                createChannel = {'image': request.data['image'],
+                'modified_at' : models.DateTimeField(auto_now=True)
+                }
+                UserProfile.objects.update_or_create(user = login_user, defaults=createChannel) 
+                
+                return Response({"message": "Successfully Deleted!"}, status=200)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
+        

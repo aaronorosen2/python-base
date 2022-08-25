@@ -1,15 +1,17 @@
-from django.conf import settings
-from django.core.mail import send_mail
-from django.dispatch import receiver
-from django.urls import reverse
-from django_rest_passwordreset.signals import reset_password_token_created
-import uuid
 import os
+import uuid
 from django.db import models
+from django.urls import reverse
+from django.conf import settings
+from django.dispatch import receiver
+from sfapp2.utils import email_utils
+from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager, PermissionsMixin
-from sfapp2.utils import email_utils
+from django_rest_passwordreset.signals import reset_password_token_created
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
@@ -122,3 +124,16 @@ If you did not make this request then simply ignore this email and no changes wi
 #     def get_short_name(self):
 #         # The user is identified by their email address
 #         return self.email
+
+class UserProfile(models.Model):
+    image = models.CharField(max_length=100,null = True, blank = True, default='')
+    
+    modified_at = models.DateTimeField(auto_now= True)
+    
+    phone_number = models.CharField(max_length=13,null = True, blank = True, default='')
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True, blank=True,
+                            related_name='user_profile')
+
+    def __str__(self) -> str:
+        return str(self.user)

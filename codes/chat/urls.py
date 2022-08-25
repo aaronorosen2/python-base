@@ -29,10 +29,10 @@ urlpatterns = [
     # path('get/nummsg/user/' ,views.GetMessageApiView.as_view(),name='message_user_till'),
     # path('get/nummsg/user/records=<pk>' ,views.GetMessageApiView.as_view(),name='message_user_till')
 
+    # It will fetch perticular User records    
+    path('get/paginatedmessages/user=<user>&records=<records>' ,views.GetMessageApiView.as_view(),name='message_user_till'),
     # It will fetch perticular group records    
-    path('get/user=<user>&records=<records>' ,views.GetMessageApiView.as_view(),name='message_user_till'),
-    # It will fetch perticular group records    
-    path('get/channel=<channel>&records=<records>' ,views.GetGroupMessageApiView.as_view(),name='message_user_till'),
+    path('get/paginatedmessages/channel=<channel>&records=<records>' ,views.GetGroupMessageApiView.as_view(),name='message_user_till'),
 
 
 ]

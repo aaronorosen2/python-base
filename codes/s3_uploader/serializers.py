@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from s3_uploader.models import UserProfile
 from vconf.models import RoomInfo, RoomVisitors, RoomRecording, Brand, Visitor, Recording
 # from .models import UserCoustom
 from sfapp2.utils.twilio import send_confirmation_code
@@ -15,7 +16,6 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class ChangePasswordSerializer(serializers.Serializer):
     model = User
-
     """
     Serializer for password change endpoint.
     """
@@ -112,3 +112,20 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 
+class UserProfileSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
+        
+class CurrentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username','first_name','last_name',)
+        # exclude = ('password','groups','user_permissions',)
+        
+
+class UserProfileShowSerializers(serializers.ModelSerializer):
+    # user = CurrentSerializer()
+    class Meta:
+        model = UserProfile
+        fields = ('image','phone_number')

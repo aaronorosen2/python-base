@@ -12,7 +12,10 @@ class RinglessVoiceMailSerializer(serializers.Serializer):
         return RinglessVoiceMail(**validated_data)
     
 
-    
+class RinglessSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = RinglessVoiceMail
+        fields = '__all__'    
 
 
 

@@ -1,24 +1,28 @@
-from django.shortcuts import render
-import uuid
-from .models import RinglessVoiceMail
-from .serializers import RinglessVoiceMailSerializer
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
-from json import dumps as jdumps
-from django.http import HttpResponse
 import os
-from django.forms.models import model_to_dict
-from django.conf import settings
-import calendar
 import time
-from django.contrib.auth.models import User
-from knox.auth import get_user_model, AuthToken
 import json
+import uuid
+import calendar
 import requests 
+from django.conf import settings
+from json import dumps as jdumps
+from django.shortcuts import render
+from .models import RinglessVoiceMail
+from chat.models import Member
+from django.http import HttpResponse
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+from rest_framework.decorators import api_view
+from django.forms.models import model_to_dict
+from .serializers import RinglessVoiceMailSerializer
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import (api_view, authentication_classes,
+                                         permission_classes)
+from rest_framework_simplejwt.authentication import JWTAuthentication
+# from knox.auth import get_user_model, AuthToken
+from asgiref.sync import async_to_sync	
+from channels.layers import get_channel_layer
 
 # from .forms import UploadFileForm
 
@@ -99,13 +103,35 @@ def send(request):
         user = request.user
         voice_id = request.POST.get("voice_id")
         receiver = request.POST.get("receiver")
+        receiver_no = request.POST.get("receiver")	
+        xuser_id = Member.objects.filter(phone_number = receiver_no).last()
         serializer = RinglessVoiceMailSerializer(RinglessVoiceMail.objects.get(id=voice_id, user_id=user ))
         if serializer.data is not None and len(serializer.data)  > 0 :
             file_url = request.get_host()+"/"+serializer.data["voiceMail_name"]
-            send_voice_mail_response = sendRingLessVoiceMail(file_url , receiver , voice_id)
+            send_voice_mail_response = sendRingLessVoiceMail(file_url , receiver_no , voice_id)
             if send_voice_mail_response["error"]:
                 return JsonResponse({'message': 'failed',
                              'error': send_voice_mail_response["error"]}, status=200)
+            elif xuser_id != None:	
+                receiver = xuser_id.user_id	
+                channel_layer = get_channel_layer()	
+                end_user = User.objects.get(id=receiver)	
+                channel_name = RinglessClients.objects.filter(user_id = end_user).last()	
+                message = {	
+                        "Send by ": str(user),	
+                        "Send to" : str(end_user),	
+                        "Voice mail ": file_url,	
+                        "Profile picture ": None,	
+                        }	
+            	
+                if channel_name!= None:	
+                    async_to_sync(channel_layer.send)(	
+                        channel_name.channel_name, 	
+                        {"type": "notification_to_user",	
+                        "message": json.dumps(message)	
+                        }	
+                        )	
+                return JsonResponse({"message" : "Delivered!",'status': 'success',}, status=200)
             else:
                 return JsonResponse({'message': 'success'}, status=200)
 

@@ -647,7 +647,7 @@ from rest_framework.pagination import PageNumberPagination
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetMessageApiView(ListAPIView):
-    # authentication_classes(TokenAuthentication,)
+    authentication_classes(JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     serializer_class = PaginationUserSerializers
     
@@ -681,7 +681,7 @@ class GetMessageApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetGroupMessageApiView(ListAPIView):
-    # authentication_classes(TokenAuthentication,)
+    authentication_classes(JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     
     serializer_class = PaginationChannelSerializers
