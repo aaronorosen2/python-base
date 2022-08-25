@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('s3_uploader', '0001_initial'),
+        ('s3_uploader', '0003_user_profile'),
         ('chat', '0002_auto_20220825_0649'),
     ]
 
