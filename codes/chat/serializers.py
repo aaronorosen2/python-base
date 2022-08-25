@@ -78,3 +78,24 @@ class PaginationUserSerializers(serializers.ModelSerializer):
     class Meta:
         model = MessageUser
         fields = '__all__'
+
+class AllAuthUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id','username','first_name','last_name')
+
+class MemberSerializers(serializers.ModelSerializer):
+    user = AllAuthUserSerializer()
+    user_profile =  UserProfileShowSerializers()
+    class Meta:
+        model = Member
+        fields = '__all__'
+
+
+class ChannelMemberSerializers(serializers.ModelSerializer):
+    Channel = ChannelSerializers()
+    
+    class Meta:
+        model = ChannelMember
+        fields = ('id','Channel')
+        # fields = '__all__' 
