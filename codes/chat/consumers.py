@@ -29,37 +29,52 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_room(self,user_id,room_name):
         try:
+            print('Checking Channel and channel member exits or not')
             room_name = Channel.objects.get(name=room_name)
+            print('Room detail from DB:', room_name)
             our_channel = ChannelMember.objects.filter(Channel=room_name).filter(user=user_id)
+            print("Our channel member detail :", our_channel, our_channel.exists())
             return our_channel.exists()
         except :
+            print('**** Error while room check *****')
             return False
 
     @database_sync_to_async
     def get_user_only(self,user_id):
         try:
             our_user = User.objects.filter(id=user_id)
-            
             return our_user.exists()
         except User.DoesNotExist:
+            print('*****User not exits *****')
             return False
 
     @database_sync_to_async
     def get_profile_pic_url(self, user_id):
-        profile_pic = Member.objects.filter(user_id=user_id).last()
+        try:
+            print('Fetching prifle pic from DB:')
+            profile_pic = Member.objects.filter(user_id=user_id).last()
+            print('Profile pic is : ', profile_pic.profile_pic)
+        except:
+            print('***** Error while getting profile pic *****')
         return profile_pic.profile_pic
 
     @database_sync_to_async
     def get_channel_info(self,room_name):
         try:
             channel_info = Channel.objects.filter(name=room_name).first()
+            print('Channel Info FROM DB :', channel_info)
             if channel_info:
                 channel_member = ChannelMember.objects.filter(Channel=channel_info).filter(user=self.user_id).first()
+                print('Channel_member from DB: ',channel_member)
             else:
+                print('***** Not a member of channel so clsoing it *****')
                 return False
             return channel_member
         except Channel.DoesNotExist:
+            print("***** Channel.DoesNotExist so closing connection *****")
             return False
+        except:
+            print("Error: ***** Undefied error ***** ")
 
     @database_sync_to_async
     def extract_username_from_db(self,user_id):
@@ -70,6 +85,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             else:
                 return "Anonymous"
         except Channel.DoesNotExist:
+            print('Error: Extract user not in DB *****')
             return False
  
     async def connect(self): 
@@ -78,20 +94,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
             parsed_query_string = parse_qs(self.scope["query_string"])
             if parsed_query_string:
                 token = parsed_query_string.get(b"token")[0].decode("utf-8")
+                print('Validating AccessToken **************')
                 self.access_token = AccessToken(token)
                 self.user_id = self.access_token["user_id"]
+                print("Self.user_id : and channel name", self.user_id, self.channel_name)
                 if self.user_id:
                     #Adding user in dict
                     self.user_channel_name_list[self.access_token["user_id"]] = self.channel_name
+                
                 try:
                     #Identifying user is in group or not
                     self.room_name =  parsed_query_string.get(b"roomname")[0].decode("utf-8")
                     self.room_exists = await self.get_room(self.user_id,self.room_name)
                 except:
+                    print("Error due to exception***********")
                     self.close()
                 else:  
-
-                    self.close()
+                    print('closing ************')
+                    # self.close()
             else:
                 
                 self.close()
@@ -104,20 +124,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
             #         'message': json.dumps({"message":f"{e}"})
             #     },
             #     )
+            print("TokenError : ", e)
             self.close()
+        except :
+            print('Error: Unknown ERROR **************')
 
+        self.room_exists = True
         if self.room_exists:
-            self.channel_member = await self.get_channel_info(self.room_name)      
+            print('Check room exits or not ***** ')
+            self.channel_member = await self.get_channel_info(self.room_name)
+            print('********* storing user name ***************')      
             await self.store_user_name(self.channel_name)
             if not self.channel_member:
+                print('Error : No Channel defined *********')
                 return 'No Channel defined'
 
             await self.accept()            
             await self.channel_layer.group_add(f"{self.room_name}", 
                                                 self.channel_name)
-
-        
-
         else:
             self.close()
 
@@ -170,14 +194,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         last_msg["status"] = event["text"]
         await self.send(text_data=json.dumps(last_msg))
 
-
-
-
     async def store_user_name(self, channel):
+        print('******** storing user name ************')
         self.user_counter += 1
         self.user_dictionary[channel] = self.user_name
         self.user_list.clear()
         self.user_list.extend(self.user_dictionary.values())
+        print("***** Stored user infor *************** ")
 
     async def users_list(self, event):
         await self.send(text_data=event["users"])
@@ -424,10 +447,12 @@ class MessageSMSConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def clients_add(self,channel,user_id):
+            print("client create start")
             createChannel = {'channel_name':channel,
             'modified_at' : models.DateTimeField(auto_now=True)
             }
             obj, create = Clients.objects.update_or_create(user_id = user_id, defaults=createChannel)
+            print('Client created successfulee', create)
             return True
     @database_sync_to_async
     def clients_delete(self,channel):
