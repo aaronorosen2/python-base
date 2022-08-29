@@ -1,3 +1,4 @@
+from rest_framework.pagination import PageNumberPagination
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.contrib.auth.models import User
@@ -27,7 +28,9 @@ from asgiref.sync import async_to_sync, sync_to_async
 from sfapp2.utils.twilio import send_sms
 import calendar
 import time
-
+from s3_uploader.models import UserProfile
+from rest_framework.pagination import PageNumberPagination
+import json
 # =====================================Org================================================
 def chat_room(request):
     return render(request, "chat_room.html")
@@ -138,88 +141,6 @@ class ChannelApiView(ListAPIView):
             return Response({"error": str(ex)}, status=400)
 
 
-
-#======================================Message=====================================================
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class MessageApiView(ListAPIView):
-    authentication_classes(JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    queryset = Message.objects.all()
-    serializer_class = MessageSerializers
-
-    def get(self, request, pk=None, *args, **kwargs):
-        try:
-            id = pk
-            if id is not None:
-                message_info = Message.objects.get(id=int(id))
-                serializer = self.get_serializer(message_info)
-                return Response(serializer.data)
-
-            message_info = Message.objects.all()
-            serializer = self.get_serializer(message_info,many=True)
-            return Response(serializer.data)
-        except Exception as ex:
-            return Response({"error": str(ex)}, status=400)
-
-
-    def post(self, request, format=None, *args, **kwargs):
-
-        def user_exist_in_group(our_user,our_channel):
-            try:
-                channel_member = ChannelMember.objects.get(user=our_user)
-                if str(channel_member.Channel) == str(our_channel):
-                    return True
-                return False
-            except:
-                return False
-        try:  
-            
-            channel_layer = get_channel_layer()
-            channel_group = Channel.objects.get(id=request.data["channel"])
-            if user_exist_in_group(request.data["user"],channel_group): 
-             
-                async_to_sync(channel_layer.group_send)(
-                    f"{channel_group}", {"type": "notification_broadcast",
-                    "message": request.data["meta_attributes"]})
-                
-              
-                serializers = MessageSerializers(data=request.data)
-                if serializers.is_valid():
-                    serializers.save()
-                    return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({'msg':'You are not allowed in this Group'},
-                 status=status.HTTP_406_NOT_ACCEPTABLE)
-
-            return Response({'msg':'Try again!'}, status=400)
-        except Exception as ex:
-            return Response({"error": str(ex)}, status=400)
-
-    
-    def patch(self, request, pk,*args, **kwargs):
-        try: 
-            message_info = Message.objects.get(id = pk)
-            serializer = MessageSerializers(message_info, data=request.data,partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            return Response({"msg": "No Content"},status=204)
-        except Exception as ex:
-            return Response({"error": str(ex)},status=400)
-
-    def delete(self, request, pk=None, *args, **kwargs):
-        try:
-            id = pk
-            message_info = Message.objects.get(id=int(id))
-            if id is not None:
-                message_info = Message.objects.get(id=int(id))
-                message_info.delete()
-                return Response({"message": "Successfully Deleted!"}, status=200)
-        except Exception as ex:
-            return Response({"error": str(ex)}, status=400)
 
 
 
@@ -380,41 +301,41 @@ class MessageChannelApiView(ListAPIView):
 
 
     def post(self, request, format=None, *args, **kwargs):
-        login_user = request.user
-        request.data['user'] = login_user.id
-        user_profile_name = UserProfile.objects.get(user = login_user)
-        request.data['user_profile'] = user_profile_name.id
-        def user_exist_in_group(our_user,our_channel):
-            try:
-                channel_member = ChannelMember.objects.filter(user=our_user).filter(Channel=our_channel)
-                return True
-            except:
-                return False
+        if request.FILES == None:
+            login_user = request.user
+            request.data['user'] = login_user.id
+            user_profile = UserProfile.objects.get(user = login_user.id)
+            request.data['user_profile'] = user_profile.id
+            def user_exist_in_group(our_user,our_channel):
+                try:
+                    channel_member = ChannelMember.objects.filter(user=our_user).filter(Channel=our_channel)
+                    return True
+                except:
+                    return False
+            try:  
+                channel_layer = get_channel_layer() 
+                channel_group = Channel.objects.get(id=request.data["channel"])
 
-        try:  
-            channel_layer = get_channel_layer()
-            channel_group = Channel.objects.get(id=request.data["channel"])
-
-            if user_exist_in_group(login_user.id,channel_group): 
+                if user_exist_in_group(login_user.id,channel_group): 
+                    serializers = MessageChannelSerializers(data=request.data)
+                    if serializers.is_valid():
+                        serializers.save()
+                        serialized_data = SocketMessageChannelSerializers(MessageChannel.objects.filter(user = login_user.id).last())
+                        async_to_sync(channel_layer.group_send)(
+                        f"{channel_group.name}", {"type": "notification.broadcast",
+                        "message": json.dumps(serialized_data.data)})
+                    
                 
-                async_to_sync(channel_layer.group_send)(
-                    f"{channel_group}", {"type": "notification.broadcast",
-                    "message": request.data["message_text"]})
                 
-              
-                serializers = MessageChannelSerializers(data=request.data)
-                if serializers.is_valid():
-                    serializers.save()
-                    return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({'msg':'You are not allowed in this Group'},
-                 status=status.HTTP_406_NOT_ACCEPTABLE)
+                        return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({'msg':'You are not allowed in this Group'},
+                    status=status.HTTP_406_NOT_ACCEPTABLE)
+                return Response({'msg':'Try again!'}, status=400)
+            except Exception as ex:
+                return Response({"error": str(ex)}, status=400)
 
-            return Response({'msg':'Try again!'}, status=400)
-        except Exception as ex:
-            return Response({"error": str(ex)}, status=400)
-
-    
+        
     def patch(self, request, pk,*args, **kwargs):
         try: 
             message_info = MessageChannel.objects.get(id = pk)
@@ -465,20 +386,23 @@ class MessageUserApiView(ListAPIView):
     def post(self, request, format=None, *args, **kwargs):
         login_user = request.user
         request.data['from_user'] = login_user.id
-        user_profile_name = UserProfile.objects.get(user = login_user)
-        request.data['user_profile'] = user_profile_name.id
+        user_profile= UserProfile.objects.get(user = login_user)
+        request.data['user_profile'] = user_profile.id
         try:  
-            
+            serializers = MessageUserSerializers(data=request.data)
+            if serializers.is_valid():
+                serializers.save()
+            message_to_user = SocketMessageUserSerializers(MessageUser.objects.filter(from_user = login_user.id).last())
             channel_layer = get_channel_layer()
             user = User.objects.get(id=request.data["to_user"])
-            
             channel_name = Clients.objects.filter(user_id = user).last()
             if channel_name!= None:
                 async_to_sync(channel_layer.send)(
                     channel_name.channel_name, 
                     {"type": "notification_to_user",
-                    "message": request.data["message_text"]},
+                    "message": json.dumps(message_to_user.data)},
                     )
+
             else:
                 from_user = User.objects.get(id=request.data["from_user"])
                 user = from_user.id
@@ -489,13 +413,10 @@ class MessageUserApiView(ListAPIView):
                         {"type": "notification_to_user",
                         "message": "User is not currently active"},
                         )
-            
-            serializers = MessageUserSerializers(data=request.data)
-            if serializers.is_valid():
-                serializers.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-        
-            return Response({'msg':'Try again!'}, status=400)
+
+                return Response({'msg':'Try again!'}, status=400)
+
+            return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
 
@@ -559,7 +480,7 @@ class MessageSMSApiView(ListAPIView):
                 send_sms(to_phone_number,message_text) 
                 serializers.save()
             channel_layer = get_channel_layer()
-            member_id = Member.objects.filter(phone_number=request.data["to_phone_number"]).first()
+            member_id = UserProfile.objects.filter(phone_number=request.data["to_phone_number"]).first()
 
             if member_id!= None:
                 user = member_id.user_id
@@ -643,22 +564,23 @@ class MessageSMSApiView(ListAPIView):
 
 # ========================================== N - Number of Message Perticular User ==================================================
 
-from rest_framework.pagination import PageNumberPagination
 
 @method_decorator(csrf_exempt, name='dispatch')
-class GetMessageApiView(ListAPIView):
+class GetUserMessageApiView(ListAPIView):
     authentication_classes(JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     serializer_class = PaginationUserSerializers
     
-    def get(self, request ,user=None,records=None, *args, **kwargs):
+    def get(self, request , *args, **kwargs):
         paginator = PageNumberPagination()
         try:
+            user = request.query_params['user']
+            records = request.query_params['records']
             queryset = MessageUser.objects.filter(to_user=user, from_user=request.user).order_by('-created_at')
             queryset_2 = MessageUser.objects.filter(to_user =request.user, from_user=user).order_by('-created_at')
             
             new_queryset = queryset_2 | queryset
-            paginator.page_size_query_param = 'records'
+            paginator.page_size_query_param = 'record'
             page_size = int(records)
             page_query_param = 'p'
             
@@ -673,7 +595,6 @@ class GetMessageApiView(ListAPIView):
             theData= serializer.data
             return paginator.get_paginated_response(theData) 
         except Exception as ex:
-            pass
             return Response({"error --- ": str(ex)}, status=400)
 
 
@@ -686,17 +607,20 @@ class GetGroupMessageApiView(ListAPIView):
     
     serializer_class = PaginationChannelSerializers
     
-    def get(self, request ,channel=None,records=None, *args, **kwargs):
+    def get(self, request , *args, **kwargs):
         paginator = PageNumberPagination()
         try:       
+            
+            channel = request.query_params['channel']
+            records = request.query_params['records']
             queryset = MessageChannel.objects.filter(channel_id=channel).order_by('-created_at')
-            paginator.page_size_query_param = 'records'
+            paginator.page_size_query_param = 'record'
             page_size = int(records)
             page_query_param = 'p'
             
             if page_size > 10 : paginator.page_size = records
-            else :  paginator.page_size = 10
-            
+            else :  paginator.page_size = 10    
+                
             paginator.page_query_param = page_query_param
             pagi = paginator.paginate_queryset(queryset= queryset, request=request)
             serializer = self.get_serializer(pagi, many=True)
@@ -707,6 +631,37 @@ class GetGroupMessageApiView(ListAPIView):
             return Response({"error --- ": str(ex)}, status=400)
             
             
-            
-            
-    
+# =============================================List User and Groups=====================================
+
+
+def getUser(request):   
+        try:
+            # channel_member_info = Member.objects.filter(user=User).order_by('-created_at')
+            channel_member_info = Member.objects.all().order_by('-created_at')
+            serializer = MemberSerializers(channel_member_info,many=True)
+            return serializer.data
+        except Exception as ex:
+            return Response({"error":"not get  data because some error "+str(ex)}, status=400)
+        
+def getGroup(request): 
+        try:
+            User = request.user
+            channel_member_info = ChannelMember.objects.filter(user=User).order_by('-created_at')
+            serializer = ChannelMemberSerializers(channel_member_info,many=True)
+            return serializer.data
+        except Exception as ex:
+            return Response({"error":"not get  data because some error"}, status=400)
+      
+      
+@method_decorator(csrf_exempt, name='dispatch')
+class List_All_user(ListAPIView):
+    authentication_classes(JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+      
+    def get(self, request, *args, **kwargs):   
+        try:
+            user = getUser(request=request)
+            channel = getGroup(request=request)
+            return Response({'users':user,'channel':channel}, status=200)
+        except Exception as ex:
+            return Response({"error":"not get  data because some error "+str(ex)}, status=400)

@@ -17,7 +17,7 @@ class Org(models.Model):
     meta_attributes = models.CharField(max_length=256,unique=True)
 
     def __str__(self) -> str:
-        return f"Organization Name {self.meta_attributes}"
+        return f"--{self.meta_attributes}--"
     # profile_photo
     # website
     # channel = models.ForeignKey('Channel', on_delete=models.CASCADE)
@@ -34,8 +34,10 @@ class Channel(models.Model):
         unique_together = ('name', 'org')
 
     def __str__(self) -> str:
-        return self.name
+        return f"--{self.name}--"
 
+
+# To be deleted
 class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
@@ -63,8 +65,12 @@ class Member(models.Model):
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True,
                             default=None)
+    class Meta:
+        unique_together = ('user', 'org')
+        
+
     def __str__(self) -> str:
-        return f"Member Name -{self.user}  Org- {self.org}"
+        return f"--{self.user}--"
 
 
 class ChannelMember(models.Model):
@@ -81,9 +87,11 @@ class ChannelMember(models.Model):
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True,
                             default=None)
+    class Meta:
+        unique_together = ('Channel', 'org', 'user')
 
     def __str__(self) -> str:
-        return f"Member- {self.user}  Channel- {self.Channel}"
+        return f"--{self.user}--{self.Channel}--"
 
 
 #=====================Updated ===========================================================
@@ -93,7 +101,7 @@ class MessageChannel(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, 
                                             blank=True, default=None, )
     created_at = models.DateTimeField(auto_now_add=True)
-    # change user to 'from =_user'
+    # change user to 'from_user'
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
@@ -104,7 +112,7 @@ class MessageChannel(models.Model):
                                             default='')
     message_text=  models.TextField(blank = True)
     def __str__(self) -> str:
-        return f"Member- {self.user}  Channel- {self.channel}"
+        return f"--{self.user}--{self.channel}--"
 
 class MessageUser(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, null=True, 
@@ -136,7 +144,7 @@ class Clients(models.Model):
     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     modified_at = models.DateTimeField(auto_now=True,null=True, blank=True)
     def __str__(self) -> str:
-        return f"- {self.user} "
+        return f"--{self.user}-- "
 
     
 class MessageSMS(models.Model):

@@ -136,4 +136,4 @@ class UserProfile(models.Model):
                             related_name='user_profile')
 
     def __str__(self) -> str:
-        return str(self.user)
+        return f"ProfileID-{self.id}"

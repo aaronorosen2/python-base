@@ -28,6 +28,10 @@ import requests
 import datetime
 import pandas as pd
 import json
+from rest_framework.decorators import (api_view, authentication_classes,
+                                         permission_classes)
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 
 # Generate a session id for conference
@@ -433,30 +437,32 @@ def send_sms_(request):
 
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_lead(request):
     #todo: add filter to Userleads via ('first_name', 'last_name', 'phone', "address") with icontains
     if request.method == 'GET':
         try:
-            token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-            print("🚀 ~ file: views.py ~ line 342 ~ token", token)
-            user = User.objects.get(id=token.user_id)
+            # token = AuthToken.objects.get(token_key=request.headers.get('Authorization'))
+            # print("🚀 ~ file: views.py ~ line 342 ~ token", token)
+            token = request.user
+            user = User.objects.get(id=token.id)
             # user = User.objects.first()
             all_csv=[]
             # qs = Userleads.objects.filter(user=user).values("csv_data")
             get_lead_serialized = UserLeadsSerializer(
-                 Userleads.objects.filter(user=user).values("csv_data"), many=True)
+                 Userleads.objects.filter(user=user.id).values("csv_data"), many=True)
+            print(get_lead_serialized.data)
             if len(get_lead_serialized.data) > 0 :
                 return JsonResponse((get_lead_serialized.data[0]['csv_data']), safe=False)
             else:
                 return Response({"msg":"No data"},status=status.HTTP_404_NOT_FOUND)
-
             # serializerData  =  UserLeadsSerializer(data=qs,many=True)
             # # for i in qs:
             # #     all_csv.append(json.loads(i['csv_data']))
             # serializerData.is_valid(raise_exception=True)
             # if serializerData.is_valid():
             #     all_csv = serializerData.data
-            
             # return JsonResponse(all_csv,safe=False)
         except Exception as e:
             # print("🚀 ~ file: views.py ~ line 351 ~ e", e)

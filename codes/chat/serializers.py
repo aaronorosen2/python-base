@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from django.contrib.auth.models import User
-from s3_uploader.serializers import  UserProfileShowSerializers
+from s3_uploader.serializers import  UserProfileSerializers, UserProfileShowSerializers
 
 
 class OrgSerializers(serializers.ModelSerializer):
@@ -15,11 +15,6 @@ class ChannelSerializers(serializers.ModelSerializer):
         model = Channel
         fields = '__all__'
 
-
-class MessageSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Message
-        fields = '__all__'
 
 
 class MemberSerializers(serializers.ModelSerializer):
@@ -40,11 +35,31 @@ class ChannelMemberSerializers(serializers.ModelSerializer):
 
 
 #=====================Updated ===========================================================
-
 class MessageChannelSerializers(serializers.ModelSerializer):
-
     class Meta:
         model = MessageChannel
+        fields = '__all__'
+
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id','username','first_name','last_name',)
+
+
+class SocketMessageChannelSerializers(serializers.ModelSerializer):
+    user_profile = UserProfileSerializers()
+    user = CurrentUserSerializer()
+    channel = ChannelSerializers()
+    class Meta:
+        model = MessageChannel
+        fields = '__all__'
+
+class SocketMessageUserSerializers(serializers.ModelSerializer):
+    user_profile = UserProfileSerializers()
+    from_user = CurrentUserSerializer()
+    to_user = CurrentUserSerializer()
+    class Meta:
+        model = MessageUser
         fields = '__all__'
         
 class MessageUserSerializers(serializers.ModelSerializer):
@@ -57,10 +72,6 @@ class MessageSMSSerializers(serializers.ModelSerializer):
         model = MessageSMS
         fields = '__all__'
         
-class CurrentUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id','username','first_name','last_name',)
 
 
 class PaginationChannelSerializers(serializers.ModelSerializer):
@@ -94,8 +105,8 @@ class MemberSerializers(serializers.ModelSerializer):
 
 class ChannelMemberSerializers(serializers.ModelSerializer):
     Channel = ChannelSerializers()
-    
     class Meta:
         model = ChannelMember
         fields = ('id','Channel')
         # fields = '__all__' 
+

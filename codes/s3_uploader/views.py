@@ -531,6 +531,30 @@ class ProfileUploadApiView(ListAPIView):
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
 
+            
+    def patch(self, request, args, *kwargs):
+        try: 
+            user =  request.user
+            user_info = UserProfile.objects.get(user= user)
+            try:   
+                gmt = time.gmtime()
+                ts = calendar.timegm(gmt)
+                handle_uploaded_file(request.FILES['image'] , ts)
+                
+                file_url = ("http://"+request.get_host()+
+                                "/static/userprofiles/"+str(ts)+'.jpg')
+                request.data['image'] = str(file_url)
+            except:
+                print("Image is not updating...")
+                
+            serializer = UserProfileSerializers(user_info, data=request.data,partial=True)
+            print(serializer,"=")
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'msg':'data Updates'}, status=status.HTTP_201_CREATED)
+            return Response({"msg": "No Content"},status=204)
+        except Exception as ex:
+            return Response({"error": str(ex)},status=400)
 
     def delete(self, request, pk=None, *args, **kwargs):
         login_user = request.user   
@@ -549,43 +573,3 @@ class ProfileUploadApiView(ListAPIView):
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
         
-
-@method_decorator(csrf_exempt, name='dispatch')
-class List_group(ListAPIView):
-    authentication_classes = ([JWTAuthentication])
-    permission_classes = ([IsAuthenticated])
-    serializer_class = ChannelMemberSerializers
-
-    def get(self, request, *args, **kwargs): 
-        try:
-            User = request.user
-            channel_member_info = ChannelMember.objects.filter(user=User)
-            print(channel_member_info)
-            serializer = self.get_serializer(channel_member_info,many=True)
-            print(serializer.data)
-            return Response(serializer.data)
-        except Exception as ex:
-            return Response({"error":"not get  data because some error"}, status=400)
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class List_user(ListAPIView):
-    authentication_classes = ([JWTAuthentication])
-    permission_classes = ([IsAuthenticated])
-    serializer_class = MemberSerializers
-
-    def get(self, request, *args, **kwargs):   
-        try:
-            User = request.user
-            print(User)
-            channel_member_info = Member.objects.filter(user=User)
-            print(channel_member_info)
-            serializer = self.get_serializer(channel_member_info,many=True)
-            print(serializer.data)
-            return Response(serializer.data)
-        except Exception as ex:
-            return Response({"error":"not get  data because some error "+str(ex)}, status=400)
-        
-        
-
-

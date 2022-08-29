@@ -121,7 +121,6 @@ class CurrentSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username','first_name','last_name',)
-        # exclude = ('password','groups','user_permissions',)
         
 
 class UserProfileShowSerializers(serializers.ModelSerializer):

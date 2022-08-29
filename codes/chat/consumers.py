@@ -48,15 +48,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             print('*****User not exits *****')
             return False
 
+
+
     @database_sync_to_async
-    def get_profile_pic_url(self, user_id):
+    def get_user_profile(self, user_id):
         try:
             print('Fetching prifle pic from DB:')
-            profile_pic = Member.objects.filter(user_id=user_id).last()
-            print('Profile pic is : ', profile_pic.profile_pic)
+            user_profile = UserProfile.objects.filter(user_id=user_id).last()
+            print('Profile pic is : ', user_profile.image)
+            return user_profile.id
         except:
             print('***** Error while getting profile pic *****')
-        return profile_pic.profile_pic
+            return False
 
     @database_sync_to_async
     def get_channel_info(self,room_name):
@@ -146,49 +149,65 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.close()
 
     async def receive(self, text_data):
-        msg_from_db = await self.load_message(text_data)
-        msg_from_db["name"] = await self.extract_username_from_db(msg_from_db.get('user'))
-        del msg_from_db['id']
-        msg_from_db['User'] = msg_from_db['user']
-        del msg_from_db['user']
-        # send_data = json.dumps(msg_from_db)
-        send_data = msg_from_db
-        # send_data = json.loads(text_data)
-        # send_data["User"] = str(self.user_id)
-        
-        await self.print_details(send_data)
-        await self.channel_layer.group_send(
-        self.room_name,
-        {
-            'type': 'notification_broadcast',
-            'message':  json.dumps(send_data),
-        },
-        )
+        try:
+            msg_from_db = await self.load_message(text_data)
+            send_data = msg_from_db  
+            await self.print_details(send_data)
+            await self.channel_layer.group_send(
+            self.room_name,
+            {
+                'type': 'notification_broadcast',
+                'message':  json.dumps(send_data),
+            },
+            )
+        except:
+            pass
         
 
     @sync_to_async
-    def load_message(self, text_data):
+    def channel_info(self,room_name):
         try:
-            channel_info = Channel.objects.filter(name=self.room_name).first()
+            channel_info = Channel.objects.filter(name=room_name).first()
+            return channel_info.id
+        except:
+
+            print('Error: Unknown ERROR **************')
+
+    @sync_to_async
+    def message_detail_serializer(self,message_details):
+        try:
+            message_serializer = MessageChannelSerializers(data=message_details)
+            message_serializer.is_valid(raise_exception=True)
+            message = message_serializer.save()
+            serialized_data= SocketMessageChannelSerializers(MessageChannel.objects.filter(user = self.user_id).last())
+
+            return serialized_data.data
+        except:
+            pass
+
+    
+    async def load_message(self, text_data):
+        try:
             message_details = {}
             message_details['media_link'] = json.loads(text_data)["media_link"]
             message_details['message_text'] = json.loads(text_data)["message_text"]
             message_details['meta_attributes'] = json.loads(text_data)["meta_attributes"]
             message_details['user'] = self.user_id
-            message_details['channel'] = channel_info.id
-            message_serializer = MessageChannelSerializers(data=message_details)
-            message_serializer.is_valid(raise_exception=True)
-            message = message_serializer.save()
-            return MessageChannelSerializers(message).data
+            message_details['user_profile'] = await self.get_user_profile(self.user_id)
+            message_details['channel'] =  await self.channel_info(self.room_name)
+            message_serializer = await self.message_detail_serializer(message_details)
+            return message_serializer
         except Channel.DoesNotExist:
             return False
 
 
 
     async def send_info_to_user_group(self, event):
-        message = event["text"]
-        await self.send(text_data=json.dumps(message))
-
+        try:
+            message = event["text"]
+            await self.send(text_data=json.dumps(message))
+        except:
+            pass
     async def send_last_message(self, event):
         last_msg = await self.get_last_message(self.user_id)
         last_msg["status"] = event["text"]
@@ -211,6 +230,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
    
 
     async def notification_broadcast(self, event): 
+        print("*****  notification_broadcast*************** ")
         await self.send(text_data=event["message"])
 
     async def error_message(self, event):       
@@ -347,17 +367,14 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
             self.close()
 
     async def receive(self, text_data):
-        await self.load_message(text_data)
+        msg_from_db = await self.load_message(text_data)
 
-        send_data = json.loads(text_data)
-        send_data = json.loads(text_data)
-        send_data["User"] = str(self.user_id)
         if await self.is_client_active(self.receiver_id):
             await self.channel_layer.send(
                     await self.to_channel_name(self.receiver_id),
             {
                 'type': 'notification_to_user',
-                'message': json.dumps(send_data),
+                'message': json.dumps(msg_from_db),
             },
             )
         elif await self.is_client_active(self.user_id):
@@ -371,8 +388,26 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
         else:
             pass
 
+
+    @database_sync_to_async
+    def get_user_profile(self, user_id):
+        try:
+            print('Fetching prifle pic from DB:')
+            user_profile = UserProfile.objects.filter(user_id=user_id).last()
+            print('Profile pic is : ', user_profile.image)
+            return user_profile.id
+        except:
+            print('***** Error while getting profile pic *****')
+            return False
     @sync_to_async
-    def load_message(self, text_data):
+    def message_detail_serializer(self,message_details):
+        message_serializer = MessageUserSerializers(data=message_details)
+        message_serializer.is_valid(raise_exception=True)
+        message = message_serializer.save()
+        message_detail_serializer= SocketMessageUserSerializers(MessageUser.objects.filter(from_user = self.user_id).last())
+        return message_detail_serializer.data
+
+    async def  load_message(self, text_data):
         try:
             message_details = {}
             message_details['from_user'] = self.user_id
@@ -380,10 +415,9 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
             message_details['message_text'] = json.loads(text_data)["message_text"]
             message_details["media_link"] = json.loads(text_data)["media_link"]
             message_details["meta_attributes"] = json.loads(text_data)["meta_attributes"]
-            message_serializer = MessageUserSerializers(data=message_details)
-            message_serializer.is_valid(raise_exception=True)
-            message = message_serializer.save()
-            return MessageUserSerializers(message).data
+            message_details["user_profile"] = await self.get_user_profile(self.user_id)
+            message_detail_serializer =  await self.message_detail_serializer(message_details)
+            return message_detail_serializer
         except Channel.DoesNotExist:
             return False
 
