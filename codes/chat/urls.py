@@ -23,17 +23,10 @@ urlpatterns = [
     path('get/message/sms',views.MessageSMSApiView.as_view(),name='message_sms_data'),
     path('get/message/sms/<str:pk>',views.MessageSMSApiView.as_view(),name='message_sms_data_id'),
 
-    # path('get/message',views.MessageApiView.as_view(),name='message-data'),
-    # path('get/message/<str:pk>',views.MessageApiView.as_view(),name='message-data'),
-
-    # path('get/nummsg/user/' ,views.GetMessageApiView.as_view(),name='message_user_till'),
-    # path('get/nummsg/user/records=<pk>' ,views.GetMessageApiView.as_view(),name='message_user_till')
-
     # It will fetch perticular User records    
     path('get/user/paginatedmessages/' ,views.GetUserMessageApiView.as_view(),name='message_user_till'),
     # It will fetch perticular group records    
-    path('get/channel/paginatedmessages/' ,views.GetGroupMessageApiView.as_view(),name='message_user_till'),
-    path('get/userConnectedList/', views.List_All_user.as_view(), name='list_user'),
-
-
+    path('get/channel/paginated_messages/' ,views.GetGroupMessageApiView.as_view(),name='message_user_till'),
+    # It will fetch all user and Group 
+    path('get/user_connected_list/', views.List_All_user.as_view(), name='list_user'),
 ]

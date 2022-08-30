@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import *
 from django.contrib.auth.models import User
-from s3_uploader.serializers import  UserProfileSerializers, UserProfileShowSerializers
+from s3_uploader.serializers import   UserProfileShowSerializers
+from s3_uploader.models import   UserProfile
 
 
 class OrgSerializers(serializers.ModelSerializer):
@@ -16,12 +17,6 @@ class ChannelSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
-class MemberSerializers(serializers.ModelSerializer):
-    class Meta:
-        model = Member
-        fields = '__all__'
-
 class MemberSerializers(serializers.ModelSerializer):
     class Meta:
         model = Member
@@ -33,18 +28,22 @@ class ChannelMemberSerializers(serializers.ModelSerializer):
         model = ChannelMember
         fields = '__all__'
 
-
-#=====================Updated ===========================================================
 class MessageChannelSerializers(serializers.ModelSerializer):
     class Meta:
         model = MessageChannel
         fields = '__all__'
 
+#=====================Updated ===========================================================
+
 class CurrentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id','username','first_name','last_name',)
-
+        
+class UserProfileSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['id','image']
 
 class SocketMessageChannelSerializers(serializers.ModelSerializer):
     user_profile = UserProfileSerializers()

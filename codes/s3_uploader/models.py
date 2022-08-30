@@ -126,14 +126,17 @@ If you did not make this request then simply ignore this email and no changes wi
 #         return self.email
 
 class UserProfile(models.Model):
-    image = models.CharField(max_length=100,null = True, blank = True, default='')
+    image = models.CharField(max_length=500,null = True, blank = True,
+                        default='https://cdn.icon-icons.com/icons2/2643/PNG/512/male_boy_person_people_avatar_icon_159358.png')
     
     modified_at = models.DateTimeField(auto_now= True)
     
-    phone_number = models.CharField(max_length=13,null = True, blank = True, default='')
+    phone_number = models.CharField(max_length=13,null = True, blank = True, default='+918982166224')
     
     user = models.ForeignKey(User, on_delete=models.CASCADE,null=True, blank=True,
                             related_name='user_profile')
 
+    class Meta:
+        unique_together = ('user', 'phone_number')
     def __str__(self) -> str:
-        return f"ProfileID-{self.id}"
+        return f"-{self.user}-{self.id}-"

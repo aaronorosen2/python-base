@@ -1,4 +1,4 @@
-from ast import Delete
+import sys
 import json
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -10,6 +10,7 @@ from django.contrib.auth.models import AnonymousUser
 from rest_framework_simplejwt.tokens import AccessToken, TokenError
 from django.contrib.auth import get_user_model
 from urllib.parse import urlparse, parse_qs
+from django.core.exceptions import ObjectDoesNotExist
 User = get_user_model()
 # =============================================MessageChannel============================================
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -35,8 +36,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             our_channel = ChannelMember.objects.filter(Channel=room_name).filter(user=user_id)
             print("Our channel member detail :", our_channel, our_channel.exists())
             return our_channel.exists()
-        except :
-            print('**** Error while room check *****')
+        except ObjectDoesNotExist as e:
+            print(f'**** {e} *****')
             return False
 
     @database_sync_to_async
@@ -44,8 +45,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             our_user = User.objects.filter(id=user_id)
             return our_user.exists()
-        except User.DoesNotExist:
-            print('*****User not exits *****')
+        except ObjectDoesNotExist as e:
+            print(f'***** {e} *****')
             return False
 
 
@@ -132,7 +133,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except :
             print('Error: Unknown ERROR **************')
 
-        self.room_exists = True
         if self.room_exists:
             print('Check room exits or not ***** ')
             self.channel_member = await self.get_channel_info(self.room_name)
@@ -170,7 +170,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             channel_info = Channel.objects.filter(name=room_name).first()
             return channel_info.id
         except:
-
             print('Error: Unknown ERROR **************')
 
     @sync_to_async
@@ -183,6 +182,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             return serialized_data.data
         except:
+            print('Error: Unknown ERROR **************')
             pass
 
     
@@ -339,9 +339,11 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
                 
                 self.close()
                 
-        except TokenError as e:
+        except:
+            print("Oops!", sys.exc_info()[0], "occurred.")
+            print("Next entry.")
             # Socket has not been accepted, so cannot send over it
-            # print(self.unidentified_user)
+           
             # await self.channel_layer.send(
             #             self.unidentified_user,
             #     {
@@ -454,7 +456,10 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         # Leave room group
         await self.clients_delete(self.channel_name)
-        self.user_channel_name_list.pop(self.user_id)
+        try :
+            self.user_channel_name_list.pop(self.user_id)
+        except:
+            pass
         self.close()
 
 

@@ -53,14 +53,9 @@ class Member(models.Model):
     user_profile =  models.ForeignKey(UserProfile, on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
-     
-    #have to delete line 49 (Abhishek Jain)
-    profile_pic = models.CharField(max_length=256, null = True, blank = True,)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
-    #have to delete line 61 (Abhishek Jain)
-    phone_number = models.CharField(max_length=13,null = True, blank = True, default='')
 
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True,

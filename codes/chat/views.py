@@ -633,13 +633,18 @@ class GetGroupMessageApiView(ListAPIView):
             
 # =============================================List User and Groups=====================================
 
-
 def getUser(request):   
         try:
             # channel_member_info = Member.objects.filter(user=User).order_by('-created_at')
             channel_member_info = Member.objects.all().order_by('-created_at')
             serializer = MemberSerializers(channel_member_info,many=True)
-            return serializer.data
+            json_data = json.dumps(serializer.data)
+            payload = json.loads(json_data)
+            
+            for item in payload:
+                type = {'type':'user'}
+                item.update(type)
+            return payload
         except Exception as ex:
             return Response({"error":"not get  data because some error "+str(ex)}, status=400)
         
@@ -648,7 +653,12 @@ def getGroup(request):
             User = request.user
             channel_member_info = ChannelMember.objects.filter(user=User).order_by('-created_at')
             serializer = ChannelMemberSerializers(channel_member_info,many=True)
-            return serializer.data
+            json_data = json.dumps(serializer.data)
+            payload = json.loads(json_data)
+            for item in payload:
+                type = {'type':'Channel'}
+                item.update(type)
+            return payload
         except Exception as ex:
             return Response({"error":"not get  data because some error"}, status=400)
       
@@ -659,9 +669,25 @@ class List_All_user(ListAPIView):
     permission_classes = (IsAuthenticated,)
       
     def get(self, request, *args, **kwargs):   
+        paginator = PageNumberPagination()
         try:
             user = getUser(request=request)
             channel = getGroup(request=request)
-            return Response({'users':user,'channel':channel}, status=200)
+            jsonMerged = user + channel
+
+            records = 10
+            # records = request.query_params['records']
+            paginator.page_size_query_param = 'record'
+            page_size = int(records)
+            page_query_param = 'p'
+            
+            if page_size > 20 : paginator.page_size = records
+            else :  paginator.page_size = 20    
+                
+            paginator.page_query_param = page_query_param
+            pagi = paginator.paginate_queryset(queryset= jsonMerged, request=request)
+            paginated_resonse = paginator.get_paginated_response(data= pagi)
+            data = paginated_resonse.data
+            return Response(data, status=200)
         except Exception as ex:
             return Response({"error":"not get  data because some error "+str(ex)}, status=400)
