@@ -357,13 +357,7 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
 
         if self.receiver_id_exists:
             await self.accept() 
-            self.user_keys_list = [i for i in self.user_channel_name_list.keys()]
-            await self.send(text_data =json.dumps(
-                {
-                    'action': 'users_list',
-                    'users':self.user_keys_list,
-                },
-            ))
+   
 
         else:
             self.close()
@@ -379,16 +373,6 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
                 'message': json.dumps(msg_from_db),
             },
             )
-        elif await self.is_client_active(self.user_id):
-            await self.channel_layer.send(
-                    await  self.to_channel_name(self.user_id),
-            {
-                'type': 'error_message',
-                'message': json.dumps({"message":"User is not currently active"})
-            },
-            )
-        else:
-            pass
 
 
     @database_sync_to_async

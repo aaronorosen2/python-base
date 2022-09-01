@@ -24,7 +24,7 @@ urlpatterns = [
     path('get/message/sms/<str:pk>',views.MessageSMSApiView.as_view(),name='message_sms_data_id'),
 
     # It will fetch perticular User records    
-    path('get/user/paginatedmessages/' ,views.GetUserMessageApiView.as_view(),name='message_user_till'),
+    path('get/user/paginated_messages/' ,views.GetUserMessageApiView.as_view(),name='message_user_till'),
     # It will fetch perticular group records    
     path('get/channel/paginated_messages/' ,views.GetGroupMessageApiView.as_view(),name='message_user_till'),
     # It will fetch all user and Group 
