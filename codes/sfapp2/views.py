@@ -79,6 +79,9 @@ def get_services(request):
 
 
 @csrf_exempt
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def confirm_phone_number(request):
     if not request.POST:
         raise Http404()
@@ -139,21 +142,24 @@ def verify_2fa(request):
             raise HttpResponseBadRequest()
 
 
-def get_member_from_headers(headers):
-    token = headers.get("Authorization")
-    if token:
-        user_token = Token.objects.filter(
-            token=token).first()
-        if user_token:
-            return user_token.member
+# def get_member_from_headers(headers):
+#     token = headers.get("Authorization")
+#     if token:
+#         user_token = Token.objects.filter(
+#             token=token).first()
+#         if user_token:
+#             return user_token.member
 
 
 @csrf_exempt
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def set_user_info(request):
     if request.POST:
         name = request.POST.get('name')
         question_answers = request.POST.get('question_answers')
-        member = get_member_from_headers(request.headers)
+        member = Member.objects.get(name=request.user)
         if name and member:
             print("SAVE NAME!!")
             member.name = name
@@ -164,40 +170,49 @@ def set_user_info(request):
             member.save()
 
         return JsonResponse({'message': 'success'})
+    return JsonResponse({'error': 'POST request only'})
 
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_user_info(request):
-    member = get_member_from_headers(request.headers)
-    print(member)
+    member = Member.objects.get(name=request.user)
     if(member.question_answers):
-        return JsonResponse({'data': json.loads(member.question_answers)})
+        return JsonResponse({'data': json.loads(json.dumps(member.question_answers))})
     else:
         return JsonResponse({'data': {}})
 
 
 @csrf_exempt
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def do_checkin_gps(request):
     if request.POST:
         msg = request.POST.get('msg')
-        member = get_member_from_headers(request.headers)
+        member = Member.objects.get(name=request.user)
         if msg and member:
             gps_checkin = GpsCheckin()
             gps_checkin.member = member
             gps_checkin.msg = request.POST.get("msg", "")
             gps_checkin.lat = request.POST.get("lat", "")
             gps_checkin.lng = request.POST.get("lng", "")
+            gps_checkin.user = member.name
             gps_checkin.save()
 
         return JsonResponse({'message': 'success'})
 
 
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def checkin_activity(request):
-    member = get_member_from_headers(request.headers)
+    member = Member.objects.get(name=request.user)
     if member:
         gps_checkins = GpsCheckin.objects.filter(
             member=member).order_by('-created_at').all()
-
         video_events = VideoUpload.objects.filter(
             member=member).order_by('-created_at').all()
 
@@ -232,10 +247,13 @@ def checkin_activity(request):
 
 @csrf_exempt
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def checkin_activity_admin(request):
     # user_phone = request.GET.get('phone')
-    token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-    user = User.objects.get(id=token.user_id)
+    # token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
+    # user = User.objects.get(id=token.user_id)
+    user = request.user
     if user:
         # member = Member.objects.filter(phone=user_phone).first()
         gps_checkins = GpsCheckin.objects.filter(
@@ -287,7 +305,6 @@ def checkin_feedback_admin(request):
         message = request.POST.get('msg')
         if message is not None and request.POST.get('logId') is not None and request.POST.get('logType') in ['video','gps']:
             log_type = request.POST.get('logType')
-            # print(message, request.POST.get('logId'))
             feedback = AdminFeedback(message=message, user=admin)
             feedback.save()
             log = None
@@ -304,8 +321,11 @@ def checkin_feedback_admin(request):
 
 
 @csrf_exempt
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def add_med(request):
-    member = get_member_from_headers(request.headers)
+    member = Member.objects.get(name=request.user)
     if member and request.POST:
         my_med = MyMed()
         my_med.member = member
@@ -317,8 +337,11 @@ def add_med(request):
 
 
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def list_meds(request):
-    member = get_member_from_headers(request.headers)
+    member = Member.objects.get(name=request.user)
     if member:
         meds = MyMed.objects.filter(member=member).values().all()
         print(meds)
@@ -326,8 +349,11 @@ def list_meds(request):
 
 
 @csrf_exempt
+@api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def del_med(request, med_id):
-    member = get_member_from_headers(request.headers)
+    member = Member.objects.get(name=request.user)
     if member:
         MyMed.objects.filter(member=member, id=med_id).delete()
         return JsonResponse({'message': 'success'})
@@ -345,13 +371,13 @@ def list_questions(request):
     return JsonResponse({'questions': list(questions)}, safe=False)
 
 
-@csrf_exempt
-def get_suggestions(request):
-    member = get_member_from_headers(request.headers)
-    if member:
-        return JsonResponse({'status': 'okay'}, safe=False)
+# @csrf_exempt
+# def get_suggestions(request):
+#     member = get_member_from_headers(request.headers)
+#     if member:
+#         return JsonResponse({'status': 'okay'}, safe=False)
 
-    return JsonResponse({'status': 'error'}, safe=False)
+#     return JsonResponse({'status': 'error'}, safe=False)
 
 
 @csrf_exempt
@@ -425,6 +451,8 @@ def get_tags(request):
             tags = TagEntry.objects.filter(assigned_to=member).select_related('assigned_by')
             tags_serialised = TagEntrySerializer(tags, many=True)
             return JsonResponse({'tags': list(tags_serialised.data)})
+        else :
+            return JsonResponse({'error': 'Member does not exist'})
 
 def get_distance(lat1,lon1,lat2,lon2):
     R = 6373.0
@@ -446,29 +474,31 @@ def get_distance(lat1,lon1,lat2,lon2):
 @api_view(['POST'])
 def member_session_start(request):
     try:
-        member = get_member_from_headers(request.headers)
+        member = Member.objects.get(name=request.user)
         if member:
             session_create = MemberSession.objects.create(member=member)
             member_session_start.mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
                                         longitude=request.data.get("longitude",None))
-        return JsonResponse({'status': 'okay'}, safe=False)
+            return JsonResponse({'status': 'okay'}, safe=False)
+        return JsonResponse({'status': 'Failed'}, safe=False)
     except Exception as e:
         print("🚀 ~ file: views.py ~ line 460 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
 
 @csrf_exempt
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def member_session_stop(request):
     try:
-        member = get_member_from_headers(request.headers)
+        member = Member.objects.get(name=request.user)
         session_create = MemberSession.objects.filter(member=member).last()
         session_create.ended_at = datetime.datetime.now()
         session_create.save()
         mge = MemberGpsEntry.objects.create(member_session=session_create, latitude=request.data.get("latitude",None),
                                     longitude=request.data.get("longitude",None))
-
-        distance = get_distance(member_session_start.mge.latitude, member_session_start.mge.longitude, 
-                                mge.latitude, mge.longitude)
+        distance = get_distance(float(member_session_start.mge.latitude), float(member_session_start.mge.longitude), 
+                                float(mge.latitude), float(mge.longitude))
         total_time = session_create.ended_at.replace(tzinfo=None) - session_create.started_at.replace(tzinfo=None)
         avg_speed = (distance *1000) / total_time.seconds
 
@@ -479,16 +509,18 @@ def member_session_stop(request):
         }
         return JsonResponse(data, safe=False)
     except Exception as e:
-        print("🚀 ~ file: views.py ~ line 460 ~ e", e)
+        print("🚀 ~ file: views.py ~ member_session_stop ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
 
 @csrf_exempt
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def member_session_distance(request):
     # timme = request.session.get('value')
     # print("🚀 ~ file: views.py ~ line 494 ~ timme", timme)
     try:
-        member = get_member_from_headers(request.headers)
+        member = Member.objects.get(name=request.user)
         if member:
             session_create = MemberSession.objects.filter(member=member).last()
             datetimeFormat = '%Y-%m-%d %H:%M:%S.%f'
@@ -516,15 +548,17 @@ def member_session_distance(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def member_session_livedata(request):
     try:
-        member = get_member_from_headers(request.headers)
+        member = Member.objects.get(name=request.user)
         session_create = MemberSession.objects.filter(member=member).last()
         mge = MemberGpsEntry.objects.filter(member_session=session_create).last()
         start_lat = mge.latitude
         start_long = mge.longitude
-        new_lat = request.data.get("latitude",None)
-        new_long = request.data.get("longitude",None)
+        new_lat = float(request.data.get("latitude",None))
+        new_long = float(request.data.get("longitude",None))
         distance = get_distance(start_lat,start_long,new_lat,new_long)
         print("🚀 ~ file: views.py ~ line 516 ~ session_create.started_at.seconds", session_create.started_at.replace(tzinfo=None))
         print("🚀 ~ file: views.py ~ line 516 ~ datetime.datetime.now().time()", datetime.datetime.now())

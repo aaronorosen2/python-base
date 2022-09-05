@@ -1,8 +1,8 @@
 import uuid
 import os
 from django.db import models
-from knox.auth import get_user_model
-
+# from knox.auth import get_user_model
+from django.contrib.auth import get_user_model
 
 # TODO:
 def uuid_file_path(instance, filename):
@@ -99,7 +99,7 @@ class Choice(models.Model):
     def __str__(self):
         return self.choice_text or ''
 
-
+#  we are not using this modle
 class Token(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     token = models.CharField(max_length=256)
