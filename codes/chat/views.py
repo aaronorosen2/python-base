@@ -279,7 +279,7 @@ class ChannelMemberApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageChannelApiView(ListAPIView):
-    authentication_classes(JWTAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     queryset = MessageChannel.objects.all()
@@ -362,7 +362,7 @@ class MessageChannelApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageUserApiView(ListAPIView):
-    authentication_classes(JWTAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     queryset = MessageUser.objects.all()
@@ -448,7 +448,7 @@ class MessageUserApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MessageSMSApiView(ListAPIView):
-    authentication_classes(JWTAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     queryset = MessageSMS.objects.all()
@@ -567,7 +567,7 @@ class MessageSMSApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetUserMessageApiView(ListAPIView):
-    authentication_classes(JWTAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     serializer_class = PaginationUserSerializers
     
@@ -602,7 +602,7 @@ class GetUserMessageApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetGroupMessageApiView(ListAPIView):
-    authentication_classes(JWTAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     
     serializer_class = PaginationChannelSerializers
@@ -636,7 +636,7 @@ class GetGroupMessageApiView(ListAPIView):
 def getUser(request):   
         try:
             # channel_member_info = Member.objects.filter(user=User).order_by('-created_at')
-            channel_member_info = Member.objects.all().order_by('-created_at')
+            channel_member_info = Member.objects.all().order_by('-modified_at')
             serializer = MemberSerializers(channel_member_info,many=True)
             json_data = json.dumps(serializer.data)
             payload = json.loads(json_data)
@@ -656,8 +656,10 @@ def getGroup(request):
             json_data = json.dumps(serializer.data)
             payload = json.loads(json_data)
             for item in payload:
+                time = {'modified_at' : item['Channel']['modified_at']}
                 type = {'type':'Channel'}
                 item.update(type)
+                item.update(time)
             return payload
         except Exception as ex:
             return Response({"error":"not get  data because some error"}, status=400)
@@ -665,7 +667,7 @@ def getGroup(request):
       
 @method_decorator(csrf_exempt, name='dispatch')
 class List_All_user(ListAPIView):
-    authentication_classes(JWTAuthentication,)
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
       
     def get(self, request, *args, **kwargs):   
@@ -674,9 +676,8 @@ class List_All_user(ListAPIView):
             user = getUser(request=request)
             channel = getGroup(request=request)
             jsonMerged = user + channel
-
+            jsonMerged.sort(key=lambda x: x['modified_at'],reverse = True)
             records = 10
-            # records = request.query_params['records']
             paginator.page_size_query_param = 'record'
             page_size = int(records)
             page_query_param = 'p'

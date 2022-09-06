@@ -25,6 +25,7 @@ class Org(models.Model):
 
 class Channel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                                    null=True, blank=True, default=None)
     name = models.CharField(max_length=100, blank=True, default='')
@@ -50,6 +51,7 @@ class Message(models.Model):
 
 class Member(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
     user_profile =  models.ForeignKey(UserProfile, on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)

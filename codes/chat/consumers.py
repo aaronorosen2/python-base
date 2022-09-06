@@ -352,19 +352,22 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
             #     },
             #     )
             self.close()
-
-    
-
         if self.receiver_id_exists:
             await self.accept() 
-   
-
         else:
             self.close()
 
     async def receive(self, text_data):
         msg_from_db = await self.load_message(text_data)
 
+        if await self.is_client_active(self.user_id):
+            await self.channel_layer.send(
+                    await self.to_channel_name(self.user_id),
+            {
+                'type': 'notification_to_user',
+                'message': json.dumps(msg_from_db),
+            },
+            )
         if await self.is_client_active(self.receiver_id):
             await self.channel_layer.send(
                     await self.to_channel_name(self.receiver_id),
