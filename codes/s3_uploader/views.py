@@ -532,7 +532,7 @@ class ProfileUploadApiView(ListAPIView):
             return Response({"error": str(ex)}, status=400)
 
             
-    def patch(self, request, args, *kwargs):
+    def patch(self, request, *args, **kwargs):
         try: 
             user =  request.user
             user_info = UserProfile.objects.get(user= user)
