@@ -131,7 +131,7 @@ class UserProfile(models.Model):
     
     modified_at = models.DateTimeField(auto_now= True)
     
-    phone_number = models.CharField(max_length=13,null = True, blank = True, default='+918982166224')
+    phone_number = models.CharField(max_length=13,null = True, blank = True, default='+910000000000')
     
     user = models.ForeignKey(User, on_delete=models.CASCADE,null=True, blank=True,
                             related_name='user_profile')

@@ -26,6 +26,8 @@ class Org(models.Model):
 class Channel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+    image = models.CharField(max_length=500,null = True, blank = True,
+                            default='https://www.iconfinder.com/icons/636895/users_avatar_group_human_people_profile_team_icon')
     created_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                                    null=True, blank=True, default=None)
     name = models.CharField(max_length=100, blank=True, default='')
@@ -36,16 +38,6 @@ class Channel(models.Model):
 
     def __str__(self) -> str:
         return f"--{self.name}--"
-
-
-# To be deleted
-class Message(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
-                             null=True, blank=True,
-                             default=None)
-    meta_attributes = models.CharField(max_length=100, blank=True, default='')
-    channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
 
 
 

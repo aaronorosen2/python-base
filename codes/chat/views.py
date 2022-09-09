@@ -37,6 +37,10 @@ def chat_room(request):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class OrgApiView(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    
+
     queryset = Org.objects.all()
     serializer_class = OrgSerializers
 
@@ -55,7 +59,8 @@ class OrgApiView(ListAPIView):
 
     
     def patch(self, request, pk,*args, **kwargs):
-        try: 
+        try:
+            request.data['created_by'] = request.user.id  
             org_info = Org.objects.get(id = pk)
             serializer = OrgSerializers(org_info, data=request.data,partial=True)
             if serializer.is_valid():
@@ -67,8 +72,9 @@ class OrgApiView(ListAPIView):
 
 
     def post(self, request, format=None, *args, **kwargs):
-        try:   
-            serilizers = OrgSerializers( data=request.data)
+        try:
+            request.data['created_by'] = request.user.id  
+            serilizers = OrgSerializers( data=request.data,many = True)
             if serilizers.is_valid():
                 serilizers.save()
                 return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
@@ -91,6 +97,9 @@ class OrgApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ChannelApiView(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
     queryset = Channel.objects.all()
     serializer_class = ChannelSerializers
 
@@ -107,29 +116,85 @@ class ChannelApiView(ListAPIView):
             return Response(serializer.data)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
+    
 
+    def handle_uploaded_file(self,f,fileName):
+
+        module_dir = os.path.dirname(__file__)
+        print(module_dir)
+        try:
+            folder = os.mkdir(os.path.join(
+                    module_dir,'..', 'staticfiles/group_profile_pic/'))
+            print(folder)
+
+        except FileExistsError as fe:
+
+            print(fe)
+            print()
+            pass
+        file_path = os.path.abspath(os.path.join(
+                module_dir, '..', 'staticfiles/group_profile_pic/', str(fileName))+'.jpg')
+            # import pdb; pdb. set_trace() 
+        with open(file_path, 'wb+') as destination:
+            for chunk in f.chunks():
+                destination.write(chunk)
+            return True
 
     def post(self, request, format=None, *args, **kwargs):
-        try:   
-            serilizers = ChannelSerializers(data=request.data)
-            if serilizers.is_valid():
-                serilizers.save()
+        try:
+            gmt = time.gmtime()
+            ts = calendar.timegm(gmt)
+            self.handle_uploaded_file(request.FILES['image'] ,ts)
+            a = str(ts)
+            print(a)
+            request.data['image'] = "https://"+request.get_host()+"/static/group_profile_pic/"+str(ts)+".jpg"
+            request.data['created_by'] = request.user.id            
+            serializers = ChannelSerializers(data=request.data,many = True)
+            print(request.data)
+
+            if serializers.is_valid():
+                serializers.save()
                 return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
             return Response({'msg':'Try again!'}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
-    
-    def patch(self, request, pk,*args, **kwargs):
+   
+
+   
+    def patch(self, request,pk=None, *args, **kwargs):
         try: 
             channel_info = Channel.objects.get(id = pk)
-            serializer = ChannelSerializers(channel_info, data=request.data,partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            return Response({"msg": "No Content"},status=204)
+            print("request.FILES",request.FILES)
+
+            if  request.FILES.get('image'):
+                gmt = time.gmtime()
+                ts = calendar.timegm(gmt)
+                self.handle_uploaded_file(request.FILES['image'] , ts)
+                
+                file_url = ("https://"+request.get_host()+
+                                "/static/group_profile_pic/"+str(ts)+'.jpg')
+                request.data['created_by'] = request.user.id            
+                request.data['image'] = str(file_url)
+                serializer = ChannelSerializers(channel_info, data=request.data,partial=True)
+                if serializer.is_valid():
+                  serializer.save()
+                return Response({'msg':'Image Updated'}, status=status.HTTP_201_CREATED)
+                
+            else:
+                 channel_info = Channel.objects.get(id = pk)
+                 serializer = ChannelSerializers(channel_info, data=request.data,partial=True)
+                 if serializer.is_valid():
+                    serializer.save()
+                    return Response({'msg':'data Updated'}, status=status.HTTP_201_CREATED)
+                 return Response({"msg": "No Content"},status=204)
         except Exception as ex:
             return Response({"error": str(ex)},status=400)
 
+        
+    
+         
+
+            
     def delete(self, request, pk=None, *args, **kwargs):
         id = pk
         try:
@@ -141,10 +206,9 @@ class ChannelApiView(ListAPIView):
             return Response({"error": str(ex)}, status=400)
 
 
-
-
-
 # ======================================Member======================================================
+
+
 def handle_uploaded_file(f,fileName):
     module_dir = os.path.dirname(__file__)
     try: 
@@ -161,6 +225,10 @@ def handle_uploaded_file(f,fileName):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MemberApiView(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    
+
     queryset = Member.objects.all()
     serializer_class = MemberSerializers
 
@@ -223,6 +291,8 @@ class MemberApiView(ListAPIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ChannelMemberApiView(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     queryset = ChannelMember.objects.all()
     serializer_class = ChannelMemberSerializers
@@ -532,36 +602,6 @@ class MessageSMSApiView(ListAPIView):
             return Response({"error": str(ex)}, status=400)
 
 
-# # ==========================================N Number of Message ==================================================
-
-
-# @method_decorator(csrf_exempt, name='dispatch')
-# class GetMessageApiView(ListAPIView):
-#     authentication_classes(JWTAuthentication,)
-#     permission_classes = (IsAuthenticated,)
-
-#     queryset = MessageChannel.objects.all().order_by('-created_at')
-#     serializer_class = MessageChannelSerializers
-    
-#     def get(self, request ,pk=None, *args, **kwargs):
-#         paginator = PageNumberPagination()
-#         try:       
-#             paginator.page_size_query_param = 'records'
-#             page_size = 10
-#             page_query_param = 'p'
-#             paginator.page_size = page_size
-#             paginator.page_query_param = page_query_param
-#             pagi = paginator.paginate_queryset(queryset=self.get_queryset(), request=request)
-#             serializer = self.get_serializer(pagi, many=True)
-#             theData= serializer.data
-#             return paginator.get_paginated_response(theData) 
-#         except Exception as ex:
-#             pass
-#             return Response({"error --- ": str(ex)}, status=400)
-
-# # http://127.0.0.1:8000/chat/get/nummsg/user/?p=1&records=8
-
-
 # ========================================== N - Number of Message Perticular User ==================================================
 
 
@@ -692,3 +732,30 @@ class List_All_user(ListAPIView):
             return Response(data, status=200)
         except Exception as ex:
             return Response({"error":"not get  data because some error "+str(ex)}, status=400)
+
+class UserCountApi(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    serializer_class = ChannelMemberSerializers
+
+    def get(self, request, pk=None, *args, **kwargs):  
+        try:
+            id = pk
+            if id is not None:
+
+                channel_member_info = ChannelMember.objects.filter(Channel=id)
+                serializer = UserCountSerializers(channel_member_info,many=True)
+                json_data = json.dumps(serializer.data)
+                payload = json.loads(json_data)
+                value = []
+                for i in payload:
+                    channel_member_info = Member.objects.get(id = i['user'])
+                    value.append(channel_member_info)
+
+                serializer = MemberSerializers(value,many=True)
+                return Response(serializer.data)
+            else:
+                return Response({"error": str(ex)}, status=400)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)

@@ -109,3 +109,7 @@ class ChannelMemberSerializers(serializers.ModelSerializer):
         fields = ('id','Channel')
         # fields = '__all__' 
 
+class UserCountSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = ChannelMember
+        fields = ('id','user',) 
