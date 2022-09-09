@@ -482,10 +482,11 @@ def handle_uploaded_file(f,fileName):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ProfileUploadApiView(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
     
     # queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializers
-    permission_classes = (IsAuthenticated,)
     
     def get(self, request, pk=None, *args, **kwargs):
         try:
