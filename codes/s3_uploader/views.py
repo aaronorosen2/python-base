@@ -469,12 +469,12 @@ def handle_uploaded_file(f,fileName):
     module_dir = os.path.dirname(__file__)
     try: 
         os.mkdir(os.path.join(
-                 module_dir, '..', 'static/userprofiles/'))
+                 module_dir, '..', 'staticfiles/userprofiles/'))
     except FileExistsError:
         pass
 
     file_path = os.path.abspath(os.path.join(
-            module_dir, '..', 'static/userprofiles/', str(fileName))+'.jpg')
+            module_dir, '..', 'staticfiles/userprofiles/', str(fileName))+'.jpg')
     with open(file_path, 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
@@ -513,7 +513,7 @@ class ProfileUploadApiView(ListAPIView):
             ts = calendar.timegm(gmt)
             handle_uploaded_file(request.FILES['image'] , ts)
             
-            file_url = ("http://"+request.get_host()+
+            file_url = ("https://"+request.get_host()+
                             "/static/userprofiles/"+str(ts)+'.jpg')
             request.data['image'] = str(file_url)
             
@@ -541,7 +541,7 @@ class ProfileUploadApiView(ListAPIView):
                 ts = calendar.timegm(gmt)
                 handle_uploaded_file(request.FILES['image'] , ts)
                 
-                file_url = ("http://"+request.get_host()+
+                file_url = ("https://"+request.get_host()+
                                 "/static/userprofiles/"+str(ts)+'.jpg')
                 request.data['image'] = str(file_url)
             except:
