@@ -99,6 +99,8 @@ class MessageChannel(models.Model):
                                             blank=True, default=None, )
     media_link =  models.URLField(max_length = 256, null = True, blank = True, 
                                             default='')
+    message_type = models.CharField(max_length = 256, null = True, 
+                                            blank = True, default='')
     message_text=  models.TextField(blank = True)
     def __str__(self) -> str:
         return f"--{self.user}--{self.channel}--"

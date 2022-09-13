@@ -191,6 +191,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message_details = {}
             message_details['media_link'] = json.loads(text_data)["media_link"]
             message_details['message_text'] = json.loads(text_data)["message_text"]
+            message_details['message_type'] = json.loads(text_data)["message_type"]
             message_details['meta_attributes'] = json.loads(text_data)["meta_attributes"]
             message_details['user'] = self.user_id
             message_details['user_profile'] = await self.get_user_profile(self.user_id)
@@ -402,6 +403,7 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
             message_details['from_user'] = self.user_id
             message_details['to_user'] = self.receiver_id
             message_details['message_text'] = json.loads(text_data)["message_text"]
+            message_details['message_type'] = json.loads(text_data)["message_type"]
             message_details["media_link"] = json.loads(text_data)["media_link"]
             message_details["meta_attributes"] = json.loads(text_data)["meta_attributes"]
             message_details["user_profile"] = await self.get_user_profile(self.user_id)

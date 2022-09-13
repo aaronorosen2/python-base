@@ -28,7 +28,8 @@ urlpatterns = [
     # It will fetch perticular group records    
     path('get/channel/paginated_messages/' ,views.GetGroupMessageApiView.as_view(),name='message_user_till'),
     # It will fetch all user and Group 
-    path('get/user_connected_list/', views.List_All_user.as_view(), name='list_user'),
+    path('get/user_connected_list/', views.List_all_user_group.as_view(), name='list_user'),
+    path('get/user_and_group_list/', views.List_all_user_group_search.as_view(), name='list_user'),
     # It will count and display all user list 
     path('get/channel/user_list/<str:pk>',views.UserCountApi.as_view(),name='user_count_list'),
 
