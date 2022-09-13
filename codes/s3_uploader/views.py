@@ -62,6 +62,7 @@ class Home(View):
 
 
 # Register User
+
 class UserRegister(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
@@ -71,12 +72,15 @@ class UserRegister(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         try:
             user = serializer.save()
+            var_user =  UserProfile.objects.update_or_create(user = user,) 
+            var_user.save()
             return Response({
-                "user": UserSerializer(user, context=self.get_serializer_context()).data,
-                "token": AuthToken.objects.create(user)[1]
-            })
+            "user": UserSerializer(user, context=self.get_serializer_context()).data,
+            "token": AuthToken.objects.create(user)[1]
+        })
         except:
             return Response({"msg": f"This email address is already registered with us"},
                             status=status.HTTP_409_CONFLICT)
@@ -351,7 +355,9 @@ def upload_to_s3(s3_key, uploaded_file):
     s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key,
                              ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
 
-    return content_type, f'https://s3.amazonaws.com/{bucket_name}/{s3_key}'
+    # return content_type, f'https://s3.amazonaws.com/{bucket_name}/{s3_key}'
+    return content_type, f'https://s3.us-west-1.amazonaws.com/{bucket_name}/{s3_key}'
+
 
 
 def get_presigned_s3_url(object_name, expiration=3600):
@@ -573,4 +579,3 @@ class ProfileUploadApiView(ListAPIView):
                 return Response({"message": "Successfully Deleted!"}, status=200)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
-        

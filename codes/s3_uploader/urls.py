@@ -3,7 +3,7 @@ from knox import views as knox_views
 from .views import (ProfileUploadApiView, UserRegister, PasswordReset, UserCourses, UserLogin, \
                    AllCourses, list_courses, list_courses_auth, \
                    ChangePasswordView, Home, S3SignedUrl, S3Upload, \
-                   MakeS3FilePublic, User_login_JWT)
+                   MakeS3FilePublic, User_login_JWT,)
 
 
 urlpatterns = [
@@ -35,9 +35,5 @@ urlpatterns = [
      path('list_courses/', list_courses, name='list_courses'),
      path('list_courses_protected/', list_courses_auth,
           name='list_courses_protected'),
-     path('user/profile_update/', ProfileUploadApiView.as_view(), name='register'),
-
-
-
-
-]    
+     path('user/profile_update/', ProfileUploadApiView.as_view(), name='register')
+     ]    

@@ -208,21 +208,6 @@ class ChannelApiView(ListAPIView):
 
 # ======================================Member======================================================
 
-
-def handle_uploaded_file(f,fileName):
-    module_dir = os.path.dirname(__file__)
-    try: 
-        os.mkdir(os.path.join(
-                 module_dir,'..', 'static/chat/profile_pic'))
-    except FileExistsError:
-        pass
-    file_path = os.path.abspath(os.path.join(
-            module_dir, '..', 'static/chat/profile_pic/', str(fileName))+'.png')
-    with open(file_path, 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
-    return True
-
 @method_decorator(csrf_exempt, name='dispatch')
 class MemberApiView(ListAPIView):
     authentication_classes = (JWTAuthentication,)
@@ -249,13 +234,6 @@ class MemberApiView(ListAPIView):
 
     def post(self, request, format=None, *args, **kwargs):
         try:
-            gmt = time.gmtime()
-            # ts stores timestamp
-            ts = calendar.timegm(gmt)
-            handle_uploaded_file(request.FILES['profile_pic'] ,ts)
-            # request.data['profile_pic'] = str(request.FILES['profile_pic'])
-            request.data['profile_pic'] = str(ts)
-            request.data['profile_pic'] = "http://"+request.get_host()+"/static/chat/profile_pic/"+str(ts)+".png"
             serilizers = MemberSerializers(data=request.data)
             if serilizers.is_valid():
                 serilizers.save()
@@ -706,7 +684,7 @@ def getGroup(request):
       
       
 @method_decorator(csrf_exempt, name='dispatch')
-class List_All_user(ListAPIView):
+class List_all_user_group(ListAPIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
       
@@ -759,3 +737,66 @@ class UserCountApi(ListAPIView):
                 return Response({"error": str(ex)}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
+
+
+# =================================================List all group and users==================================================
+
+def get_user_search(request):   
+        try:
+            # channel_member_info = Member.objects.filter(user=User).order_by('-created_at')
+            channel_member_info = Member.objects.all().order_by('-modified_at')
+            serializer = MemberSerializers(channel_member_info,many=True)
+            json_data = json.dumps(serializer.data)
+            payload = json.loads(json_data)
+            
+            for item in payload:
+                type = {'type':'user'}
+                item.update(type)
+            return payload
+        except Exception as ex:
+            return Response({"error":"not get  data because some error "+str(ex)}, status=400)
+        
+def get_group_serach(request): 
+        try:
+            User = request.user
+            channel_member_info = ChannelMember.objects.all().order_by('-created_at')
+            serializer = ChannelMemberSerializers(channel_member_info,many=True)
+            json_data = json.dumps(serializer.data)
+            payload = json.loads(json_data)
+            for item in payload:
+                time = {'modified_at' : item['Channel']['modified_at']}
+                type = {'type':'Channel'}
+                item.update(type)
+                item.update(time)
+            return payload
+        except Exception as ex:
+            return Response({"error":"not get  data because some error"}, status=400)
+      
+      
+@method_decorator(csrf_exempt, name='dispatch')
+class List_all_user_group_search(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+      
+    def get(self, request, *args, **kwargs):   
+        paginator = PageNumberPagination()
+        try:
+            user = get_user_search(request=request)
+            channel = get_group_serach(request=request)
+            jsonMerged = user + channel
+            jsonMerged.sort(key=lambda x: x['modified_at'],reverse = True)
+            records = 10
+            paginator.page_size_query_param = 'record'
+            page_size = int(records)
+            page_query_param = 'p'
+            
+            if page_size > 20 : paginator.page_size = records
+            else :  paginator.page_size = 20    
+                
+            paginator.page_query_param = page_query_param
+            pagi = paginator.paginate_queryset(queryset= jsonMerged, request=request)
+            paginated_resonse = paginator.get_paginated_response(data= pagi)
+            data = paginated_resonse.data
+            return Response(data, status=200)
+        except Exception as ex:
+            return Response({"error":"not get  data because some error "+str(ex)}, status=400)
