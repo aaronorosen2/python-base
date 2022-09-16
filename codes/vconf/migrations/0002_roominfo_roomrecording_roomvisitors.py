@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('slack_channel', models.CharField(default='', max_length=500)),
             ],
             options={
-                'db_table': 's3_uploader_roominfo',
+                'db_table': 'profile_roominfo',
             },
         ),
         migrations.CreateModel(
@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 ('room', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='vconf.roominfo')),
             ],
             options={
-                'db_table': 's3_uploader_roomvisitors',
+                'db_table': 'profile_roomvisitors',
             },
         ),
         migrations.CreateModel(
@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
                 ('room', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='vconf.roominfo')),
             ],
             options={
-                'db_table': 's3_uploader_roomrecording',
+                'db_table': 'profile_roomrecording',
             },
         ),
     ]

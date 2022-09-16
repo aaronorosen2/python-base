@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('s3_uploader', '0004_auto_20220830_0822'),
+        ('profile', '0004_auto_20220830_0822'),
     ]
 
     operations = [

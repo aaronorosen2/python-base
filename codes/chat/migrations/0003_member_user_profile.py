@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('s3_uploader', '0003_user_profile'),
+        ('profile', '0003_user_profile'),
         ('chat', '0002_auto_20220825_0649'),
     ]
 
@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='member',
             name='user_profile',
-            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='s3_uploader.userprofile'),
+            field=models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='profile.userprofile'),
         ),
     ]

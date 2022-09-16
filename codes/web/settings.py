@@ -111,7 +111,7 @@ INSTALLED_APPS = [
     # added by dextersol
     'calendar_app',
     'manifest_app',
-    's3_uploader',
+    'profile',
     'parking',
     'signature',
     'dreamreader',
@@ -329,7 +329,7 @@ REST_FRAMEWORK = {
 
 # KNOX
 REST_KNOX = {
-  'USER_SERIALIZER': 's3_uploader.serializers.UserSerializer',
+  'USER_SERIALIZER': 'profile.serializers.UserSerializer',
 }
 
 

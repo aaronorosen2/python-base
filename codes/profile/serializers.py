@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from s3_uploader.models import UserProfile
+from profile.models import UserProfile
 from vconf.models import RoomInfo, RoomVisitors, RoomRecording, Brand, Visitor, Recording
 # from .models import UserCoustom
 from sfapp2.utils.twilio import send_confirmation_code

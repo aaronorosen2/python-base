@@ -79,9 +79,9 @@ urlpatterns = [
     path('calendar', include('calendar_app.urls')),
     path('manifest', include('manifest_app.urls')),
 
-    path('s3_uploader/', include(
-        ('s3_uploader.urls', 's3_uploader'),
-        namespace='s3_uploader')),
+    path('profile/', include(
+        ('profile.urls', 'profile'),
+        namespace='profile')),
 
     path('signature_api/', include(
         ('signature.urls', 'signature_api'),

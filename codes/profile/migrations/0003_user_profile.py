@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('s3_uploader', '0002_delete_user'),
+        ('profile', '0002_delete_user'),
     ]
 
     operations = [

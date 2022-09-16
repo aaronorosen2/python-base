@@ -7,7 +7,7 @@ from rest_framework import status
 from .models import item, order, subscription, userProfile as profile,BrainTreeConfig, StripeConfig, teacherUIMessage
 from neighbormade.models import Neighborhood
 from .serializers import itemSerializer, orderSerializer
-from s3_uploader.views import upload_to_s3
+from profile.views import upload_to_s3
 from knox.models import AuthToken
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view

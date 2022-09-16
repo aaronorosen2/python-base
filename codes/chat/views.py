@@ -28,7 +28,7 @@ from asgiref.sync import async_to_sync, sync_to_async
 from sfapp2.utils.twilio import send_sms
 import calendar
 import time
-from s3_uploader.models import UserProfile
+from profile.models import UserProfile
 from rest_framework.pagination import PageNumberPagination
 import json
 # =====================================Org================================================

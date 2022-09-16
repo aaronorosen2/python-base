@@ -1,6 +1,6 @@
 # from django.db import models
 from django.contrib.auth import get_user_model
-from s3_uploader.models import UserProfile
+from profile.models import UserProfile
 from django.db import models
 # from knox.auth import get_user_model
 import os

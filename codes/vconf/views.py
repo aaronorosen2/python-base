@@ -24,7 +24,7 @@ from rest_framework.views import APIView
 class RoomInfoView(View):
 
     def get(self, request, *args, **kwargs):
-        return render(request, "s3_uploader/upload_room_logo.html")
+        return render(request, "profile/upload_room_logo.html")
 
 
 class BrandInfo(generics.RetrieveAPIView, generics.UpdateAPIView):

@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('s3_uploader', '__first__'),
+        ('profile', '__first__'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
                 ('message_text', models.TextField(blank=True)),
                 ('from_user', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='from_user', to=settings.AUTH_USER_MODEL)),
                 ('to_user', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='to_user', to=settings.AUTH_USER_MODEL)),
-                ('user_profile', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='s3_uploader.userprofile')),
+                ('user_profile', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='profile.userprofile')),
             ],
         ),
         migrations.CreateModel(
@@ -70,7 +70,7 @@ class Migration(migrations.Migration):
                 ('message_text', models.TextField(blank=True)),
                 ('channel', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='chat.channel')),
                 ('user', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('user_profile', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='s3_uploader.userprofile')),
+                ('user_profile', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='profile.userprofile')),
             ],
         ),
         migrations.CreateModel(

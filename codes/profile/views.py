@@ -25,7 +25,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from s3_uploader.models import UserProfile
+from profile.models import UserProfile
 from sfapp2.utils.twilio import send_confirmation_code
 from rest_framework.parsers import FileUploadParser
 from .serializers import ChangePasswordSerializer, UserProfileSerializers
@@ -58,7 +58,7 @@ User=get_user_model()
 @method_decorator(csrf_exempt, name='dispatch')
 class Home(View):
     def get(self, request, *args, **kwargs):
-        return render(request, "s3_uploader/upload.html")
+        return render(request, "profile/upload.html")
 
 
 # Register User
@@ -67,7 +67,7 @@ class UserRegister(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
     def get(self, request, *args, **kwargs):
-        return render(request, "s3_uploader/register.html")
+        return render(request, "profile/register.html")
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -90,7 +90,7 @@ class UserRegister(generics.GenericAPIView):
 #     parser_class = (FileUploadParser,)
 
 #     def get(self, request, *args, **kwargs):
-#         return render(request, "s3_uploader/register.html")
+#         return render(request, "profile/register.html")
 
 #     def post(self, request, *args, **kwargs):
 #         print("🚀 ~ file: views.py ~ line 67 ~ request.FILES['photo']", type(request.data.get('photo')))

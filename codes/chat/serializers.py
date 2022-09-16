@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from .models import *
 from django.contrib.auth.models import User
-from s3_uploader.serializers import   UserProfileShowSerializers
-from s3_uploader.models import   UserProfile
+from profile.serializers import   UserProfileShowSerializers
+from profile.models import   UserProfile
 
 
 class OrgSerializers(serializers.ModelSerializer):
