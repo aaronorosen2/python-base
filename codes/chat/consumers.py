@@ -153,6 +153,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             msg_from_db = await self.load_message(text_data)
             send_data = msg_from_db  
             await self.print_details(send_data)
+            
             await self.channel_layer.group_send(
             self.room_name,
             {

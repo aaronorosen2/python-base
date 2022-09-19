@@ -60,7 +60,7 @@ class OrgApiView(ListAPIView):
     
     def patch(self, request, pk,*args, **kwargs):
         try:
-            request.data['created_by'] = request.user.id  
+            request.data['user'] = request.user.id  
             org_info = Org.objects.get(id = pk)
             serializer = OrgSerializers(org_info, data=request.data,partial=True)
             if serializer.is_valid():
@@ -73,8 +73,9 @@ class OrgApiView(ListAPIView):
 
     def post(self, request, format=None, *args, **kwargs):
         try:
-            request.data['created_by'] = request.user.id  
-            serilizers = OrgSerializers( data=request.data,many = True)
+            request.data['user'] = request.user.id  
+            serilizers = OrgSerializersPost( data=request.data)
+
             if serilizers.is_valid():
                 serilizers.save()
                 return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
@@ -149,7 +150,7 @@ class ChannelApiView(ListAPIView):
             print(a)
             request.data['image'] = "https://"+request.get_host()+"/static/group_profile_pic/"+str(ts)+".jpg"
             request.data['created_by'] = request.user.id            
-            serializers = ChannelSerializers(data=request.data,many = True)
+            serializers = ChannelSerializers(data=request.data)
             print(request.data)
 
             if serializers.is_valid():
@@ -303,7 +304,7 @@ class ChannelMemberApiView(ListAPIView):
     
     def patch(self, request, pk,*args, **kwargs):
         try: 
-            channelmember_info = ChannelMember.objects.get(id = pk)
+            channelmember_info = ChannelMember.objects.get(user=request.user,Channel=pk)
             serializer = ChannelMemberSerializers(channelmember_info, data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -723,16 +724,25 @@ class UserCountApi(ListAPIView):
             if id is not None:
 
                 channel_member_info = ChannelMember.objects.filter(Channel=id)
-                serializer = UserCountSerializers(channel_member_info,many=True)
-                json_data = json.dumps(serializer.data)
-                payload = json.loads(json_data)
+                userCountSerializers = UserCountSerializers(channel_member_info,many=True)
+                json_data = json.dumps(userCountSerializers.data)
+                payloadUser = json.loads(json_data)
                 value = []
-                for i in payload:
-                    channel_member_info = Member.objects.get(id = i['user'])
-                    value.append(channel_member_info)
+                for i in payloadUser:
+                    user_member_info = User.objects.get(id = i['user'])
+                    value.append(user_member_info)
 
-                serializer = MemberSerializers(value,many=True)
-                return Response(serializer.data)
+                userSerializer = AllAuthUserSerializer(value,many=True)
+                json_data = json.dumps(userSerializer.data)
+                payload = json.loads(json_data)
+                tempValue = []
+
+                for item in payload:
+                    channel_member_info = UserProfile.objects.get(user = item['id'])
+                    tempValue.append(channel_member_info)
+                    
+                userInfoserializer = UserInfoProfileSerializers(tempValue,many=True)
+                return Response(userInfoserializer.data)
             else:
                 return Response({"error": str(ex)}, status=400)
         except Exception as ex:
@@ -800,3 +810,54 @@ class List_all_user_group_search(ListAPIView):
             return Response(data, status=200)
         except Exception as ex:
             return Response({"error":"not get  data because some error "+str(ex)}, status=400)
+
+   
+# ========================================================User Request=========================================================================
+@method_decorator(csrf_exempt, name='dispatch')
+class UserRequestView(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserRequestSerializers
+
+    def get(self, request, org=None,Channel=None, *args, **kwargs):  
+        try:
+            info = UserRequest.objects.filter(org= org , Channel=Channel)
+            serializer = self.get_serializer(info,many=True)
+            return Response(serializer.data)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
+
+    def post(self, request, format=None, *args, **kwargs):
+        try:  
+            serializers = UserRequestSerializers(data=request.data)
+            print(dir(serializers),"-=-=-")
+            if serializers.is_valid():
+                serializers.save()
+                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
+            return Response({'msg':'Try again!'}, status=400)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
+
+    
+    def patch(self, request,pk,*args, **kwargs):
+        try: 
+            info = UserRequest.objects.get(id = pk)
+            serializer = UserRequestSerializers( info, data=request.data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'msg':'data Udated'}, status=status.HTTP_201_CREATED)
+            return Response({"msg": "No Content"},status=204)
+        except Exception as ex:
+            return Response({"error": str(ex)},status=400)
+
+    def delete(self, request, pk=None, *args, **kwargs):
+        try:
+            id = pk
+            info = UserRequest.objects.get(id=int(id))
+            if id is not None:
+                info = UserRequest.objects.get(id=int(id))
+                info.delete()
+                return Response({"message": "Successfully Deleted!"}, status=200)
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
+            

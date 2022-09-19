@@ -31,6 +31,12 @@ class MessageSMSAdmin(admin.ModelAdmin):
 class ClientsAdmin(admin.ModelAdmin): 
     list_display = [field.name for field in Clients._meta.fields]
 
+class UserRequestAdmin(admin.ModelAdmin): 
+    list_display = [field.name for field in UserRequest._meta.fields]
+
+
+admin.site.register(UserRequest, UserRequestAdmin)
+
 admin.site.register(Org, OrgAdmin)
 # admin.site.register(Message, MessageAdmin)
 admin.site.register(Channel, ChannelAdmin)

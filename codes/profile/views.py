@@ -75,8 +75,7 @@ class UserRegister(generics.GenericAPIView):
 
         try:
             user = serializer.save()
-            var_user =  UserProfile.objects.update_or_create(user = user,) 
-            var_user.save()
+            UserProfile.objects.update_or_create(user = user,) 
             return Response({
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
             "token": AuthToken.objects.create(user)[1]
@@ -342,7 +341,8 @@ def upload_to_s3(s3_key, uploaded_file):
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
     secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
-
+    print()
+    print()
     if not key or not secret:
         print("No key or secret found")
         s3_client = boto3.client('s3')

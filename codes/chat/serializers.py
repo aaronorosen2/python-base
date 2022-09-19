@@ -5,7 +5,14 @@ from profile.serializers import   UserProfileShowSerializers
 from profile.models import   UserProfile
 
 
+class AllAuthUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id','username','first_name','last_name')
+
+
 class OrgSerializers(serializers.ModelSerializer):
+    user = AllAuthUserSerializer()
     class Meta:
         model = Org
         fields = '__all__'
@@ -89,10 +96,7 @@ class PaginationUserSerializers(serializers.ModelSerializer):
         model = MessageUser
         fields = '__all__'
 
-class AllAuthUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id','username','first_name','last_name')
+
 
 class MemberSerializers(serializers.ModelSerializer):
     user = AllAuthUserSerializer()
@@ -106,10 +110,26 @@ class ChannelMemberSerializers(serializers.ModelSerializer):
     Channel = ChannelSerializers()
     class Meta:
         model = ChannelMember
-        fields = ('id','Channel')
-        # fields = '__all__' 
+        fields = ('id','Channel','modified_at','designation')
 
 class UserCountSerializers(serializers.ModelSerializer):
     class Meta:
         model = ChannelMember
         fields = ('id','user',) 
+    
+class UserRequestSerializers(serializers.ModelSerializer):
+    user = AllAuthUserSerializer()
+    class Meta:
+        model=UserRequest
+        fields="__all__"
+
+class UserInfoProfileSerializers(serializers.ModelSerializer):
+    user = AllAuthUserSerializer()
+    class Meta:
+        model = UserProfile
+        fields = ['id','image','user']
+
+class OrgSerializersPost(serializers.ModelSerializer):
+    class Meta:
+        model = Org
+        fields = '__all__' 

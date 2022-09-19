@@ -30,9 +30,11 @@ class Channel(models.Model):
                             default='https://www.iconfinder.com/icons/636895/users_avatar_group_human_people_profile_team_icon')
     created_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                                    null=True, blank=True, default=None)
+    about = models.CharField(max_length=1000, blank=True, default='Please add something about channel here') 
     name = models.CharField(max_length=100, blank=True, default='')
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True, default=None)
+
     class Meta:
         unique_together = ('name', 'org')
 
@@ -61,7 +63,11 @@ class Member(models.Model):
     def __str__(self) -> str:
         return f"--{self.user}--"
 
-
+designation_choice = (
+    ("1", "joined"),
+    ("0","leave"),
+    ("-1","terminated"),   
+    )
 class ChannelMember(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     Channel = models.ForeignKey(Channel, on_delete=models.CASCADE,
@@ -76,6 +82,9 @@ class ChannelMember(models.Model):
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True,
                             default=None)
+    modified_at = models.DateTimeField(auto_now=True)
+    designation =models.CharField(max_length=100,choices=designation_choice, default="1")
+    
     class Meta:
         unique_together = ('Channel', 'org', 'user')
 
@@ -152,3 +161,24 @@ class MessageSMS(models.Model):
     def __str__(self) -> str:
         return f"From {self.user} To {self.to_phone_number}"
     
+request_type_choice = (
+    ("0","cancel"),
+    ("1","joined"),   
+    ("2", "requested"),
+    )
+# ==========================UserRequest=============================================
+class UserRequest(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
+                             null=True, blank=True,
+                             default=None)
+    Channel = models.ForeignKey(Channel, on_delete=models.CASCADE,
+                            null=True, blank=True,
+                            default=None)
+    org = models.ForeignKey(Org, on_delete=models.CASCADE,
+                            null=True, blank=True,
+                            default=None)
+    request_type=models.CharField(max_length=256,choices=request_type_choice,default="2")
+    created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
+    
+    class Meta:
+        unique_together = ('user', 'org','Channel',)

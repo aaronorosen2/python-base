@@ -32,5 +32,9 @@ urlpatterns = [
     path('get/user_and_group_list/', views.List_all_user_group_search.as_view(), name='list_user'),
     # It will count and display all user list 
     path('get/channel/user_list/<str:pk>',views.UserCountApi.as_view(),name='user_count_list'),
+    path('userRequest/',views.UserRequestView.as_view(),name='user_count_list'),
+    path('userRequest/<int:org>/<int:Channel>',views.UserRequestView.as_view(),name='user_count_list'),
+
+
 
 ]
