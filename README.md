@@ -14,7 +14,6 @@ start local database:
 
 Setup other components
 
-
 ```
 pip install virtualenv
 virtualenv -p python3 venv
