@@ -292,8 +292,9 @@ class ChannelMemberApiView(ListAPIView):
 
 
     def post(self, request, format=None, *args, **kwargs):
-        try:             
-            serilizers = ChannelMemberSerializers(data=request.data)
+        try:
+            request.data['added_by']=request.user.id
+            serilizers = SingleChannelMemberSerializers(data=request.data)
             if serilizers.is_valid():
                 serilizers.save()
                 return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
@@ -769,12 +770,13 @@ def get_user_search(request):
 def get_group_serach(request): 
         try:
             User = request.user
-            channel_member_info = ChannelMember.objects.all().order_by('-created_at')
-            serializer = ChannelMemberSerializers(channel_member_info,many=True)
+            channel_member_info = Channel.objects.all().order_by('-created_at')
+            serializer = ChannelAndOrgSerializers(channel_member_info,many=True)
+            
             json_data = json.dumps(serializer.data)
             payload = json.loads(json_data)
             for item in payload:
-                time = {'modified_at' : item['Channel']['modified_at']}
+                time = {'modified_at' : item['modified_at']}
                 type = {'type':'Channel'}
                 item.update(type)
                 item.update(time)
@@ -829,12 +831,13 @@ class UserRequestView(ListAPIView):
 
     def post(self, request, format=None, *args, **kwargs):
         try:  
-            serializers = UserRequestSerializers(data=request.data)
-            print(dir(serializers),"-=-=-")
+            serializers = SingleUserRequestSerializers(data=request.data)
             if serializers.is_valid():
                 serializers.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            return Response({'msg':'Try again!'}, status=400)
+                json_data = json.dumps(serializers.data)
+                payload = json.loads(json_data)
+                return Response(payload, status=status.HTTP_201_CREATED)
+            return Response({'msg': "error"}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
 

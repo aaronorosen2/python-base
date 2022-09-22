@@ -127,4 +127,4 @@ class UserProfileShowSerializers(serializers.ModelSerializer):
     # user = CurrentSerializer()
     class Meta:
         model = UserProfile
-        fields = ('image','phone_number')
+        fields = '__all__'

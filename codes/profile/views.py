@@ -351,6 +351,7 @@ def upload_to_s3(s3_key, uploaded_file):
             's3', aws_access_key_id=key, aws_secret_access_key=secret)
 
     content_type, _ = mimetypes.guess_type(s3_key)
+    print(content_type,"--------------------------------")
     s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key,
                              ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
 
@@ -557,7 +558,8 @@ class ProfileUploadApiView(ListAPIView):
             print(serializer,"=")
             if serializer.is_valid():
                 serializer.save()
-                return Response({'msg':'data Updates'}, status=status.HTTP_201_CREATED)
+                return Response({'msg':'data Updates','image':request.data['image']}, status=status.HTTP_201_CREATED)
+
             return Response({"msg": "No Content"},status=204)
         except Exception as ex:
             return Response({"error": str(ex)},status=400)
