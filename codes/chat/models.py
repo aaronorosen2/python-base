@@ -62,10 +62,11 @@ class Member(models.Model):
 
     def __str__(self) -> str:
         return f"--{self.user}--"
-
-designation_choice = (
-    ("1", "joined"),
-    ("0","leave"),
+request_type_choice = (
+    ("0","joined"),   
+    ("1","cancel"),
+    ("2","leave"),
+    ("3", "requested"),
     ("-1","terminated"),   
     )
 class ChannelMember(models.Model):
@@ -83,7 +84,7 @@ class ChannelMember(models.Model):
                             null=True, blank=True,
                             default=None)
     modified_at = models.DateTimeField(auto_now=True)
-    designation =models.CharField(max_length=100,choices=designation_choice, default="1")
+    designation =models.CharField(max_length=100,choices=request_type_choice, default="0")
     
     class Meta:
         unique_together = ('Channel', 'org', 'user')
@@ -161,11 +162,14 @@ class MessageSMS(models.Model):
     def __str__(self) -> str:
         return f"From {self.user} To {self.to_phone_number}"
     
-request_type_choice = (
-    ("0","cancel"),
-    ("1","joined"),   
-    ("2", "requested"),
-    )
+# request_type_choice = (
+#     ("0","joined"),   
+#     ("1","cancel"),
+#     ("2","leave"),
+#     ("3", "requested"),
+#     ("-1","terminated"),   
+#     )
+
 # ==========================UserRequest=============================================
 class UserRequest(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
@@ -177,8 +181,11 @@ class UserRequest(models.Model):
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True,
                             default=None)
-    request_type=models.CharField(max_length=256,choices=request_type_choice,default="2")
+    request_type=models.CharField(max_length=256,choices=request_type_choice,default="3")
     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     
     class Meta:
         unique_together = ('user', 'org','Channel',)
+        
+    def __str__(self) -> str:
+        return f"--{self.user}--{self.Channel}--{self.request_type}"

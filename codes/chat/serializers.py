@@ -17,7 +17,12 @@ class OrgSerializers(serializers.ModelSerializer):
         model = Org
         fields = '__all__'
 
-
+class ChannelAndOrgSerializers(serializers.ModelSerializer):
+    org=OrgSerializers()
+    class Meta:
+        model = Channel
+        fields = '__all__'
+        
 class ChannelSerializers(serializers.ModelSerializer):
     class Meta:
         model = Channel
@@ -105,6 +110,11 @@ class MemberSerializers(serializers.ModelSerializer):
         model = Member
         fields = '__all__'
 
+class SingleChannelMemberSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = ChannelMember
+        fields = '__all__'
+
 
 class ChannelMemberSerializers(serializers.ModelSerializer):
     Channel = ChannelSerializers()
@@ -119,6 +129,12 @@ class UserCountSerializers(serializers.ModelSerializer):
     
 class UserRequestSerializers(serializers.ModelSerializer):
     user = AllAuthUserSerializer()
+    class Meta:
+        model=UserRequest
+        fields="__all__"
+        
+class SingleUserRequestSerializers(serializers.ModelSerializer):
+    # user = AllAuthUserSerializer()
     class Meta:
         model=UserRequest
         fields="__all__"

@@ -35,5 +35,6 @@ urlpatterns = [
      path('list_courses/', list_courses, name='list_courses'),
      path('list_courses_protected/', list_courses_auth,
           name='list_courses_protected'),
-     path('user/profile_update/', ProfileUploadApiView.as_view(), name='register')
+     path('user/profile_update/', ProfileUploadApiView.as_view(), name='register'),
+     path('user/profile_update/<str:pk>', ProfileUploadApiView.as_view(), name='register_12')
      ]    

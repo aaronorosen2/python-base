@@ -1,3 +1,4 @@
+from xml.etree.ElementTree import QName
 from rest_framework.pagination import PageNumberPagination
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
@@ -46,14 +47,14 @@ class OrgApiView(ListAPIView):
 
     def get(self, request, pk=None, *args, **kwargs):
         try:
-            id = pk
+            id = request.user.id
             if id is not None:     
-                org_info = Org.objects.get(id=int(id))
-                serializer = self.get_serializer(org_info)
+                org_info = Org.objects.filter(user=int(id)).order_by('-created_at')
+                serializer = self.get_serializer(org_info,many=True)
+                print(serializer.data)
                 return Response(serializer.data)
-            org_info = Org.objects.all()
-            serializer = self.get_serializer(org_info,many=True)
-            return Response(serializer.data)
+            return Response({"error":"Not Getting Any"})
+
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
 
@@ -78,10 +79,10 @@ class OrgApiView(ListAPIView):
 
             if serilizers.is_valid():
                 serilizers.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            return Response({'msg':'Not valid Parameters'}, status=400)
+                return Response({'msg':'data created', 'data':json.loads(json.dumps(serilizers.data))}, status=status.HTTP_201_CREATED)
+            return Response({'error':json.loads(json.dumps(serilizers.errors))}, status=203)
         except Exception as ex:
-            return Response({"error": str(ex)}, status=400)
+            return Response({"error": str(ex)}, status=403)
 
     def delete(self, request, pk=None, *args, **kwargs):
         id = pk
@@ -112,7 +113,7 @@ class ChannelApiView(ListAPIView):
                 serializer = self.get_serializer(channel_info)
                 return Response(serializer.data)
 
-            channel_info = Channel.objects.all()
+            channel_info = Channel.objects.all().order_by("-created_at")
             serializer = self.get_serializer(channel_info,many=True)
             return Response(serializer.data)
         except Exception as ex:
@@ -155,7 +156,7 @@ class ChannelApiView(ListAPIView):
 
             if serializers.is_valid():
                 serializers.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
+                return Response({'msg': json.loads(json.dumps(serializers.data))}, status=status.HTTP_201_CREATED)
             return Response({'msg':'Try again!'}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
@@ -292,12 +293,34 @@ class ChannelMemberApiView(ListAPIView):
 
 
     def post(self, request, format=None, *args, **kwargs):
+        request.data['added_by']=request.user.id
         try:             
-            serilizers = ChannelMemberSerializers(data=request.data)
+            serilizers = SingleChannelMemberSerializers(data=request.data)
+            channel_layer = get_channel_layer()
             if serilizers.is_valid():
                 serilizers.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            return Response({'msg':'Try again!'}, status=400)
+                # channel_info = Channel.objects.get(id=request.data['Channel'])
+                # user  =  User.objects.get(id = int(request.data['user']))
+                # print(user.username,channel_info.name)
+                # msg =  {
+                # "media_link":  None,
+                # "message_text": str(user.username)+' joined group',
+                # "message_type": "group-info-update",
+                # "meta_attributes": "api",
+                # "user_profile" : user.id,
+                # "channel": channel_info.id,
+                # "user":user.id
+                # }  
+                # msgSer = MessageChannelSerializers(data=msg)
+                
+                # if msgSer.is_valid():
+                #     msgSer.save()   
+                #     channel_layer = get_channel_layer() 
+                    # async_to_sync(channel_layer.group_send)(
+                    # f"{channel_info.name}", {"type": "notification.broadcast",
+                    # "message": json.dumps(msgSer.data)})
+                return Response({'msg':json.loads(json.dumps(serilizers.data))}, status=status.HTTP_201_CREATED)
+            return Response({'error': json.loads(json.dumps(serilizers.errors))}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
 
@@ -766,18 +789,36 @@ def get_user_search(request):
         except Exception as ex:
             return Response({"error":"not get  data because some error "+str(ex)}, status=400)
         
+def get_is_user_connected(channel,org,User):
+    
+    getInfo = ChannelMember.objects.filter(org= int(org) , Channel= int(channel), user = int(User))
+    if(getInfo.__len__()!=0):
+        info = getInfo.get()
+        print(info.designation)
+        return info.designation
+    
+    getRequestedInfo =  UserRequest.objects.filter(org= int(org) , Channel= int(channel), user = int(User))
+    if(getRequestedInfo.__len__() != 0 ):
+        info = getRequestedInfo.get()
+        return info.request_type
+    
+    return 1
+
 def get_group_serach(request): 
         try:
             User = request.user
-            channel_member_info = ChannelMember.objects.all().order_by('-created_at')
-            serializer = ChannelMemberSerializers(channel_member_info,many=True)
+            channel_member_info = Channel.objects.all().order_by('-created_at')
+            serializer = ChannelAndOrgSerializers(channel_member_info,many=True)
             json_data = json.dumps(serializer.data)
             payload = json.loads(json_data)
             for item in payload:
-                time = {'modified_at' : item['Channel']['modified_at']}
+                requestType = get_is_user_connected(item['id'],item['org']['id'],User.id)
+                time = {'modified_at' : item['modified_at']}
                 type = {'type':'Channel'}
+                requested = {'requested' : requestType }
                 item.update(type)
                 item.update(time)
+                item.update(requested)
             return payload
         except Exception as ex:
             return Response({"error":"not get  data because some error"}, status=400)
@@ -791,7 +832,8 @@ class List_all_user_group_search(ListAPIView):
     def get(self, request, *args, **kwargs):   
         paginator = PageNumberPagination()
         try:
-            user = get_user_search(request=request)
+            # user = get_user_search(request=request)
+            user = []
             channel = get_group_serach(request=request)
             jsonMerged = user + channel
             jsonMerged.sort(key=lambda x: x['modified_at'],reverse = True)
@@ -829,20 +871,22 @@ class UserRequestView(ListAPIView):
 
     def post(self, request, format=None, *args, **kwargs):
         try:  
-            serializers = UserRequestSerializers(data=request.data)
-            print(dir(serializers),"-=-=-")
+            serializers = SingleUserRequestSerializers(data=request.data)
             if serializers.is_valid():
                 serializers.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            return Response({'msg':'Try again!'}, status=400)
+                json_data = json.dumps(serializers.data)
+                payload = json.loads(json_data)
+                return Response(payload, status=status.HTTP_201_CREATED)
+            print(dir(serializers))
+            return Response({'msg': serializers.errors}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
 
     
     def patch(self, request,pk,*args, **kwargs):
         try: 
-            info = UserRequest.objects.get(id = pk)
-            serializer = UserRequestSerializers( info, data=request.data,partial=True)
+            info = UserRequest.objects.get(user = request.user.id)
+            serializer = SingleUserRequestSerializers( info, data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response({'msg':'data Udated'}, status=status.HTTP_201_CREATED)
@@ -850,14 +894,24 @@ class UserRequestView(ListAPIView):
         except Exception as ex:
             return Response({"error": str(ex)},status=400)
 
-    def delete(self, request, pk=None, *args, **kwargs):
+    def delete(self, request,pk=None, org=None,Channel=None, *args, **kwargs):
         try:
             id = pk
-            info = UserRequest.objects.get(id=int(id))
             if id is not None:
-                info = UserRequest.objects.get(id=int(id))
-                info.delete()
+                getRequestedInfo = UserRequest.objects.get(id=int(id))
+                getRequestedInfo.delete()
                 return Response({"message": "Successfully Deleted!"}, status=200)
+                
+            if Channel is not None:
+                getRequestedInfo =  UserRequest.objects.filter(
+                                                               user = request.user.id,
+                                                               org= org ,     
+                                                               Channel= Channel,
+                                                               )
+                getRequestedInfo.delete()
+                return Response({"message": "Successfully Deleted!"}, status=200)
+            
+            return Response({"error": "Orginization, Channel, User, or Id were not provided!"}, status=200)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
             

@@ -232,7 +232,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
    
 
     async def notification_broadcast(self, event): 
-        print("*****  notification_broadcast*************** ")
+        print("*****notification_broadcast*************** ")
         await self.send(text_data=event["message"])
 
     async def error_message(self, event):       

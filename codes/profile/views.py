@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import redirect, HttpResponseRedirect
 import logging
 import mimetypes
@@ -467,115 +468,97 @@ class User_login_JWT(TokenObtainPairView):
         return return_data
 
 
-from rest_framework.generics import ListAPIView
-from django.db import models
+# def handle_uploaded_file(f,fileName):
+#     module_dir = os.path.dirname(__file__)
+#     try: 
+#         os.mkdir(os.path.join(
+#                  module_dir, '..', 'staticfiles/userprofiles/'))
+#     except FileExistsError:
+#         pass
 
-
-def handle_uploaded_file(f,fileName):
-    module_dir = os.path.dirname(__file__)
-    try: 
-        os.mkdir(os.path.join(
-                 module_dir, '..', 'staticfiles/userprofiles/'))
-    except FileExistsError:
-        pass
-
-    file_path = os.path.abspath(os.path.join(
-            module_dir, '..', 'staticfiles/userprofiles/', str(fileName))+'.jpg')
-    with open(file_path, 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
-    return True 
+#     file_path = os.path.abspath(os.path.join(
+#             module_dir, '..', 'staticfiles/userprofiles/', str(fileName))+'.jpg')
+#     with open(file_path, 'wb+') as destination:
+#         for chunk in f.chunks():
+#             destination.write(chunk)
+#     return True 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ProfileUploadApiView(ListAPIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
     
-    # queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializers
     
     def get(self, request, pk=None, *args, **kwargs):
         try:
-            if request.user:
-                user = request.user
-            else:
-                user = pk
-            if id is not None:
+            # if request.user:
+            #     user = request.user.id
+            # else:
+            user = pk
+            if user is not None:
                 member_info = UserProfile.objects.get(user= user)
-                
-                
+                print(member_info)
                 serializer = self.get_serializer(member_info)
-
                 return Response(serializer.data)
-
-            return Response(serializer.data)
+            return Response({"error": "provide user id display"}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
 
-    def post(self, request, format=None, *args, **kwargs):
-        login_user = request.user
-        request.data['user'] = login_user.id
-        try:   
-            gmt = time.gmtime()
-            ts = calendar.timegm(gmt)
-            handle_uploaded_file(request.FILES['image'] , ts)
+    # def post(self, request, format=None, *args, **kwargs):
+    #     login_user = request.user
+    #     request.data['user'] = login_user.id
+    #     try:   
+    #         print(request.data)
+    #         # gmt = time.gmtime()
+    #         # ts = calendar.timegm(gmt)
+    #         # handle_uploaded_file(request.FILES['image'] , ts)
             
-            file_url = ("https://"+request.get_host()+
-                            "/static/userprofiles/"+str(ts)+'.jpg')
-            request.data['image'] = str(file_url)
+    #         # file_url = ("https://"+request.get_host()+
+    #         #                 "/static/userprofiles/"+str(ts)+'.jpg')
+    #         # request.data['image'] = str(file_url)
+    #         serilizers = UserProfileSerializers(data=request.data)
+    #         if serilizers.is_valid():  
+    #             createChannel = {'image':request.data['image'],
+    #             'modified_at' : models.DateTimeField(auto_now=True),
+    #             'phone_number':request.data['phone_number']
+    #             }
+    #             UserProfile.objects.update_or_create(user = login_user, defaults=createChannel) 
+    #             # serilizers.save()
+    #             return Response({'msg':'data created','document_id': request.data['image']}, 
+    #                             status=status.HTTP_201_CREATED)
             
-            serilizers = UserProfileSerializers(data=request.data)
-            if serilizers.is_valid():  
-                createChannel = {'image':request.data['image'],
-                'modified_at' : models.DateTimeField(auto_now=True),
-                'phone_number':request.data['phone_number']
-                }
-                UserProfile.objects.update_or_create(user = login_user, defaults=createChannel) 
-                # serilizers.save()
-                return Response({'msg':'data created','document_id': request.data['image']}, status=status.HTTP_201_CREATED)
-            
-            return Response({'msg':'Try again!'}, status=400)
-        except Exception as ex:
-            return Response({"error": str(ex)}, status=400)
+    #         return Response({'msg':'Try again!'}, status=400)
+    #     except Exception as ex:
+    #         return Response({"error": str(ex)}, status=400)
 
             
     def patch(self, request, *args, **kwargs):
         try: 
             user =  request.user
-            user_info = UserProfile.objects.get(user= user)
-            try:   
-                gmt = time.gmtime()
-                ts = calendar.timegm(gmt)
-                handle_uploaded_file(request.FILES['image'] , ts)
-                
-                file_url = ("https://"+request.get_host()+
-                                "/static/userprofiles/"+str(ts)+'.jpg')
-                request.data['image'] = str(file_url)
-            except:
-                print("Image is not updating...")
-                
+            user_info = UserProfile.objects.get(user = user)                
             serializer = UserProfileSerializers(user_info, data=request.data,partial=True)
-            print(serializer,"=")
             if serializer.is_valid():
                 serializer.save()
-                return Response({'msg':'data Updates'}, status=status.HTTP_201_CREATED)
+                log = json.loads(json.dumps(serializer.data))
+                print(log)
+                return Response({'msg':'data Updates','data':log}, status=status.HTTP_201_CREATED)
             return Response({"msg": "No Content"},status=204)
         except Exception as ex:
             return Response({"error": str(ex)},status=400)
 
-    def delete(self, request, pk=None, *args, **kwargs):
-        login_user = request.user   
-        request.data['user'] = login_user.id
-        request.data['image'] = ''
-        try:
-            serilizers = UserProfileSerializers(data=request.data)
+    # def delete(self, request, pk=None, *args, **kwargs):
+    #     login_user = request.user   
+    #     request.data['user'] = login_user.id
+    #     request.data['image'] = ''
+    #     try:
+    #         serilizers = UserProfileSerializers(data=request.data)
                 
-            if serilizers.is_valid():  
-                createChannel = {'image': request.data['image'],
-                'modified_at' : models.DateTimeField(auto_now=True)
-                }
-                UserProfile.objects.update_or_create(user = login_user, defaults=createChannel) 
-                
-                return Response({"message": "Successfully Deleted!"}, status=200)
-        except Exception as ex:
-            return Response({"error": str(ex)}, status=400)
+    #         if serilizers.is_valid():  
+    #             createChannel = {'image': request.data['image'],
+    #             'modified_at' : models.DateTimeField(auto_now=True)
+    #             }
+    #             UserProfile.objects.update_or_create(user = login_user, defaults=createChannel) 
+    #             return Response({"message": "Successfully Deleted!"}, status=200)
+    #     except Exception as ex:
+    #         return Response({"error": str(ex)}, status=400)
