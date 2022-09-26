@@ -256,13 +256,14 @@ ASGI_APPLICATION = 'web.routing.application'
 
 db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
 db_user = os.environ.get('db_user', 'postgres')
+db_host = os.environ.get('db_host', '3.21.231.89')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres1',
+        'NAME': 'postgres',
         'USER': db_user,
-        'HOST': '18.117.227.68',
+        'HOST': db_host,
         'PORT': '5433',
         'PASSWORD': db_password,
     }
