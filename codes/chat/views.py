@@ -66,8 +66,8 @@ class OrgApiView(ListAPIView):
             serializer = OrgSerializers(org_info, data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            return Response({"msg": "No Content"},status=204)
+                return Response({'msg':'data created', 'data': json.loads(json.dumps(serializer.data))}, status=status.HTTP_201_CREATED)
+            return Response({"error": json.loads(json.dumps(serializer.errors))},status=204)
         except Exception as ex:
             return Response({"error": str(ex)},status=400)
 
@@ -79,7 +79,7 @@ class OrgApiView(ListAPIView):
 
             if serilizers.is_valid():
                 serilizers.save()
-                return Response({'msg':'data created', 'data':json.loads(json.dumps(serilizers.data))}, status=status.HTTP_201_CREATED)
+                return Response({'msg':'Data Updated', 'data':json.loads(json.dumps(serilizers.data))}, status=status.HTTP_201_CREATED)
             return Response({'error':json.loads(json.dumps(serilizers.errors))}, status=203)
         except Exception as ex:
             return Response({"error": str(ex)}, status=403)
@@ -109,11 +109,11 @@ class ChannelApiView(ListAPIView):
         try:
             id = pk
             if id is not None:
-                channel_info = Channel.objects.get(id=int(id))
-                serializer = self.get_serializer(channel_info)
-                return Response(serializer.data)
+                channel_info = Channel.objects.filter(org=int(id))
+                serializer = self.get_serializer(channel_info,many=True)
+                return Response(serializer.data,status=200)
 
-            channel_info = Channel.objects.all().order_by("-created_at")
+            channel_info = Channel.objects.filter(created_by = request.user.id).order_by("-created_at")
             serializer = self.get_serializer(channel_info,many=True)
             return Response(serializer.data)
         except Exception as ex:
@@ -294,31 +294,16 @@ class ChannelMemberApiView(ListAPIView):
 
     def post(self, request, format=None, *args, **kwargs):
         request.data['added_by']=request.user.id
-        try:             
+        try:  
+            try:           
+                channel_member_info = ChannelMember.objects.get(user=request.data['user'],org=request.data['org'],Channel=request.data['Channel'])
+                if channel_member_info:
+                    channel_member_info.delete()
+            except:
+                pass
             serilizers = SingleChannelMemberSerializers(data=request.data)
-            channel_layer = get_channel_layer()
             if serilizers.is_valid():
                 serilizers.save()
-                # channel_info = Channel.objects.get(id=request.data['Channel'])
-                # user  =  User.objects.get(id = int(request.data['user']))
-                # print(user.username,channel_info.name)
-                # msg =  {
-                # "media_link":  None,
-                # "message_text": str(user.username)+' joined group',
-                # "message_type": "group-info-update",
-                # "meta_attributes": "api",
-                # "user_profile" : user.id,
-                # "channel": channel_info.id,
-                # "user":user.id
-                # }  
-                # msgSer = MessageChannelSerializers(data=msg)
-                
-                # if msgSer.is_valid():
-                #     msgSer.save()   
-                #     channel_layer = get_channel_layer() 
-                    # async_to_sync(channel_layer.group_send)(
-                    # f"{channel_info.name}", {"type": "notification.broadcast",
-                    # "message": json.dumps(msgSer.data)})
                 return Response({'msg':json.loads(json.dumps(serilizers.data))}, status=status.HTTP_201_CREATED)
             return Response({'error': json.loads(json.dumps(serilizers.errors))}, status=400)
         except Exception as ex:
@@ -641,7 +626,7 @@ class GetUserMessageApiView(ListAPIView):
 
 
 # ========================================== N - Number of Message for Group ==================================================
-
+from django.db.models import Q
 @method_decorator(csrf_exempt, name='dispatch')
 class GetGroupMessageApiView(ListAPIView):
     authentication_classes = (JWTAuthentication,)
@@ -655,7 +640,9 @@ class GetGroupMessageApiView(ListAPIView):
             
             channel = request.query_params['channel']
             records = request.query_params['records']
-            queryset = MessageChannel.objects.filter(channel_id=channel).order_by('-created_at')
+            channel_member_info = ChannelMember.objects.get(user=request.user.id,Channel=channel)
+            print("Channel_member_info",channel_member_info.created_at)
+            queryset = MessageChannel.objects.filter(channel_id=channel).filter(Q(created_at__gte = channel_member_info.created_at)).order_by('-created_at')
             paginator.page_size_query_param = 'record'
             page_size = int(records)
             page_query_param = 'p'

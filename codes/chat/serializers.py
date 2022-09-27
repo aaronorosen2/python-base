@@ -120,7 +120,7 @@ class ChannelMemberSerializers(serializers.ModelSerializer):
     Channel = ChannelSerializers()
     class Meta:
         model = ChannelMember
-        fields = ('id','Channel','modified_at','designation')
+        fields = '__all__'
 
 class UserCountSerializers(serializers.ModelSerializer):
     class Meta:
