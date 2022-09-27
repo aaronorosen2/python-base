@@ -342,8 +342,7 @@ def upload_to_s3(s3_key, uploaded_file):
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     key = getattr(settings, 'AWS_ACCESS_KEY_ID', None)
     secret = getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
-    print()
-    print()
+
     if not key or not secret:
         print("No key or secret found")
         s3_client = boto3.client('s3')
@@ -353,6 +352,7 @@ def upload_to_s3(s3_key, uploaded_file):
             's3', aws_access_key_id=key, aws_secret_access_key=secret)
 
     content_type, _ = mimetypes.guess_type(s3_key)
+    print(content_type,"--------------------------------")
     s3_client.upload_fileobj(uploaded_file, bucket_name, s3_key,
                              ExtraArgs={'ACL': 'public-read', 'ContentType': content_type})
 

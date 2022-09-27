@@ -1,5 +1,6 @@
 from django.urls import path, include
 from knox import views as knox_views
+from django.views.decorators.csrf import csrf_exempt
 from .views import (ProfileUploadApiView, UserRegister, PasswordReset, UserCourses, UserLogin, \
                    AllCourses, list_courses, list_courses_auth, \
                    ChangePasswordView, Home, S3SignedUrl, S3Upload, \

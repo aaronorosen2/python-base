@@ -16,10 +16,10 @@ User = get_user_model()
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
     # Link to password reset page
-    SERVER_URL = "https://teacher.dreampotential.org"
+    SERVER_URL = "https://teacher-v2.dreampotential.org"
     # SERVER_URL = "http://localhost:8084"
 
-    reset_url = "{}/index.html?token={}".format(SERVER_URL, reset_password_token.key)
+    reset_url = "{}/CreatePassword?token={}".format(SERVER_URL, reset_password_token.key)
 
 
     email_plaintext_message = f'''To reset your password, visit the following link: 

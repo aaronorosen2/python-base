@@ -139,6 +139,11 @@ class SingleUserRequestSerializers(serializers.ModelSerializer):
         model=UserRequest
         fields="__all__"
 
+class SingleUserRequestSerializers(serializers.ModelSerializer):
+    class Meta:
+        model=UserRequest
+        fields="__all__"
+
 class UserInfoProfileSerializers(serializers.ModelSerializer):
     user = AllAuthUserSerializer()
     class Meta:
