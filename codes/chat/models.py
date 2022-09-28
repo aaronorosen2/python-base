@@ -22,7 +22,10 @@ class Org(models.Model):
     # website
     # channel = models.ForeignKey('Channel', on_delete=models.CASCADE)
 
-
+activeType = (
+    ("0","exist"),   
+    ("5","arcade"),   
+    )
 class Channel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
@@ -34,7 +37,7 @@ class Channel(models.Model):
     name = models.CharField(max_length=100, blank=True, default='')
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True, default=None)
-
+    isExist =models.CharField(max_length=100,choices=activeType, default="0")
     class Meta:
         unique_together = ('name', 'org')
 
@@ -67,7 +70,8 @@ request_type_choice = (
     ("1","cancel"),
     ("2","leave"),
     ("3", "requested"),
-    ("-1","terminated"),   
+    ("4","terminated"),   
+    ("5","arcade"),   
     )
 class ChannelMember(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

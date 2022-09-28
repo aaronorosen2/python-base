@@ -179,24 +179,21 @@ class ChannelApiView(ListAPIView):
                 request.data['image'] = str(file_url)
                 serializer = ChannelSerializers(channel_info, data=request.data,partial=True)
                 if serializer.is_valid():
-                  serializer.save()
+                    serializer.save()
                 return Response({'msg':'Image Updated'}, status=status.HTTP_201_CREATED)
                 
             else:
-                 channel_info = Channel.objects.get(id = pk)
-                 serializer = ChannelSerializers(channel_info, data=request.data,partial=True)
-                 if serializer.is_valid():
+                channel_info = Channel.objects.get(id = pk)
+                serializer = ChannelSerializers(channel_info, data=request.data,partial=True)
+                if serializer.is_valid():
                     serializer.save()
-                    return Response({'msg':'data Updated'}, status=status.HTTP_201_CREATED)
-                 return Response({"msg": "No Content"},status=204)
+                    if request.data['isExist'] :
+                        updateMembers(serializer.data,request.data['isExist'])
+                    return Response({'msg':'data Updated','update':request.data,'data':json.loads(json.dumps(serializer.data))}, status=status.HTTP_201_CREATED)
+                return Response({"msg": "No Content"},status=204)
         except Exception as ex:
             return Response({"error": str(ex)},status=400)
-
-        
-    
          
-
-            
     def delete(self, request, pk=None, *args, **kwargs):
         id = pk
         try:
@@ -208,6 +205,23 @@ class ChannelApiView(ListAPIView):
             return Response({"error": str(ex)}, status=400)
 
 
+def updateMembers(Channel,value):
+    channel_member_info = ChannelMember.objects.filter(Channel=Channel['id'],org=Channel['org'])
+    serializer = SingleChannelMemberSerializers(data=channel_member_info,many=True)
+    serializer.is_valid()
+    payload = json.loads(json.dumps(serializer.data))
+    for item in payload:
+        channelmember_info = ChannelMember.objects.get(id=int(item['id']))
+        serializer = SingleChannelMemberSerializers(channelmember_info, data={'designation':value},partial=True)
+        if serializer.is_valid():
+            serializer.save()
+        print(item['id'])
+    
+    # member_info = Member.objects.get(id = pk)
+    # serializer = MemberSerializers(member_info, data=request.data,partial=True)
+    # if serializer.is_valid():
+    #     serializer.save()
+        
 # ======================================Member======================================================
 
 @method_decorator(csrf_exempt, name='dispatch')
