@@ -1,3 +1,4 @@
+from urllib import response
 from xml.etree.ElementTree import QName
 from rest_framework.pagination import PageNumberPagination
 from django.views.decorators.csrf import csrf_exempt
@@ -217,11 +218,6 @@ def updateMembers(Channel,value):
             serializer.save()
         print(item['id'])
     
-    # member_info = Member.objects.get(id = pk)
-    # serializer = MemberSerializers(member_info, data=request.data,partial=True)
-    # if serializer.is_valid():
-    #     serializer.save()
-        
 # ======================================Member======================================================
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -325,13 +321,17 @@ class ChannelMemberApiView(ListAPIView):
 
     
     def patch(self, request, pk,*args, **kwargs):
-        try: 
-            channelmember_info = ChannelMember.objects.get(user=request.user,Channel=pk)
+        try:
+            try:
+                channelmember_info = ChannelMember.objects.get(user=request.data['user'],Channel=pk)
+            except:
+                channelmember_info = ChannelMember.objects.get(user=request.user,Channel=pk)
+                
             serializer = ChannelMemberSerializers(channelmember_info, data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
-            return Response({"msg": "No Content"},status=204)
+                return Response({'msg':'data Updated','update':request.data,'data':json.loads(json.dumps(serializer.data))}, status=status.HTTP_201_CREATED)
+            return Response({"error": json.loads(json.dumps(serializer.data))},status=204)
         except Exception as ex:
             return Response({"error": str(ex)},status=400)
 
@@ -747,7 +747,7 @@ class UserCountApi(ListAPIView):
             id = pk
             if id is not None:
 
-                channel_member_info = ChannelMember.objects.filter(Channel=id)
+                channel_member_info = ChannelMember.objects.filter(Channel=id).filter(designation = '0')
                 userCountSerializers = UserCountSerializers(channel_member_info,many=True)
                 json_data = json.dumps(userCountSerializers.data)
                 payloadUser = json.loads(json_data)
