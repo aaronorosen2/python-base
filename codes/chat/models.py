@@ -1,4 +1,5 @@
 # from django.db import models
+from operator import truediv
 from django.contrib.auth import get_user_model
 from profile.models import UserProfile
 from django.db import models
@@ -37,7 +38,7 @@ class Channel(models.Model):
     name = models.CharField(max_length=100, blank=True, default='')
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True, default=None)
-    isExist =models.CharField(max_length=100,choices=activeType, default="0")
+    isExist =models.CharField(max_length=100,choices=activeType, default="0",null=True)
     class Meta:
         unique_together = ('name', 'org')
 
@@ -88,7 +89,7 @@ class ChannelMember(models.Model):
                             null=True, blank=True,
                             default=None)
     modified_at = models.DateTimeField(auto_now=True)
-    designation =models.CharField(max_length=100,choices=request_type_choice, default="0")
+    designation =models.CharField(max_length=100,choices=request_type_choice, default="0",null=True)
     
     class Meta:
         unique_together = ('Channel', 'org', 'user')
@@ -185,7 +186,7 @@ class UserRequest(models.Model):
     org = models.ForeignKey(Org, on_delete=models.CASCADE,
                             null=True, blank=True,
                             default=None)
-    request_type=models.CharField(max_length=256,choices=request_type_choice,default="3")
+    request_type=models.CharField(max_length=256,choices=request_type_choice,default="3",null=True)
     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     
     class Meta:
