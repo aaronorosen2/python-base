@@ -655,8 +655,12 @@ class GetGroupMessageApiView(ListAPIView):
             channel = request.query_params['channel']
             records = request.query_params['records']
             channel_member_info = ChannelMember.objects.get(user=request.user.id,Channel=channel)
-            print("Channel_member_info",channel_member_info.created_at)
-            queryset = MessageChannel.objects.filter(channel_id=channel).filter(Q(created_at__gte = channel_member_info.created_at)).order_by('-created_at')
+            print("Channel_member_info",channel_member_info.designation == '4',channel_member_info.designation == '5',)
+            if (channel_member_info.designation == '5' or channel_member_info.designation == '4'):
+                queryset = MessageChannel.objects.filter(channel_id=channel).filter(Q(created_at__lte = channel_member_info.modified_at)).order_by('-created_at')
+            else:   
+                queryset = MessageChannel.objects.filter(channel_id=channel).filter(Q(created_at__gte = channel_member_info.created_at)).order_by('-created_at')
+            
             paginator.page_size_query_param = 'record'
             page_size = int(records)
             page_query_param = 'p'
