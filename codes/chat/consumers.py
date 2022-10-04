@@ -115,7 +115,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     self.close()
                 else:  
                     print('closing ************')
-                    # self.close()
+                    self.close()
             else:
                 
                 self.close()
@@ -151,14 +151,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             msg_from_db = await self.load_message(text_data)
-            send_data = msg_from_db  
-            await self.print_details(send_data)
+            msg_from_db = json.loads(json.dumps(msg_from_db))
+            print('==========================')
+            msg_from_db["unead_message_count"] = await self.get_group_user_unread_messages(self.user_id,self.get_channel_id(self.room_name))       
+            print('==========================')
+            await self.print_details(msg_from_db)
             
             await self.channel_layer.group_send(
             self.room_name,
             {
                 'type': 'notification_broadcast',
-                'message':  json.dumps(send_data),
+                'message':  json.dumps(msg_from_db),
             },
             )
         except:
@@ -185,7 +188,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except:
             print('Error: Unknown ERROR **************')
             pass
+    @database_sync_to_async
+    def get_channel_id(self,roomanme):
+        try:
+            id = Channel.objects.filter(name = roomanme).last()
+            return id
+        except User.DoesNotExist:
+            return 0
 
+    @database_sync_to_async
+    def get_group_user_unread_messages(self,user_id,channel):
+        try:
+            messageUser_instance = MessageChannel.objects.filter(user=user_id).filter(channel=channel)
+            groupUserLastSeen_instance = GroupUserLastSeen.objects.filter(user=user_id).filter(channel = channel).last()
+            print(groupUserLastSeen_instance)
+            if groupUserLastSeen_instance:
+                count=0
+                for i in messageUser_instance:
+                    print(i.created_at , groupUserLastSeen_instance.last_visit,i.message_text)
+                    print(i.created_at > groupUserLastSeen_instance.last_visit)
+                    if i.created_at >groupUserLastSeen_instance.last_visit:
+                        count+=1
+                # print(y)
+                print(count,"-------------------")
+                return count
+        except User.DoesNotExist:
+            return 0
     
     async def load_message(self, text_data):
         try:
@@ -288,6 +316,26 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
             return our_user.exists()
         except User.DoesNotExist:
             return False
+    @database_sync_to_async
+    def get_user_unread_messages(self,user_id,receiver_id):
+        try:
+            # x = MessageUser.objects.filter(from_user=user_id).filter(to_user=receiver_id).filter(created_at__gte =)
+            messageUser_instance = MessageUser.objects.filter(from_user=user_id).filter(to_user=receiver_id)
+            # g = UserLastSeen.objects.filter(user=user_id).filter(end_user=receiver_id).last()
+            userLastSeen_instance = UserLastSeen.objects.filter(user=receiver_id).filter(end_user=user_id).last()
+            print(userLastSeen_instance)
+            if userLastSeen_instance:
+                count=0
+                for i in messageUser_instance:
+                    print(i.created_at , userLastSeen_instance.last_visit,i.message_text)
+                    print(i.created_at > userLastSeen_instance.last_visit)
+                    if i.created_at > userLastSeen_instance.last_visit:
+                        count+=1
+                # print(y)
+                print(count,"-------------------")
+                return count
+        except User.DoesNotExist:
+            return 0
 
     @database_sync_to_async
     def to_channel_name(self,id):
@@ -361,7 +409,10 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         msg_from_db = await self.load_message(text_data)
-
+        # lastseen = await self.get_user_lastseen()
+        msg_from_db = json.loads(json.dumps(msg_from_db))
+        msg_from_db["unread_message_count"] = await self.get_user_unread_messages(self.user_id,self.receiver_id)
+        # msg_from_db["unread_message_count"] = self.y
         if await self.is_client_active(self.user_id):
             await self.channel_layer.send(
                     await self.to_channel_name(self.user_id),
@@ -390,6 +441,15 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
         except:
             print('***** Error while getting profile pic *****')
             return False
+    @database_sync_to_async
+    def get_user_lastseen(self, user_id):
+        try:
+            print('Fetching LASTSEEN from DB:')
+            
+        except:
+            print('**** Error while getting LASTSEEN ****')
+            return False
+
     @sync_to_async
     def message_detail_serializer(self,message_details):
         message_serializer = MessageUserSerializers(data=message_details)

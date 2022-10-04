@@ -33,10 +33,15 @@ class ClientsAdmin(admin.ModelAdmin):
 
 class UserRequestAdmin(admin.ModelAdmin): 
     list_display = [field.name for field in UserRequest._meta.fields]
+class UserLastSeenAdmin(admin.ModelAdmin): 
+    list_display = [field.name for field in UserLastSeen._meta.fields]
+class GroupUserLastSeenAdmin(admin.ModelAdmin): 
+    list_display = [field.name for field in GroupUserLastSeen._meta.fields]
 
 
 admin.site.register(UserRequest, UserRequestAdmin)
-
+admin.site.register(GroupUserLastSeen,GroupUserLastSeenAdmin)
+admin.site.register(UserLastSeen,UserLastSeenAdmin)
 admin.site.register(Org, OrgAdmin)
 # admin.site.register(Message, MessageAdmin)
 admin.site.register(Channel, ChannelAdmin)
