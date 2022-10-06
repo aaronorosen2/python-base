@@ -16,6 +16,7 @@ services:
           - db
           - db_password
           - db_user
+          - db_host
 
 
     web_websocket:
@@ -35,6 +36,8 @@ services:
           - db
           - db_password
           - db_user
+          - db_host
+
 
 
 
