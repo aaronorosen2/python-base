@@ -614,12 +614,14 @@ class GetUserMessageApiView(ListAPIView):
     
     def get(self, request , *args, **kwargs):
         paginator = PageNumberPagination()
+        user = request.query_params['user']
+        UserLastSeen.objects.update_or_create(user=User.objects.get(id= request.user.id),end_user=User.objects.get(id=user))
+
+        MessageUser.objects.filter(from_user=User.objects.get(id= request.user.id)).filter(to_user=User.objects.get(id=user)).update(message_status="read")
         try:
-            user = request.query_params['user']
             records = request.query_params['records']
             queryset = MessageUser.objects.filter(to_user=user, from_user=request.user).order_by('-created_at')
             queryset_2 = MessageUser.objects.filter(to_user =request.user, from_user=user).order_by('-created_at')
-            
             new_queryset = queryset_2 | queryset
             paginator.page_size_query_param = 'record'
             page_size = int(records)
@@ -650,9 +652,12 @@ class GetGroupMessageApiView(ListAPIView):
     
     def get(self, request , *args, **kwargs):
         paginator = PageNumberPagination()
+        channel = request.query_params['channel']
+
+        print(Channel.objects.filter(id=channel).last())
+        GroupUserLastSeen.objects.update_or_create(user=User.objects.get(id= request.user.id),channel=Channel.objects.filter(id=channel).last())
+        
         try:       
-            
-            channel = request.query_params['channel']
             records = request.query_params['records']
             channel_member_info = ChannelMember.objects.get(user=request.user.id,Channel=channel)
             print("Channel_member_info",channel_member_info.designation == '4',channel_member_info.designation == '5',)

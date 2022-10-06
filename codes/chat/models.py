@@ -136,6 +136,8 @@ class MessageUser(models.Model):
     media_link =  models.URLField(max_length = 256, null = True, 
                                             blank = True, default='')
     message_text= models.TextField(blank = True)
+    message_status = models.CharField(max_length = 256, null = True, 
+                                            blank = True, default='unread')
 
     def __str__(self) -> str:
         return f"To- {self.to_user}  From- {self.from_user}"
@@ -194,3 +196,29 @@ class UserRequest(models.Model):
         
     def __str__(self) -> str:
         return f"--{self.user}--{self.Channel}--{self.request_type}"
+
+
+class UserLastSeen(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
+                             null=True, blank=True,
+                             related_name="user_login")
+
+    end_user=models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
+                             null=True, blank=True,
+                             related_name="end_user")
+    last_visit=models.DateTimeField(auto_now=True,null=True, blank=True)
+      
+    class Meta:
+        unique_together = ('user', 'end_user',)
+
+
+class GroupUserLastSeen(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
+                             null=True, blank=True)
+
+    channel=models.ForeignKey(Channel, on_delete=models.CASCADE,
+                             null=True, blank=True,)
+    last_visit=models.DateTimeField(auto_now=True,null=True, blank=True)
+      
+    class Meta:
+        unique_together = ('user', 'channel',)

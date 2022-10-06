@@ -258,42 +258,33 @@ db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
 db_user = os.environ.get('db_user', 'postgres')
 db_host = os.environ.get('db_host', '3.21.231.89')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': db_user,
-        'HOST': db_host,
-        'PORT': '5433',
-        'PASSWORD': db_password,
-    }
-}
-
-# db_password = os.environ.get('db_password', 'codingislife')
-# db_user = os.environ.get('db_user', 'postgres')
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'store',
-#         'USER': 'postgres',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#         'PASSWORD': 'hellothere',
-#     }
-# }
-
-# testing
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 #         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#         'PASSWORD': 'Digitallab'
+#         'USER': db_user,
+#         'HOST': '18.117.227.68',
+#         'PORT': '5433',
+#         'PASSWORD': db_password,
 #     }
 # }
+
+# db_password = os.environ.get('db_password', 'codingislife')
+# db_user = os.environ.get('db_user', 'postgres')
+
+
+
+# testing
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres2',
+        'USER': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5433',
+        'PASSWORD': db_password 
+    }
+}
 
 
 # Password validation
@@ -321,7 +312,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ("rest_framework.renderers.JSONRenderer",),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         # 'knox.auth.TokenAuthentication',
     ),
@@ -368,7 +359,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [("localhost", 6379)],
         },
     },
 }
