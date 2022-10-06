@@ -152,11 +152,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             msg_from_db = await self.load_message(text_data)
             msg_from_db = json.loads(json.dumps(msg_from_db))
-            print('==========================')
-            msg_from_db["unead_message_count"] = await self.get_group_user_unread_messages(self.user_id,self.get_channel_id(self.room_name))       
-            print('==========================')
+            msg_from_db["unead_message_count"] = await self.get_group_user_unread_messages(self.user_id, await self.get_channel_id(self.room_name))       
+            msg_from_db['unead_message_count_dict'] = {1:2,2:3,3:10}
             await self.print_details(msg_from_db)
-            
             await self.channel_layer.group_send(
             self.room_name,
             {
@@ -165,7 +163,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             },
             )
         except:
-            pass
+            print('************Error receive*********')
+            
         
 
     @sync_to_async
@@ -188,16 +187,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except:
             print('Error: Unknown ERROR **************')
             pass
+
     @database_sync_to_async
     def get_channel_id(self,roomanme):
         try:
-            id = Channel.objects.filter(name = roomanme).last()
-            return id
+            channel= Channel.objects.filter(name = roomanme).last()
+            return channel.id
         except User.DoesNotExist:
             return 0
 
     @database_sync_to_async
     def get_group_user_unread_messages(self,user_id,channel):
+
         try:
             messageUser_instance = MessageChannel.objects.filter(user=user_id).filter(channel=channel)
             groupUserLastSeen_instance = GroupUserLastSeen.objects.filter(user=user_id).filter(channel = channel).last()
@@ -205,12 +206,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if groupUserLastSeen_instance:
                 count=0
                 for i in messageUser_instance:
-                    print(i.created_at , groupUserLastSeen_instance.last_visit,i.message_text)
-                    print(i.created_at > groupUserLastSeen_instance.last_visit)
                     if i.created_at >groupUserLastSeen_instance.last_visit:
                         count+=1
-                # print(y)
-                print(count,"-------------------")
+                print(count)
                 return count
         except User.DoesNotExist:
             return 0
@@ -299,6 +297,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 # =============================================MessageUser==================================================
 # This will Delete all data in Clients if we restart the server
 Clients.objects.all().delete()
+
+
 class MessageUserConsumer(AsyncWebsocketConsumer):
 
     user_channel_name_list = {} #dict of all active users
@@ -316,23 +316,19 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
             return our_user.exists()
         except User.DoesNotExist:
             return False
+
     @database_sync_to_async
     def get_user_unread_messages(self,user_id,receiver_id):
         try:
-            # x = MessageUser.objects.filter(from_user=user_id).filter(to_user=receiver_id).filter(created_at__gte =)
             messageUser_instance = MessageUser.objects.filter(from_user=user_id).filter(to_user=receiver_id)
-            # g = UserLastSeen.objects.filter(user=user_id).filter(end_user=receiver_id).last()
             userLastSeen_instance = UserLastSeen.objects.filter(user=receiver_id).filter(end_user=user_id).last()
             print(userLastSeen_instance)
             if userLastSeen_instance:
                 count=0
                 for i in messageUser_instance:
-                    print(i.created_at , userLastSeen_instance.last_visit,i.message_text)
-                    print(i.created_at > userLastSeen_instance.last_visit)
                     if i.created_at > userLastSeen_instance.last_visit:
                         count+=1
-                # print(y)
-                print(count,"-------------------")
+                print(count,"*********Unread Message Count************")
                 return count
         except User.DoesNotExist:
             return 0

@@ -616,7 +616,7 @@ class GetUserMessageApiView(ListAPIView):
         paginator = PageNumberPagination()
         user = request.query_params['user']
         UserLastSeen.objects.update_or_create(user=User.objects.get(id= request.user.id),end_user=User.objects.get(id=user))
-        print("===========================")
+
         MessageUser.objects.filter(from_user=User.objects.get(id= request.user.id)).filter(to_user=User.objects.get(id=user)).update(message_status="read")
         try:
             records = request.query_params['records']
@@ -653,10 +653,7 @@ class GetGroupMessageApiView(ListAPIView):
     def get(self, request , *args, **kwargs):
         paginator = PageNumberPagination()
         channel = request.query_params['channel']
-        print(channel)
-        print()
-        print()
-        print()
+
         print(Channel.objects.filter(id=channel).last())
         GroupUserLastSeen.objects.update_or_create(user=User.objects.get(id= request.user.id),channel=Channel.objects.filter(id=channel).last())
         
