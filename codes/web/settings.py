@@ -258,33 +258,33 @@ db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
 db_user = os.environ.get('db_user', 'postgres')
 db_host = os.environ.get('db_host', '3.21.231.89')
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'postgres',
-#         'USER': db_user,
-#         'HOST': '18.117.227.68',
-#         'PORT': '5433',
-#         'PASSWORD': db_password,
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres2',
+        'USER': db_user,
+        'HOST': '18.117.227.68',
+        'PORT': '5433',
+        'PASSWORD': db_password,
+    }
+}
 
 # db_password = os.environ.get('db_password', 'codingislife')
 # db_user = os.environ.get('db_user', 'postgres')
 
 
 
-# testing
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres2',
-        'USER': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5433',
-        'PASSWORD': db_password 
-    }
-}
+# # testing
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'postgres2',
+#         'USER': 'postgres',
+#         'HOST': 'localhost',
+#         'PORT': '5433',
+#         'PASSWORD': db_password 
+#     }
+# }
 
 
 # Password validation
