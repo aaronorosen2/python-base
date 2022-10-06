@@ -76,12 +76,14 @@ class UserRegister(generics.GenericAPIView):
 
         try:
             user = serializer.save()
-            UserProfile.objects.update_or_create(user = user,) 
+            UserProfile.objects.update_or_create(user = user,)
             return Response({
             "user": UserSerializer(user, context=self.get_serializer_context()).data,
-            "token": AuthToken.objects.create(user)[1]
+           # "token": AuthToken.objects.create(user)[1]
         })
-        except:
+        except Exception as e:
+            print("************************************")
+            print(e)
             return Response({"msg": f"This email address is already registered with us"},
                             status=status.HTTP_409_CONFLICT)
 

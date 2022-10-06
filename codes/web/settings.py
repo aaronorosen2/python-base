@@ -72,7 +72,7 @@ if DEBUG:
             },
         'loggers': {
             'django': {
-                'handlers': ['file'],
+                'handlers': ['file', 'console'],
                 'level': 'INFO',
                 'propagate': True,
             },
@@ -320,9 +320,9 @@ REST_FRAMEWORK = {
 }
 
 # KNOX
-REST_KNOX = {
-  'USER_SERIALIZER': 'profile.serializers.UserSerializer',
-}
+#REST_KNOX = {
+#  'USER_SERIALIZER': 'profile.serializers.UserSerializer',
+#}
 
 
 SIMPLE_JWT = {
@@ -359,7 +359,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("localhost", 6379)],
+            "hosts": [("redis", 6379)],
         },
     },
 }
