@@ -17,6 +17,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     user_dictionary = {}
     user_channels_details = {}
+    user_unread_message_count_dict = {}
     user_counter = 0
     user_name = 'Anonymous'
     user_list = []
@@ -156,8 +157,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             msg_from_db = await self.load_message(text_data)
             msg_from_db = json.loads(json.dumps(msg_from_db))
-            msg_from_db["unead_message_count"] = await self.get_group_user_unread_messages(self.user_id, await self.get_channel_id(self.room_name))       
-            msg_from_db['unead_message_count_dict'] = {1:2,2:3,3:10}
+            msg_from_db['unead_message_count_dict']= await self.get_group_user_unread_messages(self.user_id, await self.get_channel_id(self.room_name)) 
+        
             await self.print_details(msg_from_db)
             await self.channel_layer.group_send(
             self.room_name,
@@ -202,20 +203,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_group_user_unread_messages(self,user_id,channel):
-
+        user_unread_message_count_dict = {}
+        print("*********get_group_user_unread_messages***********")
         try:
-            messageUser_instance = MessageChannel.objects.filter(user=user_id).filter(channel=channel)
-            groupUserLastSeen_instance = GroupUserLastSeen.objects.filter(user=user_id).filter(channel = channel).last()
-            print(groupUserLastSeen_instance,'*********groupUserLastSeen_instanc******')
-        
-            if groupUserLastSeen_instance:
-                count=0
-                for i in messageUser_instance:
-                    if i.created_at >groupUserLastSeen_instance.last_visit:
+            messageUser_instance = MessageChannel.objects.filter(channel=channel)
+            groupUserLastSeen_instance = GroupUserLastSeen.objects.filter(channel = channel)
+            for m in groupUserLastSeen_instance:
+                print(m.user,"---",m.user.id,"---",m.last_visit)
+            for i in groupUserLastSeen_instance:
+                count =0
+                for j in messageUser_instance:
+                    if j.created_at > i.last_visit:
                         count+=1
-                print(count)
-                return count
+                user_unread_message_count_dict[i.user.id] = count
+            return user_unread_message_count_dict
+            
         except User.DoesNotExist:
+            print("***********get_group_user_unread_messages************")
             return 0
     
     async def load_message(self, text_data):
