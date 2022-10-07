@@ -76,11 +76,12 @@ class UserRegister(generics.GenericAPIView):
 
         try:
             user = serializer.save()
-            UserProfile.objects.update_or_create(user = user,)
+            print(user)
+            UserProfile.objects.update_or_create(user = user,) 
+
             return Response({
-            "user": UserSerializer(user, context=self.get_serializer_context()).data,
-           # "token": AuthToken.objects.create(user)[1]
-        })
+               "user": UserSerializer(user, context=self.get_serializer_context()).data,
+            })
         except Exception as e:
             print("************************************")
             print(e)

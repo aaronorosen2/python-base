@@ -655,9 +655,9 @@ class GetGroupMessageApiView(ListAPIView):
         channel = request.query_params['channel']
 
         print(Channel.objects.filter(id=channel).last())
-        GroupUserLastSeen.objects.update_or_create(user=User.objects.get(id= request.user.id),channel=Channel.objects.filter(id=channel).last())
         
         try:       
+            GroupUserLastSeen.objects.update_or_create(user=User.objects.get(id= request.user.id),channel=Channel.objects.filter(id=channel).last())
             records = request.query_params['records']
             channel_member_info = ChannelMember.objects.get(user=request.user.id,Channel=channel)
             print("Channel_member_info",channel_member_info.designation == '4',channel_member_info.designation == '5',)

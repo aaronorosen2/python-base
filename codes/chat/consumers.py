@@ -29,15 +29,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     @database_sync_to_async
     def get_room(self,user_id,room_name):
+        
         try:
             print('Checking Channel and channel member exits or not')
             room_name = Channel.objects.get(name=room_name)
+            print(room_name,"room name********************************")
             print('Room detail from DB:', room_name)
             our_channel = ChannelMember.objects.filter(Channel=room_name).filter(user=user_id)
-            print("Our channel member detail :", our_channel, our_channel.exists())
-            return our_channel.exists()
-        except ObjectDoesNotExist as e:
-            print(f'**** {e} *****')
+            print(our_channel,"ourchannel******************************")
+            if our_channel:
+                print("Our channel member detail :", our_channel, our_channel.exists())
+                return 1
+        except:
+            print(f'****error in getting room*****')
             return False
 
     @database_sync_to_async
@@ -202,7 +206,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             messageUser_instance = MessageChannel.objects.filter(user=user_id).filter(channel=channel)
             groupUserLastSeen_instance = GroupUserLastSeen.objects.filter(user=user_id).filter(channel = channel).last()
-            print(groupUserLastSeen_instance)
+            print(groupUserLastSeen_instance,'*********groupUserLastSeen_instanc******')
+        
             if groupUserLastSeen_instance:
                 count=0
                 for i in messageUser_instance:
@@ -483,6 +488,7 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
         pass
 
     async def notification_to_user(self, event):
+        print("************notification to user***************")
         await self.send(text_data=event["message"])
 
     async def error_message(self, event):       
