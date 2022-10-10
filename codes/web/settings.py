@@ -139,7 +139,8 @@ INSTALLED_APPS = [
     'chat',
     'gitlab',
     "salesforce",
-    "rest_framework_simplejwt"
+    "rest_framework_simplejwt",
+    'googlevoice',
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
