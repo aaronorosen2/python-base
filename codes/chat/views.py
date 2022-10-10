@@ -695,6 +695,9 @@ def getUser(request):
             for item in payload:
                 type = {'type':'user'}
                 item.update(type)
+            # print("-------payload-----",payload)
+            for i in payload:
+                print(i)
             return payload
         except Exception as ex:
             return Response({"error":"not get  data because some error "+str(ex)}, status=400)

@@ -21,7 +21,7 @@ from notifications.views import notify
 from notifications.views import notification, admin_monitoring, vstream_html, disconnect_html
 from chat.views import chat_room
 from rest_framework_simplejwt.views import (TokenObtainPairView,
-                                            TokenRefreshView)
+                                            TokenRefreshView,TokenVerifyView)
 from rest_framework_swagger.views import get_swagger_view
 
 schema_view = get_swagger_view(title='Pastebin API')
@@ -104,6 +104,7 @@ urlpatterns = [
     path('chatroom/', chat_room),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     # path('faceswap/', include('faceswap.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import AccessToken, TokenError
 from django.contrib.auth import get_user_model
 from urllib.parse import urlparse, parse_qs
 from django.core.exceptions import ObjectDoesNotExist
+
 User = get_user_model()
 # =============================================MessageChannel============================================
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -105,7 +106,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 token = parsed_query_string.get(b"token")[0].decode("utf-8")
                 print('Validating AccessToken **************')
                 self.access_token = AccessToken(token)
+
                 self.user_id = self.access_token["user_id"]
+
                 print("Self.user_id : and channel name", self.user_id, self.channel_name)
                 if self.user_id:
                     #Adding user in dict
@@ -204,17 +207,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_group_user_unread_messages(self,user_id,channel):
         user_unread_message_count_dict = {}
-        print("*********get_group_user_unread_messages***********")
         try:
-            messageUser_instance = MessageChannel.objects.filter(channel=channel)
+            messageUser_instance = MessageChannel.objects.filter(channel=channel).order_by("-created_at")
             groupUserLastSeen_instance = GroupUserLastSeen.objects.filter(channel = channel)
-            for m in groupUserLastSeen_instance:
-                print(m.user,"---",m.user.id,"---",m.last_visit)
+
             for i in groupUserLastSeen_instance:
                 count =0
                 for j in messageUser_instance:
+                    print(j.created_at > i.last_visit,j.created_at ,i.last_visit,"j.created_at > i.last_visit")
                     if j.created_at > i.last_visit:
                         count+=1
+                    else:
+                        break
                 user_unread_message_count_dict[i.user.id] = count
             return user_unread_message_count_dict
             
@@ -329,14 +333,15 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_user_unread_messages(self,user_id,receiver_id):
         try:
-            messageUser_instance = MessageUser.objects.filter(from_user=user_id).filter(to_user=receiver_id)
+            messageUser_instance = MessageUser.objects.filter(from_user=user_id).filter(to_user=receiver_id).order_by("-created_at")
             userLastSeen_instance = UserLastSeen.objects.filter(user=receiver_id).filter(end_user=user_id).last()
-            print(userLastSeen_instance)
             if userLastSeen_instance:
                 count=0
                 for i in messageUser_instance:
                     if i.created_at > userLastSeen_instance.last_visit:
                         count+=1
+                    else:
+                        break
                 print(count,"*********Unread Message Count************")
                 return count
         except User.DoesNotExist:
@@ -417,15 +422,17 @@ class MessageUserConsumer(AsyncWebsocketConsumer):
         # lastseen = await self.get_user_lastseen()
         msg_from_db = json.loads(json.dumps(msg_from_db))
         msg_from_db["unread_message_count"] = await self.get_user_unread_messages(self.user_id,self.receiver_id)
-        # msg_from_db["unread_message_count"] = self.y
-        if await self.is_client_active(self.user_id):
-            await self.channel_layer.send(
-                    await self.to_channel_name(self.user_id),
-            {
-                'type': 'notification_to_user',
-                'message': json.dumps(msg_from_db),
-            },
-            )
+ 
+        if msg_from_db['message_type']!='message/videocall' and msg_from_db['message_type']!='message/voicecall':
+            print("===============================")
+            if await self.is_client_active(self.user_id):
+                await self.channel_layer.send(
+                        await self.to_channel_name(self.user_id),
+                {
+                    'type': 'notification_to_user',
+                    'message': json.dumps(msg_from_db),
+                },
+                )
         if await self.is_client_active(self.receiver_id):
             await self.channel_layer.send(
                     await self.to_channel_name(self.receiver_id),

@@ -154,3 +154,8 @@ class OrgSerializersPost(serializers.ModelSerializer):
     class Meta:
         model = Org
         fields = '__all__' 
+
+class UserSerializers_01(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id','username','first_name','last_name')
