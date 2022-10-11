@@ -256,6 +256,7 @@ ASGI_APPLICATION = 'web.routing.application'
 #    "db", "python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com")
 
 db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
+db_name = os.environ.get('db_user', 'postgres2')
 db_user = os.environ.get('db_user', 'postgres')
 db_host = os.environ.get('db_host', 'localhost')
 db_port = os.environ.get('db_port', '5433')
@@ -263,7 +264,7 @@ db_port = os.environ.get('db_port', '5433')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': db_user,
+        'NAME': db_name,
         'USER': db_user,
         'HOST': db_host,
         'PORT': db_port,
