@@ -72,7 +72,7 @@ if DEBUG:
             },
         'loggers': {
             'django': {
-                'handlers': ['file'],
+                'handlers': ['file', 'console'],
                 'level': 'INFO',
                 'propagate': True,
             },
@@ -139,7 +139,8 @@ INSTALLED_APPS = [
     'chat',
     'gitlab',
     "salesforce",
-    "rest_framework_simplejwt"
+    "rest_framework_simplejwt",
+    'googlevoice',
 ]
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
@@ -256,15 +257,16 @@ ASGI_APPLICATION = 'web.routing.application'
 
 db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
 db_user = os.environ.get('db_user', 'postgres')
-db_host = os.environ.get('db_host', '3.21.231.89')
+db_host = os.environ.get('db_host', 'localhost')
+db_port = os.environ.get('db_port', '5433')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres2',
+        'NAME': db_user,
         'USER': db_user,
-        'HOST': '18.117.227.68',
-        'PORT': '5433',
+        'HOST': db_host,
+        'PORT': db_port,
         'PASSWORD': db_password,
     }
 }
@@ -320,9 +322,9 @@ REST_FRAMEWORK = {
 }
 
 # KNOX
-REST_KNOX = {
-  'USER_SERIALIZER': 'profile.serializers.UserSerializer',
-}
+#REST_KNOX = {
+#  'USER_SERIALIZER': 'profile.serializers.UserSerializer',
+#}
 
 
 SIMPLE_JWT = {
@@ -359,7 +361,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("localhost", 6379)],
+            "hosts": [("redis", 6379)],
         },
     },
 }
