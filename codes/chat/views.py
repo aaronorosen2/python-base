@@ -683,21 +683,24 @@ class GetGroupMessageApiView(ListAPIView):
             
             
 # =============================================List User and Groups=====================================
-
-def getUser(request):   
+def getUser(request):
         try:
-            # channel_member_info = Member.objects.filter(user=User).order_by('-created_at')
-            channel_member_info = Member.objects.all().order_by('-modified_at')
-            serializer = MemberSerializers(channel_member_info,many=True)
+            user_member_info = User.objects.all()
+            serializer = CurrentUserSerializer(user_member_info,many=True,)
             json_data = json.dumps(serializer.data)
             payload = json.loads(json_data)
-            
             for item in payload:
+                print(item)
+                member_info = UserProfile.objects.get(user=int(item['id']))
+                serializer = UserProfileSerializers(member_info)
                 type = {'type':'user'}
+                user_profile={'user_profile':serializer.data}
+                item.update(user_profile)
+                time = {'modified_at' : "2022-10-01T05:15:01.708840Z"}
                 item.update(type)
-            # print("-------payload-----",payload)
-            for i in payload:
-                print(i)
+                item.update(time)
+                item.update(item)
+                item.update({'user':json.loads(json.dumps(item))})
             return payload
         except Exception as ex:
             return Response({"error":"not get  data because some error "+str(ex)}, status=400)
