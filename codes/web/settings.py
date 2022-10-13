@@ -255,9 +255,8 @@ ASGI_APPLICATION = 'web.routing.application'
 #db_server = os.environ.get(
 #    "db", "python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com")
 
-db_password = os.environ.get('db_password', 'EhB4bINnDFmzI0Bg')
-db_name = os.environ.get('db_user', 'postgres2')
 db_user = os.environ.get('db_user', 'postgres')
+db_password = os.environ.get('db_password', 'BFAATYmce')
 db_host = os.environ.get('db_host', 'localhost')
 db_port = os.environ.get('db_port', '5433')
 
@@ -416,4 +415,3 @@ APPEND_SLASH=False
 STRIPE_TEST_PUBLISHABLE_KEY='pk_test_51Kycp9I0iCCc2SMWQAXTYzlcYg4FeexqIwsPywXpqqbACoVDnmpH3JP7pZPjLUqh9ktRAnlOigvn4gpi3yhcnU8E00bHXBUNJT'
 STRIPE_TEST_SECRET_KEY='sk_test_51Kycp9I0iCCc2SMWh6qqLSzvjUD9CSaSF8XE5DLN75mx2hHcEP0AnPafx3BFQAlSc1kYcrf2bXJfb4FDnqFAl5Kp00FH3NGI9X'
 TEACHER_UI_URL = os.environ.get('TEACHER_UI_URL', 'http://localhost:8086')
-
