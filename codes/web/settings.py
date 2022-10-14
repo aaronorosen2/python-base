@@ -141,6 +141,7 @@ INSTALLED_APPS = [
     "salesforce",
     "rest_framework_simplejwt"
 ]
+
 X_FRAME_OPTIONS='SAMEORIGIN' # only if django version >= 3.0
 
 FCM_DJANGO_SETTINGS = {
@@ -289,8 +290,8 @@ DATABASES = {
 #         'NAME': 'postgres',
 #         'USER': 'postgres',
 #         'HOST': 'localhost',
-#         'PORT': '5432',
-#         'PASSWORD': 'Digitallab'
+#         'PORT': '5433',
+#         'PASSWORD': db_password
 #     }
 # }
 

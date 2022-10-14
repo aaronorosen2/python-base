@@ -656,14 +656,16 @@ class GetGroupMessageApiView(ListAPIView):
 def getUser(request):   
         try:
             # channel_member_info = Member.objects.filter(user=User).order_by('-created_at')
-            channel_member_info = Member.objects.all().order_by('-modified_at')
-            serializer = MemberSerializers(channel_member_info,many=True)
+            user_member_info = User.objects.all()
+            print(user_member_info)
+            serializer = MemberSerializers(user_member_info,many=True)
             json_data = json.dumps(serializer.data)
             payload = json.loads(json_data)
             
             for item in payload:
                 type = {'type':'user'}
                 item.update(type)
+            print(payload)
             return payload
         except Exception as ex:
             return Response({"error":"not get  data because some error "+str(ex)}, status=400)
@@ -696,7 +698,7 @@ class List_all_user_group(ListAPIView):
             user = getUser(request=request)
             channel = getGroup(request=request)
             jsonMerged = user + channel
-            jsonMerged.sort(key=lambda x: x['modified_at'],reverse = True)
+            # jsonMerged.sort(key=lambda x: x['modified_at'],reverse = True)
             records = 10
             paginator.page_size_query_param = 'record'
             page_size = int(records)
@@ -752,13 +754,20 @@ class UserCountApi(ListAPIView):
 
 # =================================================List all group and users==================================================
 
-def get_user_search(request):   
+def get_user_search(request):
         try:
             # channel_member_info = Member.objects.filter(user=User).order_by('-created_at')
-            channel_member_info = Member.objects.all().order_by('-modified_at')
-            serializer = MemberSerializers(channel_member_info,many=True)
+            user_member_info = User.objects.all()
+            serializer = UserSerializers(user_member_info,many=True)
+            print("Serializer mamber infor start")
+            print(serializer)
+            print("Serializer mamber infor end")
             json_data = json.dumps(serializer.data)
+            print(json_data)
             payload = json.loads(json_data)
+            print("Pyload member info start ")
+            print(payload)
+            print("payload member info end ")
             
             for item in payload:
                 type = {'type':'user'}

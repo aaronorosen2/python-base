@@ -65,12 +65,15 @@ class Home(View):
 
 class UserRegister(generics.GenericAPIView):
     serializer_class = RegisterSerializer
-
+ 
     def get(self, request, *args, **kwargs):
         return render(request, "profile/register.html")
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+        print("data serializer start")
+        print(serializer.is_valid())
+        print("data serializer end")
         serializer.is_valid(raise_exception=True)
 
         try:

@@ -110,6 +110,13 @@ class MemberSerializers(serializers.ModelSerializer):
         model = Member
         fields = '__all__'
 
+class UserSerializers(serializers.ModelSerializer):
+    user = AllAuthUserSerializer()
+    user_profile =  UserProfileShowSerializers()
+    class Meta:
+        model = User
+        fields = '__all__'
+
 class SingleChannelMemberSerializers(serializers.ModelSerializer):
     class Meta:
         model = ChannelMember

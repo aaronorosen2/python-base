@@ -27,5 +27,6 @@ urlpatterns = [
     path('api/member_session_stop', views.member_session_stop, name="member_session_stop"),
     path('api/member_session_distance', views.member_session_distance, name="member_session_distance"),
     path('api/member_session_livedata', views.member_session_livedata, name="member_session_livedata"),
+    path('api/places', views.places.as_view(), name="places"),
 
 ]

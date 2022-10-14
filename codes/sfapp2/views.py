@@ -7,12 +7,13 @@ from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from .utils.twilio import send_confirmation_code
 from django.views.decorators.csrf import csrf_exempt
-from .models import Member, Token, Service, GpsCheckin
+from .models import Member, Token, Service, GpsCheckin, Location
 from .models import VideoUpload, MemberSession, MemberGpsEntry
 from .models import MyMed, Question, Choice, AdminFeedback, TagEntry
 from django.conf import settings
 import logging
 import boto3
+from rest_framework.generics import ListAPIView
 from botocore.exceptions import ClientError
 from knox.auth import get_user_model, AuthToken
 from rest_framework.response import Response
@@ -25,6 +26,9 @@ from django.contrib.auth.models import User
 import random
 from math import sin, cos, sqrt, atan2, radians
 import datetime
+from .serializers import LocationSerializer
+
+
 
 def to_list(el):
     if not el:
@@ -577,3 +581,11 @@ def member_session_livedata(request):
     except Exception as e:
         print("🚀 ~ file: views.py ~ line 460 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
+
+class places(ListAPIView):
+    try:
+        queryset = Location.objects.all()
+        serializer_class = LocationSerializer
+        
+    except Exception as e:
+        pass

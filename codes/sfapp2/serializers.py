@@ -2,6 +2,7 @@ from rest_framework import serializers
 from knox.auth import get_user_model
 from .models import AdminFeedback, TagEntry, Member
 from django.contrib.auth.models import User
+from .models import Location
 
 class UserSerializer(serializers.ModelSerializer):
     user_id = serializers.CharField(source='id')
@@ -37,3 +38,8 @@ class TagEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = TagEntry
         fields = ('assignedBy', 'tag', 'id')
+
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = ['id','username','latitude','longitude','position']
