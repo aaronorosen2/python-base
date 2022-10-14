@@ -309,7 +309,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 # =============================================MessageUser==================================================
 # This will Delete all data in Clients if we restart the server
-Clients.objects.all().delete()
+try:
+    Clients.objects.all().delete()
+except:
+    pass
 
 
 class MessageUserConsumer(AsyncWebsocketConsumer):
