@@ -6,11 +6,11 @@ services:
         ports:
             - 5433:5432
         volumes:
-            - ../postgres-python-base-dev:/var/lib/postgresql/data
+            - /opt/postgres-python-base:/var/lib/postgresql/data
         environment:
-            POSTGRES_DB: postgres
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: BFAATYmce
+            POSTGRES_DB: postgresdb
+            POSTGRES_USER: postgresuser
+            POSTGRES_PASSWORD: postgrespassword
         networks:
             - backend
 
