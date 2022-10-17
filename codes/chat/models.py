@@ -13,6 +13,16 @@ class Org(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE,
                              null=True, blank=True,
                              default=None)
+    image = models.CharField(max_length=500, blank = True,
+                            default='https://www.iconfinder.com/icons/636895/users_avatar_group_human_people_profile_team_icon')
+    address = models.CharField(max_length = 256,null=True, blank=True,
+                             default=None)  
+    phone_number=models.IntegerField(max_length = 10,null=True, blank=True,
+                             default=None ) 
+    about   = models.CharField(max_length = 256,null=True, blank=True,
+                             default=None)        
+    email=models.CharField(max_length = 256,null=True, blank=True,
+                             default=None)  
     meta_attributes = models.CharField(max_length=256, unique=True)
 
     def __str__(self) -> str:
