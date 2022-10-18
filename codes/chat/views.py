@@ -121,44 +121,17 @@ class ChannelApiView(ListAPIView):
             return Response({"error": str(ex)}, status=400)
     
 
-    def handle_uploaded_file(self,f,fileName):
-
-        module_dir = os.path.dirname(__file__)
-        print(module_dir)
-        try:
-            folder = os.mkdir(os.path.join(
-                    module_dir,'..', 'staticfiles/group_profile_pic/'))
-            print(folder)
-
-        except FileExistsError as fe:
-
-            print(fe)
-            print()
-            pass
-        file_path = os.path.abspath(os.path.join(
-                module_dir, '..', 'staticfiles/group_profile_pic/', str(fileName))+'.jpg')
-            # import pdb; pdb. set_trace() 
-        with open(file_path, 'wb+') as destination:
-            for chunk in f.chunks():
-                destination.write(chunk)
-            return True
-
     def post(self, request, format=None, *args, **kwargs):
         try:
-            gmt = time.gmtime()
-            ts = calendar.timegm(gmt)
-            self.handle_uploaded_file(request.FILES['image'] ,ts)
-            a = str(ts)
-            print(a)
-            request.data['image'] = "https://"+request.get_host()+"/static/group_profile_pic/"+str(ts)+".jpg"
-            request.data['created_by'] = request.user.id            
-            serializers = ChannelSerializers(data=request.data)
-            print(request.data)
 
-            if serializers.is_valid():
-                serializers.save()
-                return Response({'msg': json.loads(json.dumps(serializers.data))}, status=status.HTTP_201_CREATED)
-            return Response({'msg':'Try again!'}, status=400)
+            print(request.data)
+            serilizers = ChannelSerializers(data=request.data)
+            # print(serializers.data)
+            print(serilizers.is_valid())
+            if serilizers.is_valid():
+                serilizers.save()
+                return Response({'msg':'data created'}, status=status.HTTP_201_CREATED)
+            return Response({'msg':serilizers.error_messages}, status=400)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
    
