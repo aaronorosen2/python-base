@@ -658,12 +658,14 @@ class GetGroupMessageApiView(ListAPIView):
 # =============================================List User and Groups=====================================
 def getUser(request):
         try:
-            user_member_info = User.objects.all()
+            if(request.query_params.__contains__('search')):
+                user_member_info = User.objects.filter(username__icontains = request.query_params['search'])
+            else:
+                user_member_info = User.objects.all()
             serializer = CurrentUserSerializer(user_member_info,many=True,)
             json_data = json.dumps(serializer.data)
             payload = json.loads(json_data)
             for item in payload:
-                print(item)
                 member_info = UserProfile.objects.get(user=int(item['id']))
                 serializer = UserProfileSerializers(member_info)
                 type = {'type':'user'}
@@ -676,23 +678,37 @@ def getUser(request):
                 item.update({'user':json.loads(json.dumps(item))})
             return payload
         except Exception as ex:
-            return Response({"error":"not get  data because some error "+str(ex)}, status=400)
+            return Response({"error":"Unable To Find User's "+str(ex)}, status=400)
         
 def getGroup(request): 
         try:
+            search = None
+            if (request.query_params.__contains__('search')):
+                search = str(request.query_params['search']).lower()
             User = request.user
             channel_member_info = ChannelMember.objects.filter(user=User).order_by('-created_at')
             serializer = ChannelMemberSerializers(channel_member_info,many=True)
             json_data = json.dumps(serializer.data)
             payload = json.loads(json_data)
             for item in payload:
-                time = {'modified_at' : item['Channel']['modified_at']}
-                type = {'type':'Channel'}
-                item.update(type)
-                item.update(time)
+                t = str(item['Channel']['name'])
+                if((search is not None)):
+                    if(t.lower().__contains__(search)):
+                        time = {'modified_at' : item['Channel']['modified_at']}
+                        type = {'type':'Channel'}
+                        item.update(type)
+                        item.update(time)
+                    else:
+                        payload.remove(item)
+                else:
+                    time = {'modified_at' : item['Channel']['modified_at']}
+                    type = {'type':'Channel'}
+                    item.update(type)
+                    item.update(time)
             return payload
         except Exception as ex:
-            return Response({"error":"not get  data because some error"}, status=400)
+            return Response({"error":"Unable To Find Group's"+str(ex)}, status=400)
+ 
       
       
 @method_decorator(csrf_exempt, name='dispatch')
@@ -792,24 +808,27 @@ def get_is_user_connected(channel,org,User):
     
     return 1
 
-def get_group_serach(request): 
+def get_user_search(request):   
         try:
-            User = request.user
-            channel_member_info = Channel.objects.all().order_by('-created_at')
-            serializer = ChannelAndOrgSerializers(channel_member_info,many=True)
+            user_member_info = User.objects.all()
+            serializer = CurrentUserSerializer(user_member_info,many=True,)
             json_data = json.dumps(serializer.data)
             payload = json.loads(json_data)
             for item in payload:
-                requestType = get_is_user_connected(item['id'],item['org']['id'],User.id)
-                time = {'modified_at' : item['modified_at']}
-                type = {'type':'Channel'}
-                requested = {'requested' : requestType }
+                member_info = UserProfile.objects.get(user=int(item['id']))
+                serializer = UserProfileSerializers(member_info)
+                type = {'type':'user'}
+                user_profile={'user_profile':serializer.data}
+                item.update(user_profile)
+                time = {'modified_at' : "2022-10-01T05:15:01.708840Z"}
                 item.update(type)
                 item.update(time)
-                item.update(requested)
+                item.update(item)
+                item.update({'user':json.loads(json.dumps(item))})
             return payload
         except Exception as ex:
-            return Response({"error":"not get  data because some error"}, status=400)
+            return Response({"error":"not get  data because some error "+str(ex)}, status=400)
+ 
       
       
 @method_decorator(csrf_exempt, name='dispatch')
