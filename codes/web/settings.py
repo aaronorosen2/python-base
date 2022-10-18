@@ -255,9 +255,9 @@ ASGI_APPLICATION = 'web.routing.application'
 #db_server = os.environ.get(
 #    "db", "python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com")
 
-db_user = os.environ.get('db_user', 'postgres')
-db_password = os.environ.get('db_password', 'BFAATYmce')
-db_name = os.environ.get('db_user', 'postgres')
+db_user = os.environ.get('db_user', 'postgresuser')
+db_password = os.environ.get('db_password', 'postgrespassword')
+db_name = os.environ.get('db_user', 'postgresdb')
 db_host = os.environ.get('db_host', 'localhost')
 db_port = os.environ.get('db_port', '5433')
 
