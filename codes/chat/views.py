@@ -780,36 +780,6 @@ class UserCountApi(ListAPIView):
 
 def get_user_search(request):   
         try:
-            # channel_member_info = Member.objects.filter(user=User).order_by('-created_at')
-            channel_member_info = Member.objects.all().order_by('-modified_at')
-            serializer = MemberSerializers(channel_member_info,many=True)
-            json_data = json.dumps(serializer.data)
-            payload = json.loads(json_data)
-            
-            for item in payload:
-                type = {'type':'user'}
-                item.update(type)
-            return payload
-        except Exception as ex:
-            return Response({"error":"not get  data because some error "+str(ex)}, status=400)
-        
-def get_is_user_connected(channel,org,User):
-    
-    getInfo = ChannelMember.objects.filter(org= int(org) , Channel= int(channel), user = int(User))
-    if(getInfo.__len__()!=0):
-        info = getInfo.get()
-        print(info.designation)
-        return info.designation
-    
-    getRequestedInfo =  UserRequest.objects.filter(org= int(org) , Channel= int(channel), user = int(User))
-    if(getRequestedInfo.__len__() != 0 ):
-        info = getRequestedInfo.get()
-        return info.request_type
-    
-    return 1
-
-def get_user_search(request):   
-        try:
             user_member_info = User.objects.all()
             serializer = CurrentUserSerializer(user_member_info,many=True,)
             json_data = json.dumps(serializer.data)
@@ -828,7 +798,43 @@ def get_user_search(request):
             return payload
         except Exception as ex:
             return Response({"error":"not get  data because some error "+str(ex)}, status=400)
- 
+        
+def get_is_user_connected(channel,org,User):
+    
+    getInfo = ChannelMember.objects.filter(org= int(org) , Channel= int(channel), user = int(User))
+    if(getInfo.__len__()!=0):
+        info = getInfo.get()
+        print(info.designation)
+        return info.designation
+    
+    getRequestedInfo =  UserRequest.objects.filter(org= int(org) , Channel= int(channel), user = int(User))
+    if(getRequestedInfo.__len__() != 0 ):
+        info = getRequestedInfo.get()
+        return info.request_type
+    
+    return 1
+    
+def get_group_serach(request): 
+        try:
+            User = request.user
+            if(request.query_params.__contains__('search')):
+                channel_member_info = Channel.objects.filter(name__icontains = request.query_params['search'] )
+            else:
+                channel_member_info = Channel.objects.all().order_by('-created_at')
+            serializer = ChannelAndOrgSerializers(channel_member_info,many=True)
+            json_data = json.dumps(serializer.data)
+            payload = json.loads(json_data)
+            for item in payload:
+                requestType = get_is_user_connected(item['id'],item['org']['id'],User.id)
+                time = {'modified_at' : item['modified_at']}
+                type = {'type':'Channel'}
+                requested = {'requested' : requestType }
+                item.update(type)
+                item.update(time)
+                item.update(requested)
+            return payload
+        except Exception as ex:
+            return Response({"error":"not get  data because some error"}, status=400)
       
       
 @method_decorator(csrf_exempt, name='dispatch')
