@@ -1,8 +1,9 @@
 import math
 import time
 import json
+from urllib import response
 import uuid
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponseBadRequest
 from django.http import JsonResponse
 from .utils.twilio import send_confirmation_code
@@ -13,7 +14,7 @@ from .models import MyMed, Question, Choice, AdminFeedback, TagEntry
 from django.conf import settings
 import logging
 import boto3
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView 
 from botocore.exceptions import ClientError
 from knox.auth import get_user_model, AuthToken
 from rest_framework.response import Response
@@ -582,10 +583,41 @@ def member_session_livedata(request):
         print("🚀 ~ file: views.py ~ line 460 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
 
-class places(ListAPIView):
+
+class Position(ListAPIView):
     try:
         queryset = Location.objects.all()
         serializer_class = LocationSerializer
         
     except Exception as e:
-        pass
+        print(e)
+
+
+@api_view(['POST'])
+def createPosition(request):
+	serializer = LocationSerializer(data=request.data)
+
+	if serializer.is_valid():
+		serializer.save()
+
+	return Response(serializer.data)
+
+
+@api_view(['POST'])
+def updatePosition(request, pk):
+	location = Location.objects.get(id=pk)
+	serializer = LocationSerializer(instance=location, data=request.data)
+
+	if serializer.is_valid():
+		serializer.save()
+
+	return Response(serializer.data)
+    
+
+@api_view(['DELETE'])
+def deletePosition(request, pk):
+     position = Location.objects.get(id=pk)
+     position.delete()
+
+     return Response('Item succsesfully delete!')
+

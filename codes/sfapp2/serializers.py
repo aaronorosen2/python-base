@@ -42,4 +42,4 @@ class TagEntrySerializer(serializers.ModelSerializer):
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
-        fields = ['id','username','latitude','longitude','position']
+        fields = ['id','username','latitude','longitude']

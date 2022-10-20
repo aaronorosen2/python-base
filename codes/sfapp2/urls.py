@@ -27,6 +27,11 @@ urlpatterns = [
     path('api/member_session_stop', views.member_session_stop, name="member_session_stop"),
     path('api/member_session_distance', views.member_session_distance, name="member_session_distance"),
     path('api/member_session_livedata', views.member_session_livedata, name="member_session_livedata"),
-    path('api/places', views.places.as_view(), name="places"),
+    path('api/places', views.Position.as_view(), name="places-home"),
+    path('api/places/create/', views.createPosition, name="place-create"),
+    path('api/place-update/<str:pk>/', views.updatePosition, name="task-update"),
+    path('api/place-delete/<str:pk>/', views.deletePosition, name="task-delete"),
+    # path('api/places/create', views.CreateLocationView.as_view(), name="crete_location"),
+    # path('api/places/update/<pk>/', views.UpdateLocationView.as_view(), name="update_location"),
 
 ]
