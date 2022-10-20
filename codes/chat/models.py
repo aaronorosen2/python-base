@@ -54,7 +54,7 @@ class Channel(models.Model):
                                default="0", null=True)
 
     class Meta:
-        unique_together = ('name', 'org')
+        unique_together = ('name', 'org') 
 
     def __str__(self) -> str:
         return f"--{self.name}--"

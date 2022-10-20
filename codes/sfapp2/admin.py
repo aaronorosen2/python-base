@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import  Member, Token, Upload, AdminFeedback, GpsCheckin, MemberGpsEntry, MemberMonitor, MemberSession, MyMed, Question, Choice, Service, TagEntry, VideoUpload
+from .models import  Member, Token, Upload, AdminFeedback, GpsCheckin, MemberGpsEntry, MemberMonitor, MemberSession, MyMed, Question, Choice, Service, TagEntry, VideoUpload, Location
 
 
 class QuestionAdmin(admin.ModelAdmin):
@@ -60,4 +60,5 @@ admin.site.register(Token, sfapp2Token)
 admin.site.register(Service, sfapp2Service)
 admin.site.register(MemberSession, sfapp2MemberSession)
 admin.site.register(MemberGpsEntry, sfapp2MemberGpsEntry)
+admin.site.register(Location)
  

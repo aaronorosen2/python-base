@@ -722,7 +722,7 @@ class List_all_user_group(ListAPIView):
             user = getUser(request=request)
             channel = getGroup(request=request)
             jsonMerged = user + channel
-            jsonMerged.sort(key=lambda x: x['modified_at'],reverse = True)
+            # jsonMerged.sort(key=lambda x: x['modified_at'],reverse = True)
             records = 10
             paginator.page_size_query_param = 'record'
             page_size = int(records)
@@ -778,11 +778,12 @@ class UserCountApi(ListAPIView):
 
 # =================================================List all group and users==================================================
 
-def get_user_search(request):   
+def get_user_search(request):
         try:
             user_member_info = User.objects.all()
             serializer = CurrentUserSerializer(user_member_info,many=True,)
             json_data = json.dumps(serializer.data)
+            print(json_data)
             payload = json.loads(json_data)
             for item in payload:
                 member_info = UserProfile.objects.get(user=int(item['id']))

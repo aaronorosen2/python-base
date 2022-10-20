@@ -24,6 +24,7 @@ class userProfile(models.Model):
                             null=True, blank=True)
     Neighborhood = models.ForeignKey(Neighborhood, on_delete=models.CASCADE,
                             null=True, blank=True)
+                            
 class order(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True)
     name = models.CharField(max_length=70, blank=False)
