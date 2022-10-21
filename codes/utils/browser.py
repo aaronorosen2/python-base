@@ -75,7 +75,7 @@ def get_driver_firefox(platform=None, proxy=None):
     caps.update(options.to_capabilities())
 
     # XXX make configurable with env var for dev setup and prod deploy
-    if socket.gethostname() in [
+    if True or socket.gethostname() in [
         'arosen-laptop', 'merih.local', 'hassans-MacBook-Pro-2.local',
         'arosen-ZenBook-UX434IQ-Q407IQ', 'zano-Vostro-3558',
         'zano-ASUS-TUF-Gaming-A15-FA506II-FA506II'
