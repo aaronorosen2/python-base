@@ -5,6 +5,12 @@
 sudo apt install libffi-dev cmake libjpeg-dev zlib1g-dev
 
 
+MAC
+
+brew install libtiff libjpeg webp little-cms2
+
+
+
 ```configure db on env
 
 start local database:

@@ -133,6 +133,7 @@ INSTALLED_APPS = [
     'lesson_notifications',
     'postcards',
     'wifi',
+    'sound',
     'ringlessVoiceMail',
     'facebook',
     'ipflow',
