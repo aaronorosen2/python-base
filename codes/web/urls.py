@@ -35,6 +35,7 @@ urlpatterns = [
     path('vconf_api/', include(
         ('vconf.urls', 'vconf_api'),
         namespace='vconf_api')),
+    path('sound_api/', include("sound.urls")),
     path('courses_api/', include("courses_api.urls")),
     path('ringlessVoiceMail_api/', include("ringlessVoiceMail.urls")),
     path('store_stripe/', include("store_stripe.urls")),

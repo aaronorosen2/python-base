@@ -10,6 +10,7 @@ def uuid_file_path(instance, filename):
 
 
 class SoundFile(models.Model):
-    file = models.FileField(upload_to=uuid_file_path)
+    file = models.FileField(upload_to=uuid_file_path,
+                            blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128, blank=True, null=True)

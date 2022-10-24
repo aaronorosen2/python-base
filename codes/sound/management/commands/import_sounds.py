@@ -1,11 +1,14 @@
 from django.core.management.base import BaseCommand
 from sound.models import SoundFile
 import os
-import platform
+import requests
 
 
 def create_sound_file():
-    pass
+
+    sound_file = SoundFile()
+    sound_file.name =  "testfile"
+    sound_file.save()
 
 
 class Command(BaseCommand):
@@ -15,4 +18,4 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
-	create_sound_file()
+        create_sound_file()
