@@ -14,3 +14,6 @@ class SoundFile(models.Model):
                             blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=128, blank=True, null=True)
+
+    def __str__(self) -> str:
+        return f"-{self.id} {self.name}-"
