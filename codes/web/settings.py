@@ -256,11 +256,27 @@ ASGI_APPLICATION = 'web.routing.application'
 #db_server = os.environ.get(
 #    "db", "python-base-restore-dev.cb7bl0nt7fvo.us-east-2.rds.amazonaws.com")
 
-db_user = os.environ.get('db_user', 'postgresuser')
-db_password = os.environ.get('db_password', 'postgrespassword')
+# db_user = os.environ.get('db_user', 'postgresuser')
+# db_password = os.environ.get('db_password', 'postgrespassword')
+# db_name = os.environ.get('db_user', 'postgres')
+# db_host = os.environ.get('db_host', 'localhost')
+# db_port = os.environ.get('db_port', '5433')
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': db_name,
+#         'USER': db_user,
+#         'HOST': db_host,
+#         'PORT': db_port,
+#         'PASSWORD': db_password,
+#     }
+# }
+db_user = os.environ.get('db_user', 'postgres')
+db_password = os.environ.get('db_password', '123456')
 db_name = os.environ.get('db_user', 'postgres')
-db_host = os.environ.get('db_host', 'localhost')
-db_port = os.environ.get('db_port', '5433')
+db_host = os.environ.get('db_host', 'localhost') 
+db_port = os.environ.get('db_port', '5432')
 
 DATABASES = {
     'default': {
@@ -327,11 +343,15 @@ REST_FRAMEWORK = {
 #REST_KNOX = {
 #  'USER_SERIALIZER': 'profile.serializers.UserSerializer',
 #}
-
+import datetime
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(weeks=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(weeks=2),
+
+    # allow refreshing of tokens
+    'JWT_ALLOW_REFRESH': True,
+
 }
 
 # Internationalization
@@ -363,7 +383,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [("localhost", 6379)],
         },
     },
 }
@@ -400,7 +420,7 @@ CELERY_BEAT_SCHEDULE = {
 CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS=['*']
 CORS_ORIGIN_ALLOW_ALL = True
-# CORS_ALLOWED_ORIGINS=["*"]
+# CORS_ALLOWED_ORIGINS=["*"]  
 
 # Email
 EMAIL_BACKEND = 'django_ses.SESBackend'

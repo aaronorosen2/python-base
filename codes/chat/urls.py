@@ -33,6 +33,7 @@ urlpatterns = [
     # It will count and display all user list 
     path('get/channel/user_list/<str:pk>',views.UserCountApi.as_view(),name='user_count_list'),
     path('userRequest/<int:pk>',views.UserRequestView.as_view(),name='user_count_list'),
+    path('get/all_call_logs/',views.CallLogs.as_view(),name='group_call_logs'),
     path('userRequest/<int:org>/<int:Channel>',views.UserRequestView.as_view(),name='user_count_list'),
 
 

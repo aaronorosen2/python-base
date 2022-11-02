@@ -33,6 +33,8 @@ import time
 from profile.models import UserProfile
 from rest_framework.pagination import PageNumberPagination
 import json
+from django.db.models import Q
+
 # =====================================Org================================================
 def chat_room(request):
     return render(request, "chat_room.html")
@@ -928,4 +930,38 @@ class UserRequestView(ListAPIView):
             return Response({"error": "Orginization, Channel, User, or Id were not provided!"}, status=200)
         except Exception as ex:
             return Response({"error": str(ex)}, status=400)
-            
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CallLogs(ListAPIView):
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    
+    queryset = MessageChannel.objects.all()
+    serializer_class = MessageChannelSerializers
+    def get(self, request, pk=None, *args, **kwargs):
+        try:
+            id = request.user.id
+            if id is not None:     
+                call_log_info_group = MessageChannel.objects.filter( Q(message_type="message/videocall") | Q(message_type="message/voicecall")).filter(user=request.user.id).order_by('-created_at')
+                serializer = self.get_serializer(call_log_info_group,many=True) #line no 941
+                json_data = json.dumps(serializer.data)
+                payload_channel = json.loads(json_data)
+                for item in payload_channel:
+                    item['id'] =str(item['id'])+'_channel'
+                    type = {'type':'channel'}
+                    item.update(type)
+                call_log_info_user = MessageUser.objects.filter( Q(message_type="message/videocall") | Q(message_type="message/voicecall")).filter(from_user=request.user.id).order_by('-created_at')
+                serializer = MessageUserSerializers(call_log_info_user,many=True)
+                json_data = json.dumps(serializer.data)
+                payload_user = json.loads(json_data)
+                for item in payload_user:
+                    item['id'] =str(item['id'])+'_user'
+                    type = {'type':'user'}
+                    item.update(type)
+                json_data= payload_channel + payload_user
+                return JsonResponse(json_data, safe=False)
+            return Response({"error":"Not Getting Any"})
+
+        except Exception as ex:
+            return Response({"error": str(ex)}, status=400)
