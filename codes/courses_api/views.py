@@ -48,6 +48,7 @@ from .utils.email_util import send_email, send_email_code
 # from codes.vconf.views import upload_to_s3, uuid_file_path
 import stripe
 from django.conf import settings
+from utils.chirp import CHIRP
 
 stripe.api_key = settings.STRIPE_TEST_SECRET_KEY
 
@@ -59,8 +60,7 @@ def apiOverview(request):
 
 @api_view(['POST'])
 def lesson_create(request):
-    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
-    user = User.objects.get(id=token.user_id)
+    user = request.user
     les_ = Lesson()
     les_.lesson_name = request.data["lesson_name"]
     les_.meta_attributes = request.data["meta_attributes"]
@@ -131,7 +131,7 @@ def lesson_create(request):
 
         stripe_recurring_price = False;
         if 'stripe_recurring_price' in flashcard:
-            print('stripe_recurring_price--setting')
+            CHIRP.info('stripe_recurring_price--setting')
             stripe_recurring_price = flashcard['stripe_recurring_price']
 
         if(braintree_item_name != '' and braintree_item_price != '' and braintree_merchant_ID != '' 
@@ -151,14 +151,14 @@ def lesson_create(request):
         elif stripe_product_price != 0:
             p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
             if not stripe_recurring_price:
-                print('no_recurring_price')
+                CHIRP.info('no_recurring_price')
                 price = stripe.Price.create(
                     unit_amount=int(stripe_product_price)*100,
                     currency='usd',
                     product=p.id,
                 )
             else: 
-                print('creating_recurring_price')
+                CHIRP.info('creating_recurring_price')
                 price = stripe.Price.create(
                     unit_amount=int(stripe_product_price)*100,
                     currency='usd',
@@ -205,7 +205,6 @@ def lesson_create(request):
 def lesson_read(request, pk):
     data = {}
     try:
-        # token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
         user = request.user
         les_= Lesson.objects.get(user=user,id=pk)
         if not les_:
@@ -319,14 +318,12 @@ def lessons_in_class(request):
 @api_view(['GET','POST','PUT','DELETE'])
 @csrf_exempt
 def lesson_all(request):
-    print("🚀 ~ file: views.py ~ line 202 ~ request.headers.get('Authorization')[:8]", request.headers.get('Authorization')[:8])
-    token = AuthToken.objects.get(token_key = request.headers.get('Authorization')[:8])
+    print("HERER")
+    CHIRP.info(request.user)
     if request.method == 'GET':
-        if 'Authorization' in request.headers:
-            # les_= Lesson.objects.filter(user=token.user_id)
-            # less_serialized = LessonSerializer(les_,many=True)
+        if request.user:
             less_serialized = LessonSerializer(
-                Lesson.objects.filter(user=token.user_id), many=True)
+                Lesson.objects.filter(user=request.user), many=True)
             return JsonResponse(less_serialized.data, safe=False)
         else:
             return JsonResponse({"message":"Unauthorized"})
@@ -355,15 +352,14 @@ from termcolor import cprint
 @api_view(['POST'])
 def lesson_update(request, pk):
     try:
-        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-        user = User.objects.get(id=token.user_id)
-        lesson = Lesson.objects.get(user=user,id=pk)
+        user = request.user
+        lesson = Lesson.objects.get(user=user, id=pk)
         lesson_name = request.data['lesson_name']
         lesson_is_public = request.data['lesson_is_public']
         meta_attributes = request.data['meta_attributes']
-        Lesson.objects.filter(user=user,id=pk).update(lesson_name=lesson_name)
-        Lesson.objects.filter(user=user,id=pk).update(meta_attributes=meta_attributes)
-        Lesson.objects.filter(user=user,id=pk).update(lesson_is_public=lesson_is_public)
+        Lesson.objects.filter(user=user, id=pk).update(lesson_name=lesson_name)
+        Lesson.objects.filter(user=user, id=pk).update(meta_attributes=meta_attributes)
+        Lesson.objects.filter(user=user, id=pk).update(lesson_is_public=lesson_is_public)
         for fc in FlashCard.objects.filter(lesson=lesson):
             toDelete = True
             for flashcard in request.data["flashcards"]:
@@ -448,7 +444,7 @@ def lesson_update(request, pk):
                     # BrainTreeConfig_obj.save()
 
                 if(stripe_product_price != 0):
-                    print('stripe_product_price', stripe_product_price)
+                    CHIRP.info('stripe_product_price', stripe_product_price)
                     obj_item = flashcard.objects.filter(id=id).first()
                     p = stripe.Product.create(name=f'product__{stripe_product_price}__{uuid.uuid4()}')
                     price = stripe.Price.create(
@@ -545,16 +541,15 @@ def lesson_update(request, pk):
                     f.save()
         return Response(LessonSerializer(lesson).data)
     except Exception as e:
-        print("🚀 ~ file: views.py ~ line 374 ~ e", e)
+        CHIRP.info("🚀 ~ file: views.py ~ line 374 ~ e", e)
         return Response({"msg":"you cannot update this lesson"},status=status.HTTP_401_UNAUTHORIZED)
         
 
 @api_view(['DELETE'])
-def lesson_delete(request,pk):
+def lesson_delete(request, pk):
     try:
-        token = AuthToken.objects.get(token_key=request.headers.get('Authorization')[:8])
-        user = User.objects.get(id=token.user_id)
-        lesson = Lesson.objects.filter(user=user,id=pk)
+        user = request.user
+        lesson = Lesson.objects.filter(user=user, id=pk)
         lesson.delete()
         return Response("deleted")
     except:
@@ -709,7 +704,7 @@ def flashcard_response(request):
     flashcard = FlashCard.objects.get(id=flashcard_id)
 
     user_session = UserSession.objects.get(session_id=session_id)
-    print("%s %s %s" % (user_session, flashcard, answer))
+    CHIRP.info("%s %s %s" % (user_session, flashcard, answer))
 
     # first check if we have FlashCardResponse
     flashcard_response = FlashCardResponse.objects.filter(
@@ -795,9 +790,9 @@ def overall_flashcard_response_results(request, lesson_id):
 def email_responses(request,lessonId):
     try:
         notify = LessonEmailNotify.objects.get(lesson=lessonId)
-        print("🚀 ~ file: views.py ~ line 551 ~ notify", notify)
+        CHIRP.info("🚀 ~ file: views.py ~ line 551 ~ notify", notify)
         flash_obj = FlashCardResponse.objects.filter(lesson=notify.lesson.id)
-        print("🚀 ~ file: views.py ~ line 553 ~ flash_obj", flash_obj)
+        CHIRP.info("🚀 ~ file: views.py ~ line 553 ~ flash_obj", flash_obj)
         
         subject = f'User Response'
         body = ''
@@ -810,7 +805,7 @@ def email_responses(request,lessonId):
                             message_html=html_message)
         return Response({"sucess":True},status=200)
     except Exception as e:
-        print("🚀 ~ file: views.py ~ line 568 ~ e", e)
+        CHIRP.info("🚀 ~ file: views.py ~ line 568 ~ e", e)
         return Response("error")
 
 
@@ -827,14 +822,14 @@ def user_responses(request,lesson_id):
 def lesson_email_notify(request,lessonId):
     try:
         lesson = Lesson.objects.get(id=lessonId)
-        print("🚀 ~ file: views.py ~ line 584 ~ lesson", lesson)
+        CHIRP.info("🚀 ~ file: views.py ~ line 584 ~ lesson", lesson)
         email = request.POST.get('email')
-        print("🚀 ~ file: views.py ~ line 586 ~ email", email)
+        CHIRP.info("🚀 ~ file: views.py ~ line 586 ~ email", email)
         data = LessonEmailNotify(lesson_notify=lesson,email=email)
         data.save()
         return Response("Email Recorded",status=201)
     except Exception as e:
-        print("🚀 ~ file: views.py ~ line 591 ~ e", e)
+        CHIRP.info("🚀 ~ file: views.py ~ line 591 ~ e", e)
         return Response("error")
 
 @api_view(['DELETE'])
@@ -847,7 +842,7 @@ def lesson_email_notify_delete(request,lessonId):
 
 @api_view(['GET'])
 def logged_user(request):
-    print("reuest token")
+    CHIRP.info("reuest token")
 
 
 @api_view(['GET'])
@@ -1136,9 +1131,7 @@ def get_distance(lat1, lon1, lat2, lon2):
 @api_view(['POST'])
 def member_session_start(request):
     try:
-        token = AuthToken.objects.get(
-            token_key=request.headers.get('Authorization')[:8])
-        user = User.objects.get(id=token.user_id)
+        user = request.user
         session_create = MemberSession.objects.create(user=user)
         member_session_start.mge = MemberGpsEntry.objects.create(
             member_session=session_create,
@@ -1146,7 +1139,7 @@ def member_session_start(request):
             longitude=request.data.get("longitude", None))
         return JsonResponse({'status': 'okay'}, safe=False)
     except Exception as e:
-        print("🚀 ~ file: views.py ~ line 929 ~ e", e)
+        CHIRP.info("🚀 ~ file: views.py ~ line 929 ~ e", e)
         return JsonResponse({'status': 'error'}, safe=False)
 
 
@@ -1154,9 +1147,7 @@ def member_session_start(request):
 @api_view(['POST'])
 def member_session_stop(request):
     try:
-        token = AuthToken.objects.get(
-            token_key=request.headers.get('Authorization')[:8])
-        user = User.objects.get(id=token.user_id)
+        user = request.user
         session_create = MemberSession.objects.filter(user=user).last()
         session_create.ended_at = datetime.datetime.now()
         session_create.save()
@@ -1194,6 +1185,6 @@ def student_lesson_list_with_progress(request):
         serializer = StudentLessonProgressSerializer(stulist, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
-        print(e)
+        CHIRP.info(e)
         return Response({'message': 'error'},
                         status=status.HTTP_404_NOT_FOUND)
